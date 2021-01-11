@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mollie.Checkout", "Mollie.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mollie.Checkout.CommerceManager", "Mollie.Checkout.CommerceManager\Mollie.Checkout.CommerceManager.csproj", "{E2800EC2-2A42-4D60-A8E7-D3BC495396E1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddOn", "AddOn", "{735DCB13-E8B7-4D65-8217-9644A41D8A5B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Foundation", "Foundation", "{206EC107-EC0C-4DAB-BC93-9ADAF3FB7E30}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +28,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7D2EED50-B8D0-45DF-8BE7-9A1E60C26B7B} = {735DCB13-E8B7-4D65-8217-9644A41D8A5B}
+		{E2800EC2-2A42-4D60-A8E7-D3BC495396E1} = {735DCB13-E8B7-4D65-8217-9644A41D8A5B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6B0CDC98-CEBA-487F-9F41-C7ADB1EB337F}
