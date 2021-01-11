@@ -19,7 +19,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
             if (!Page.IsPostBack)
             {
-                apiKeyTextbox.Text = GetParameterByName(Constants.ApiKeyField)?.Value ?? string.Empty;
+                environmentDropDownList.SelectedValue = GetParameterByName(Constants.Fields.EnvironmentField)?.Value ?? "test";
+                apiKeyTextbox.Text = GetParameterByName(Constants.Fields.ApiKeyField)?.Value ?? string.Empty;
             }
         }
 
@@ -28,6 +29,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             if (Visible)
             {
                 paymentMethodDto = dto as PaymentMethodDto;
+
                 if (paymentMethodDto != null && paymentMethodDto.PaymentMethodParameter != null)
                 {
                     var paymentMethodId = Guid.Empty;
@@ -36,7 +38,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                         paymentMethodId = paymentMethodDto.PaymentMethod[0].PaymentMethodId;
                     }
 
-                    SetParamValue(paymentMethodId, Constants.ApiKeyField, apiKeyTextbox.Text);
+                    SetParamValue(paymentMethodId, Constants.Fields.EnvironmentField, environmentDropDownList.SelectedValue);
+                    SetParamValue(paymentMethodId, Constants.Fields.ApiKeyField, apiKeyTextbox.Text);
                 }
             }
         }
@@ -47,6 +50,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         private PaymentMethodDto.PaymentMethodParameterRow GetParameterByName(string name)
         {
             var rows = paymentMethodDto.PaymentMethodParameter.Select($"Parameter='{name}'");
+
             if (rows != null && rows.Length > 0)
             {
                 return rows[0] as PaymentMethodDto.PaymentMethodParameterRow;
@@ -57,6 +61,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         private void SetParamValue(Guid paymentMethodId, string paramName, string value)
         {
             var param = GetParameterByName(paramName);
+
             if (param != null)
             {
                 param.Value = value;
