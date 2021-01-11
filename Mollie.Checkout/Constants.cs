@@ -2,6 +2,11 @@
 {
     public static class Constants
     {
-        public const string ApiKeyField = "ApiKey";
+        public static class Fields
+        {
+            public const string EnvironmentField = "Environment";
+
+            public const string ApiKeyField = "ApiKey";
+        }
     }
 }

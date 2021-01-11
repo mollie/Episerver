@@ -248,7 +248,6 @@
     <Compile Include="Apps\Order\Payments\Plugins\MollieCheckout\ConfigurePayment.ascx.designer.cs">
       <DependentUpon>ConfigurePayment.ascx</DependentUpon>
     </Compile>
-    <Compile Include="Apps\Constants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
