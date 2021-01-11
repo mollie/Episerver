@@ -20,6 +20,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             if (!Page.IsPostBack)
             {
                 apiKeyTextbox.Text = GetParameterByName(Constants.ApiKeyField)?.Value ?? string.Empty;
+                profileIDTextBox.Text = GetParameterByName(Constants.ProfileIDField)?.Value ?? string.Empty;
             }
         }
 
@@ -37,6 +38,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                     }
 
                     SetParamValue(paymentMethodId, Constants.ApiKeyField, apiKeyTextbox.Text);
+                    SetParamValue(paymentMethodId, Constants.ProfileIDField, profileIDTextBox.Text);
+                    
                 }
             }
         }
