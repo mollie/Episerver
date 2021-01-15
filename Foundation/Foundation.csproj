@@ -1689,7 +1689,6 @@
     <Content Include="Features\Stores\stores.js" />
     <Content Include="Features\MyOrganization\Users\b2b-users-organization.js" />
     <Content Include="Assets\js\main.js" />
-    <Content Include="Assets\js\main.min.js" />
     <Content Include="ClientResources\Scripts\fontawesomeicons.js" />
     <Content Include="Assets\js\common\notification-helper.js" />
     <Content Include="Assets\js\vendors\notify.js" />
@@ -1719,7 +1718,6 @@
     <Content Include="modules\_protected\Foundation.Cms\ClientResources\js\vendors\mvc-grid.js" />
     <Content Include="modules\_protected\Foundation.Cms\ClientResources\js\vendors\popper.min.js" />
     <Content Include="modules\_protected\Foundation.Cms\ClientResources\js\vendors\spur.js" />
-    <Content Include="Assets\scss\main.min.css" />
     <Content Include="Assets\scss\vendors\jquery\images\css_images_ui-bg_gloss-wave_55_5c9ccc_500x100.png" />
     <Content Include="Assets\scss\vendors\jquery\images\ui-bg_inset-hard_100_fcfdfd_1x100.png" />
     <Content Include="Features\Blocks\HeroBlock\_hero-block.scss" />
@@ -2250,8 +2248,6 @@
     <Content Include="Assets\vendors\fa-solid-900.woff" />
     <Content Include="Assets\vendors\fa-solid-900.woff2" />
     <Content Include="Features\Markets\Index.cshtml" />
-    <Content Include="Assets\js\main.min.js.map" />
-    <Content Include="Assets\scss\main.min.css.map" />
     <Content Include="Features\Blocks\MembershipDisplayBlock\membership-display-block.scss" />
     <Content Include="Features\Blocks\TwitterBlock\twitter-block.scss" />
     <Content Include="Features\Search\_QuickSearchPdf.cshtml" />
