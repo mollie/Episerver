@@ -248,6 +248,8 @@
     <Compile Include="Apps\Order\Payments\Plugins\MollieCheckout\ConfigurePayment.ascx.designer.cs">
       <DependentUpon>ConfigurePayment.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Features\Versions\Services\AssemblyVersionService.cs" />
+    <Compile Include="Features\Versions\Services\IAssemblyVersionService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -266,6 +268,7 @@
       <Name>Mollie.Checkout</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

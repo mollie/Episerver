@@ -1,7 +1,9 @@
-﻿using Mediachase.Commerce.Orders.Dto;
+﻿using EPiServer.ServiceLocation;
+using Mediachase.Commerce.Orders.Dto;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Web.Console.BaseClasses;
 using Mediachase.Web.Console.Interfaces;
+using Mollie.Checkout.CommerceManager.Features.Versions.Services;
 using System;
 using System.Web.UI;
 
@@ -21,6 +23,10 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             {
                 apiKeyTextbox.Text = GetParameterByName(Constants.Fields.ApiKeyField)?.Value ?? string.Empty;
                 profileIDTextBox.Text = GetParameterByName(Constants.Fields.ProfileIDField)?.Value ?? string.Empty;
+
+                var assemblyVersionService = ServiceLocator.Current.GetInstance<IAssemblyVersionService>();
+
+                versionValueLabel.Text = assemblyVersionService.CreateVersionString();
             }
         }
 
