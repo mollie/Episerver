@@ -15,6 +15,20 @@
 
 <table id="GenericTable" runat="server" class="mollie-payment-table">
     <tr>
+        <td>
+            <strong><asp:Literal ID="environmentLabel" Text="Mollie Environment" runat="server"></asp:Literal></strong>
+        </td>
+        <td>
+            <asp:DropDownList ID="environmentDropDownList" runat="server">
+                <asp:ListItem Text="Test" Value="test"></asp:ListItem>
+                <asp:ListItem Text="Live" Value="live"></asp:ListItem>
+            </asp:DropDownList>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+<tr>
         <td class="FormLabelCell center">
             <strong><asp:Literal ID="apiKeyLabel" Text="Api Key" runat="server"></asp:Literal></strong>
         </td>

@@ -24,6 +24,24 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         protected global::System.Web.UI.HtmlControls.HtmlTable GenericTable;
 
         /// <summary>
+        /// environmentLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal environmentLabel;
+
+        /// <summary>
+        /// environmentDropDownList control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList environmentDropDownList;
+
+        /// <summary>
         /// apiKeyLabel control.
         /// </summary>
         /// <remarks>
