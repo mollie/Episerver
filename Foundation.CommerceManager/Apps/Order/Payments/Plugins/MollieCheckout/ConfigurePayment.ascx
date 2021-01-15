@@ -16,6 +16,20 @@
 <table id="GenericTable" runat="server" class="mollie-payment-table">
     <tr>
         <td class="FormLabelCell center">
+            <strong><asp:Literal ID="environmentLabel" Text="Environment" runat="server"></asp:Literal></strong>
+        </td>
+        <td class="FormFieldCell">
+            <asp:DropDownList ID="environmentDropDownList" runat="server">
+                <asp:ListItem Text="Test" Value="test"></asp:ListItem>
+                <asp:ListItem Text="Live" Value="live"></asp:ListItem>
+            </asp:DropDownList>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
+        <td class="FormLabelCell center">
             <strong><asp:Literal ID="apiKeyLabel" Text="Api Key" runat="server"></asp:Literal></strong>
         </td>
         <td class="FormFieldCell">
@@ -42,7 +56,7 @@
             <strong><asp:Literal ID="versionLabel" Text="Version" runat="server"></asp:Literal></strong>
         </td>
         <td class="FormFieldCell">
-            <asp:Label ID="versionValueLabel" CssClass="text" Text="Api Key" runat="server"></asp:Label>
+            <asp:Label ID="versionValueLabel" CssClass="text" Text="Version" runat="server"></asp:Label>
         </td>
     </tr>
 </table>
