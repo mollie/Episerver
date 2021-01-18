@@ -130,6 +130,8 @@ namespace Foundation.Infrastructure
             _services.AddTransient<IPaymentMethod, CashOnDeliveryPaymentOption>();
             _services.AddTransient<IPaymentMethod, GenericCreditCardPaymentOption>();
             _services.AddTransient<IPaymentMethod, GiftCardPaymentOption>();
+            _services.AddTransient<IPaymentMethod, MollieCheckoutPaymentOption>();
+
             _services.AddSingleton<ISearchService, SearchService>();
             _services.AddSingleton<CatalogContentClientConventions, FoundationFindConventions>();
             _services.AddSingleton<CatalogContentEventListener, FoundationCatalogContentEventListener>();

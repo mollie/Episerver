@@ -45,7 +45,16 @@
         </td>
         <td class="FormFieldCell">
             <asp:TextBox ID="profileIDTextBox" CssClass="text" Text="Enter Profile ID" runat="server"></asp:TextBox>
-            <asp:RequiredFieldValidator ID="requiredProfileIDTextBox" runat="server" ControlToValidate="profileIDTextBox" ErrorMessage="Profile ID is required" />
+            <asp:RequiredFieldValidator ID="requiredProfileIDValidator" runat="server" ControlToValidate="profileIDTextBox" ErrorMessage="Profile ID is required" />
+        </td>
+    </tr>
+    <tr>
+        <td class="FormLabelCell center">
+            <strong><asp:Literal ID="redirectURLLabel" Text="Redirect URL" runat="server"></asp:Literal></strong>
+        </td>
+        <td class="FormFieldCell">
+            <asp:TextBox ID="redirectURLTextBox" CssClass="text" Text="Enter Redirect URL" runat="server"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="requiredRedirectURLValidator" runat="server" ControlToValidate="redirectURLTextBox" ErrorMessage="Redirect URL is required" />
         </td>
     </tr>
     <tr>

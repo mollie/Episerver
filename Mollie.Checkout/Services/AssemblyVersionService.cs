@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Mollie.Checkout.CommerceManager.Features.Versions.Services
+namespace Mollie.Checkout.Services
 {
     [ServiceConfiguration(typeof(IAssemblyVersionService))]
     public class AssemblyVersionService : IAssemblyVersionService
