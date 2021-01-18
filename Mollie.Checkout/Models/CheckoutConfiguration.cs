@@ -2,6 +2,8 @@
 {
     public class CheckoutConfiguration
     {
+        public string Environment { get; set; }
+
         public string ApiKey { get; set; }
 
         public string ProfileId { get; set; }

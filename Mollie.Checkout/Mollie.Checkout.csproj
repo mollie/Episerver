@@ -226,9 +226,11 @@
     <Compile Include="OrderGroupExtensions.cs" />
     <Compile Include="PaymentMethodDtoExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\AssemblyVersionService.cs" />
     <Compile Include="Services\DefaultCheckoutConfigurationLoader.cs" />
     <Compile Include="Services\DefaultCheckoutMetaDataFactory.cs" />
     <Compile Include="Services\DefaultPaymentDescriptionGenerator.cs" />
+    <Compile Include="Services\IAssemblyVersionService.cs" />
     <Compile Include="Services\ICheckoutConfigurationLoader.cs" />
     <Compile Include="Services\ICheckoutMetaDataFactory.cs" />
     <Compile Include="Services\IPaymentDescriptionGenerator.cs" />
