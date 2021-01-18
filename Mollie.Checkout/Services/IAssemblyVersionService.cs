@@ -1,4 +1,4 @@
-﻿namespace Mollie.Checkout.CommerceManager.Features.Versions.Services
+﻿namespace Mollie.Checkout.Services
 {
     public interface IAssemblyVersionService
     {

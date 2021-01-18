@@ -3,7 +3,7 @@ using Mediachase.Commerce.Orders.Dto;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Web.Console.BaseClasses;
 using Mediachase.Web.Console.Interfaces;
-using Mollie.Checkout.CommerceManager.Features.Versions.Services;
+using Mollie.Checkout.Services;
 using System;
 using System.Web.UI;
 
