@@ -9,4 +9,13 @@
             <asp:TextBox ID="apiKeyTextbox" Text="Enter Api Key" runat="server"></asp:TextBox>
         </td>
     </tr>
+    <tr>
+        <td>
+            <strong><asp:Literal ID="profileIDLabel" Text="Profile ID" runat="server"></asp:Literal></strong>
+        </td>
+        <td>
+            <asp:TextBox ID="profileIDTextBox" Text="Enter Profile ID" runat="server" Req></asp:TextBox>
+            <asp:RequiredFieldValidator ID="requiredProfileIDTextBox" runat="server" ControlToValidate="profileIDTextBox" ErrorMessage="Profile ID is required" />
+        </td>
+    </tr>
 </table>
