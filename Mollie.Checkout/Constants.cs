@@ -6,9 +6,13 @@
 
         public static class Fields
         {
+            public const string EnvironmentField = "Environment";
+
             public const string ApiKeyField = "ApiKey";
 
             public const string ProfileIDField = "ProfileID";
+
+            public const string RedirectURLField = "RedirectURL";
         }
 
         public static class OtherPaymentFields
