@@ -23,7 +23,7 @@ namespace Mollie.Checkout.Services
 
             if (paymentMethodDto == null)
             {
-                throw new Exception($"PaymentMethod {Constants.MollieCheckoutSystemKeyword} is not configiured for language {languageId}");
+                throw new Exception($"PaymentMethod {Constants.MollieCheckoutSystemKeyword} is not configured for language {languageId}");
             }
 
             return ReadConfiguration(paymentMethodDto);

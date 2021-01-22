@@ -20,5 +20,16 @@
             public const string LanguageId = "LanguageId";
             public const string MolliePaymentId = "MolliePaymentId";
         }
+
+        public static class MolliePaymentStatus
+        {
+            public const string Open = "open";
+            public const string Paid = "paid";
+            public const string Pending = "pending";
+            public const string Authorized = "authorized";
+            public const string Canceled = "canceled";
+            public const string Expired = "expired";
+            public const string Failed = "failed";
+        }
     }
 }

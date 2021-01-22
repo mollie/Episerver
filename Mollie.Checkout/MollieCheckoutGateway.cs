@@ -87,8 +87,9 @@ namespace Mollie.Checkout
 
         private PaymentProcessingResult ProcessPaymentCheckout(ICart cart, IPayment payment)
         {
-            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(
-                payment.Properties[Constants.OtherPaymentFields.LanguageId] as string);
+            var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
+
+            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             var paymentClient = new Api.Client.PaymentClient(checkoutConfiguration.ApiKey);
             var paymentRequest = new Api.Models.Payment.Request.PaymentRequest
@@ -96,7 +97,7 @@ namespace Mollie.Checkout
                 Amount = new Api.Models.Amount(cart.Currency.CurrencyCode, payment.Amount),
                 Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
-                WebhookUrl = "http://foundation/api/webhook",
+                WebhookUrl = $"http://foundation/api/molliewebhook/?languageId={languageId}",
                 Metadata = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration)
             };
 
