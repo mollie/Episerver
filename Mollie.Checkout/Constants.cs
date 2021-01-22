@@ -19,6 +19,7 @@
         {
             public const string LanguageId = "LanguageId";
             public const string MolliePaymentId = "MolliePaymentId";
+            public const string MolliePaymentStatus = "MolliePaymentStatus";
         }
 
         public static class MolliePaymentStatus

@@ -1,10 +1,12 @@
 ﻿using EPiServer.Commerce.Order;
+using EPiServer.Logging;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce.Orders;
 using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Response;
 using Mollie.Checkout.Models;
 using Mollie.Checkout.Services;
+using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -15,6 +17,8 @@ namespace Mollie.Checkout.Webhooks
     [RoutePrefix("api/molliewebhook")]
     public class MollieWebhookApiController : ApiController
     {
+        private readonly ILogger _log = LogManager.GetLogger(typeof(MollieWebhookApiController));
+
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IOrderRepository _orderRepository;
         private readonly IMollieCheckoutService _mollieCheckoutService;
@@ -34,7 +38,7 @@ namespace Mollie.Checkout.Webhooks
         }
 
         [HttpPost]
-        [Route("")]
+        [Route("{languageId}")]
         public async Task<IHttpActionResult> IndexAsync(string languageId)
         {
             var jsonResult = Request.Content.ReadAsStringAsync().Result;
@@ -86,47 +90,60 @@ namespace Mollie.Checkout.Webhooks
             {
                 if (orderGroupPayment.Properties[OtherPaymentFields.MolliePaymentId].ToString() == molliePaymentId)
                 {
-                    orderGroupPayment.TransactionID = molliePaymentId;
+                    orderGroupPayment.ProviderTransactionID = molliePaymentId;
+
+                    // Store mollie payment status..
+                    if (orderGroupPayment.Properties.ContainsKey(OtherPaymentFields.MolliePaymentStatus))
+                        orderGroupPayment.Properties[OtherPaymentFields.MolliePaymentStatus] = result.Status;
+                    else
+                        orderGroupPayment.Properties.Add(OtherPaymentFields.MolliePaymentStatus, result.Status);
 
                     switch (result.Status)
                     {
                         case MolliePaymentStatus.Open:
-                            orderGroupPayment.Status = MolliePaymentStatus.Open;
+                        case MolliePaymentStatus.Pending:
+                        case MolliePaymentStatus.Authorized:
+                            orderGroupPayment.Status = PaymentStatus.Pending.ToString();
                             _orderRepository.Save(orderGroup);
                             break;
                         case MolliePaymentStatus.Paid:
                             orderGroupPayment.Status = PaymentStatus.Processed.ToString();
                             _orderRepository.Save(orderGroup);
-                            _mollieCheckoutService.HandlePaymentSuccess(orderGroup, orderGroupPayment);
-                            break;
-                        case MolliePaymentStatus.Pending:
-                            orderGroupPayment.Status = PaymentStatus.Pending.ToString();
-                            _orderRepository.Save(orderGroup);
-                            break;
-                        case MolliePaymentStatus.Authorized:
-                            orderGroupPayment.Status = MolliePaymentStatus.Authorized;
-                            _orderRepository.Save(orderGroup);
+
+                            HandlePaymentSuccessAsync(_mollieCheckoutService, orderGroup, orderGroupPayment);
+
                             break;
                         case MolliePaymentStatus.Canceled:
-                            orderGroupPayment.Status = MolliePaymentStatus.Canceled;
-                            _orderRepository.Save(orderGroup);
-                            break;
                         case MolliePaymentStatus.Expired:
-                            orderGroupPayment.Status = MolliePaymentStatus.Expired;
-                            _orderRepository.Save(orderGroup);
-                            break;
                         case MolliePaymentStatus.Failed:
                             orderGroupPayment.Status = PaymentStatus.Failed.ToString();
                             _orderRepository.Save(orderGroup);
+
                             _mollieCheckoutService.HandlePaymentFailure(orderGroup, orderGroupPayment);
                             break;
                         default:
                             break;
-                    };
+                    }
                 }
             }
 
             return Ok();
+        }
+
+        private async Task HandlePaymentSuccessAsync(IMollieCheckoutService checkoutService, IOrderGroup orderGroup, IPayment payment)
+        {
+            try
+            {
+                await Task.Factory.StartNew(() =>
+                {
+                    checkoutService.HandlePaymentSuccess(orderGroup, payment);
+                    return true;
+                });
+            }
+            catch(Exception ex)
+            {
+                _log.Error("Error handling payment success", ex);
+            }
         }
     }
 }
