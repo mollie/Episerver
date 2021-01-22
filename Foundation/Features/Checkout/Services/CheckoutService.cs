@@ -19,12 +19,14 @@ using Mediachase.Commerce.Orders.Exceptions;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Commerce.Security;
 using Mediachase.Web.Console.Common;
+using Mollie.Checkout;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 
 namespace Foundation.Features.Checkout.Services
@@ -201,6 +203,14 @@ namespace Foundation.Features.Checkout.Services
                 if (unsuccessPayments != null && unsuccessPayments.Any())
                 {
                     throw new InvalidOperationException(string.Join("\n", unsuccessPayments.Select(x => x.Message)));
+                }
+
+                // Do we need a redirect to payment provider
+                if (processPayments.Any(x => x.IsSuccessful && !string.IsNullOrWhiteSpace(x.RedirectUrl)))
+                {
+                    var payment = processPayments.First(x => x.IsSuccessful && !string.IsNullOrWhiteSpace(x.RedirectUrl));
+                    HttpContext.Current.Response.Redirect(payment.RedirectUrl, true);
+                    return null;
                 }
 
                 var processedPayments = cart.GetFirstForm().Payments.Where(x => x.Status.Equals(PaymentStatus.Processed.ToString()));
