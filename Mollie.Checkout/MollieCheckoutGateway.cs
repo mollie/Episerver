@@ -102,13 +102,21 @@ namespace Mollie.Checkout
             };
 
             var paymentResponse = paymentClient.CreatePaymentAsync(paymentRequest).Result;
-            payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, paymentResponse.Id);
+            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
+            {
+                payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = paymentResponse.Id;
+            }
+            else
+            {
+                payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, paymentResponse.Id);
+            }
+
             _orderRepository.Save(cart);
 
-            var message = $"---Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout}";
+            var message = $"---Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout.Href}";
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse.Links.Checkout.ToString());
+            return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse.Links.Checkout.Href);
         }
 
         private PaymentProcessingResult ProcessPaymentRefund(IOrderGroup orderGroup, IPayment payment)
