@@ -465,7 +465,7 @@ namespace Foundation.Features.Checkout
                 var purchaseOrder = _checkoutService.PlaceOrder(CartWithValidationIssues.Cart, ModelState, checkoutViewModel);
                 if (purchaseOrder == null)
                 {
-                    TempData[Constant.ErrorMessages] = "There is no payment was processed";
+                    TempData[Constant.ErrorMessages] = "There is no payment processed";
                     return RedirectToAction("Index");
                 }
 

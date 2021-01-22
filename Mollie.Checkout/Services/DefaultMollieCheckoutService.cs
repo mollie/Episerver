@@ -2,10 +2,7 @@
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce.Orders;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mollie.Checkout.Services
 {
@@ -29,6 +26,7 @@ namespace Mollie.Checkout.Services
         public void HandlePaymentSuccess(IOrderGroup orderGroup, IPayment payment)
         {
             var cart = orderGroup as ICart;
+
             if (cart != null)
             {
                 var processedPayments = orderGroup.GetFirstForm().Payments
@@ -39,7 +37,10 @@ namespace Mollie.Checkout.Services
                 if (totalProcessedAmount == orderGroup.GetTotal(_orderGroupCalculator).Amount)
                 {
                     // Create order
-                    var orderReference = (cart.Properties["IsUsePaymentPlan"] != null && cart.Properties["IsUsePaymentPlan"].Equals(true)) ? SaveAsPaymentPlan(cart) : _orderRepository.SaveAsPurchaseOrder(cart);
+                    var orderReference = (cart.Properties["IsUsePaymentPlan"] != null &&
+                        cart.Properties["IsUsePaymentPlan"].Equals(true)) ?
+                            SaveAsPaymentPlan(cart) :
+                            _orderRepository.SaveAsPurchaseOrder(cart);
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
                     // Delete cart

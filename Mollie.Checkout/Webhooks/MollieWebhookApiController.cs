@@ -17,11 +17,13 @@ namespace Mollie.Checkout.Webhooks
     {
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IOrderRepository _orderRepository;
+        private readonly IMollieCheckoutService _mollieCheckoutService;
 
         public MollieWebhookApiController()
         {
             _checkoutConfigurationLoader = ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>();
             _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
+            _mollieCheckoutService = ServiceLocator.Current.GetInstance<IMollieCheckoutService>();
         }
 
         [HttpGet]
@@ -73,6 +75,11 @@ namespace Mollie.Checkout.Webhooks
             // Get Cart with ID
             var orderGroup = _orderRepository.Load<ICart>(metaData.OrderId);
 
+            if(orderGroup == null)
+            {
+                return Ok();
+            }
+
             var orderGroupPayments = orderGroup.GetFirstForm().Payments;
 
             foreach (var orderGroupPayment in orderGroupPayments)
@@ -85,32 +92,39 @@ namespace Mollie.Checkout.Webhooks
                     {
                         case MolliePaymentStatus.Open:
                             orderGroupPayment.Status = MolliePaymentStatus.Open;
+                            _orderRepository.Save(orderGroup);
                             break;
                         case MolliePaymentStatus.Paid:
                             orderGroupPayment.Status = PaymentStatus.Processed.ToString();
+                            _orderRepository.Save(orderGroup);
+                            _mollieCheckoutService.HandlePaymentSuccess(orderGroup, orderGroupPayment);
                             break;
                         case MolliePaymentStatus.Pending:
                             orderGroupPayment.Status = PaymentStatus.Pending.ToString();
+                            _orderRepository.Save(orderGroup);
                             break;
                         case MolliePaymentStatus.Authorized:
                             orderGroupPayment.Status = MolliePaymentStatus.Authorized;
+                            _orderRepository.Save(orderGroup);
                             break;
                         case MolliePaymentStatus.Canceled:
                             orderGroupPayment.Status = MolliePaymentStatus.Canceled;
+                            _orderRepository.Save(orderGroup);
                             break;
                         case MolliePaymentStatus.Expired:
                             orderGroupPayment.Status = MolliePaymentStatus.Expired;
+                            _orderRepository.Save(orderGroup);
                             break;
                         case MolliePaymentStatus.Failed:
                             orderGroupPayment.Status = PaymentStatus.Failed.ToString();
+                            _orderRepository.Save(orderGroup);
+                            _mollieCheckoutService.HandlePaymentFailure(orderGroup, orderGroupPayment);
                             break;
                         default:
                             break;
                     };
                 }
             }
-
-            var orderReference = _orderRepository.Save(orderGroup);
 
             return Ok();
         }
