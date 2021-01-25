@@ -238,7 +238,6 @@
     <Compile Include="Services\AssemblyVersionService.cs" />
     <Compile Include="Services\DefaultCheckoutConfigurationLoader.cs" />
     <Compile Include="Services\DefaultCheckoutMetaDataFactory.cs" />
-    <Compile Include="Services\DefaultMollieCheckoutService.cs" />
     <Compile Include="Services\DefaultPaymentDescriptionGenerator.cs" />
     <Compile Include="Services\IAssemblyVersionService.cs" />
     <Compile Include="Services\ICheckoutConfigurationLoader.cs" />

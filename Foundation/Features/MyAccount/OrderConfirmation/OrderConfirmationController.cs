@@ -14,6 +14,7 @@ namespace Foundation.Features.MyAccount.OrderConfirmation
     public class OrderConfirmationController : OrderConfirmationControllerBase<OrderConfirmationPage>
     {
         private readonly ICampaignService _campaignService;
+
         public OrderConfirmationController(
             ICampaignService campaignService,
             ConfirmationService confirmationService,
@@ -24,6 +25,7 @@ namespace Foundation.Features.MyAccount.OrderConfirmation
         {
             _campaignService = campaignService;
         }
+
         public ActionResult Index(OrderConfirmationPage currentPage, string notificationMessage, int? orderNumber)
         {
             IPurchaseOrder order = null;
