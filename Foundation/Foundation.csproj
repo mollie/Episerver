@@ -1039,6 +1039,7 @@
     <Compile Include="Features\Checkout\Payments\PaymentOptionBase.cs" />
     <Compile Include="Features\Checkout\Payments\PaymentService.cs" />
     <Compile Include="Features\Checkout\PriceCalculationService.cs" />
+    <Compile Include="Features\Checkout\Services\MollieCheckoutService.cs" />
     <Compile Include="Features\Checkout\ViewModels\CheckoutViewModelFactory.cs" />
     <Compile Include="Features\Checkout\ViewModels\MultiShipmentViewModelFactory.cs" />
     <Compile Include="Features\Checkout\ViewModels\OrderSummaryViewModelFactory.cs" />

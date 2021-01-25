@@ -7,12 +7,12 @@ using System.Linq;
 namespace Mollie.Checkout.Services
 {
     [ServiceConfiguration(typeof(IMollieCheckoutService))]
-    public class DefaultMollieCheckoutService : IMollieCheckoutService
+    public class MollieCheckoutService : IMollieCheckoutService
     {
         private readonly IOrderGroupCalculator _orderGroupCalculator;
         private readonly IOrderRepository _orderRepository;
 
-        public DefaultMollieCheckoutService(IOrderGroupCalculator orderGroupCalculator, IOrderRepository orderRepository)
+        public MollieCheckoutService(IOrderGroupCalculator orderGroupCalculator, IOrderRepository orderRepository)
         {
             _orderGroupCalculator = orderGroupCalculator;
             _orderRepository = orderRepository;
