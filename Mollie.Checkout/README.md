@@ -22,7 +22,7 @@ The Mollie.Checkout package helps with the implementation of [Mollie Checkout](h
 
 ### 1. Install packages
 
-Install package [Mollie.Checkout] in the __Foundation__ project and the __Foundation.CommerceManager__ project
+Install package [Mollie.Checkout] in the __Foundation__ project and the __Foundation.CommerceManager__ project  
 Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceManager__ project
 
 ### 2. Configure Payment in CommerceManager
