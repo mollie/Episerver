@@ -11,12 +11,12 @@ namespace Mollie.Checkout.Models
         {
             var jObject = JObject.Parse(json);
 
-            OrderId = (int)jObject["OrderId"];
+            CartId = (int)jObject["CartId"];
             OrderNumber = (string)jObject["OrderNumber"];
             Versions = (string)jObject["Versions"];
         }
 
-        public int OrderId { get; set; }
+        public int CartId { get; set; }
 
         public string OrderNumber { get; set; }
 

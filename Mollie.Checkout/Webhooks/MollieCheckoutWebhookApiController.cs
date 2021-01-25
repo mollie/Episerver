@@ -85,11 +85,11 @@ namespace Mollie.Checkout.Webhooks
             }
 
             // Get Cart with ID
-            var orderGroup = _orderRepository.Load<ICart>(metaData.OrderId);
+            var orderGroup = _orderRepository.Load<ICart>(metaData.CartId);
 
             if(orderGroup == null)
             {
-                _log.Error($"Cart with ID {metaData.OrderId} does not exist.");
+                _log.Error($"Cart with ID {metaData.CartId} does not exist.");
 
                 return Ok();
             }
@@ -112,6 +112,8 @@ namespace Mollie.Checkout.Webhooks
                         orderGroupPayment.Properties.Add(OtherPaymentFields.MolliePaymentStatus, result.Status);
                     }
 
+                    orderGroupPayment.Properties[OtherPaymentFields.MolliePaymentMethod] = result.Method;
+
                     switch (result.Status)
                     {
                         case MolliePaymentStatus.Open:
@@ -125,7 +127,6 @@ namespace Mollie.Checkout.Webhooks
                             _orderRepository.Save(orderGroup);
 
                             await HandlePaymentSuccessAsync(_mollieCheckoutService, orderGroup, orderGroupPayment);
-
                             break;
                         case MolliePaymentStatus.Canceled:
                         case MolliePaymentStatus.Expired:
