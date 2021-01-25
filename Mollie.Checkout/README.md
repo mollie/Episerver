@@ -1,0 +1,48 @@
+# Episerver Mollie Checkout integration
+
+
+## Intro
+
+The Mollie.Checkout package helps with the implementation of [Mollie Checkout](https://docs.mollie.com/guides/checkout) 
+(Mollie hosted payment pages) as payment method in episerver commerce. 
+
+
+## Packages
+
+[Mollie.Checkout] is the package for integration of Mollie Checkout in a Episerver commerce website.  
+[Mollie.Checkout.CommerceManager] contains the usercontrol for configuration of the payment method in Episerver Commerce Manager.
+
+
+## How it works / Flow
+
+***Foundation flow
+
+
+## Integration in Foundation 
+
+### 1. Install packages
+
+Install package [Mollie.Checkout] in the __Foundation__ project and the __Foundation.CommerceManager__ project
+Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceManager__ project
+
+### 2. Configure Payment in CommerceManager
+
+In Episerver CommerceManager go to Administration >> Order System >> Payments >> _language_  
+Click __New__ to add a new payment 
+
+Fill (at least) the following fields:
+##### On the Overview tab:_
+- Name 
+- System Keyword: Type __MollieCheckout__ 
+- Language
+- Class Name: Select __Mollie.Checkout.MollieCheckoutGateway__
+- Payment class: Select __Mediachase.Commerce.Orders.OtherPayment__
+- IsActive: Select __Yes__
+#####On the Markets tab:
+- Select markets to enable this paymentmethod for.
+
+Click OK to Save, then open the payment again and navigate to the Parameters tab, and enter:
+
+- Api Key: 
+- Redirect URL: 
+
