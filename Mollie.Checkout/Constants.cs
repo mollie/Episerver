@@ -18,19 +18,32 @@
         public static class OtherPaymentFields
         {
             public const string LanguageId = "LanguageId";
+
             public const string MolliePaymentId = "MolliePaymentId";
+
             public const string MolliePaymentStatus = "MolliePaymentStatus";
         }
 
         public static class MolliePaymentStatus
         {
             public const string Open = "open";
+
             public const string Paid = "paid";
+
             public const string Pending = "pending";
+
             public const string Authorized = "authorized";
+
             public const string Canceled = "canceled";
+
             public const string Expired = "expired";
+
             public const string Failed = "failed";
+        }
+
+        public static class Webhooks
+        {
+            public const string MollieCheckoutWebhookUrl = "api/molliecheckoutwebhook";
         }
     }
 }

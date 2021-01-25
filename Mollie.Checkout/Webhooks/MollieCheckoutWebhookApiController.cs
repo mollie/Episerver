@@ -14,16 +14,16 @@ using static Mollie.Checkout.Constants;
 
 namespace Mollie.Checkout.Webhooks
 {
-    [RoutePrefix("api/molliewebhook")]
-    public class MollieWebhookApiController : ApiController
+    [RoutePrefix(Constants.Webhooks.MollieCheckoutWebhookUrl)]
+    public class MollieCheckoutWebhookApiController : ApiController
     {
-        private readonly ILogger _log = LogManager.GetLogger(typeof(MollieWebhookApiController));
+        private readonly ILogger _log = LogManager.GetLogger(typeof(MollieCheckoutWebhookApiController));
 
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IOrderRepository _orderRepository;
         private readonly IMollieCheckoutService _mollieCheckoutService;
 
-        public MollieWebhookApiController()
+        public MollieCheckoutWebhookApiController()
         {
             _checkoutConfigurationLoader = ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>();
             _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
@@ -34,7 +34,7 @@ namespace Mollie.Checkout.Webhooks
         [Route("isonline")]
         public string IsOnline()
         {
-            return "Online!";
+            return "Webhook is Online!";
         }
 
         [HttpPost]
@@ -45,6 +45,8 @@ namespace Mollie.Checkout.Webhooks
 
             if(string.IsNullOrWhiteSpace(jsonResult))
             {
+                _log.Error($"There is no Result from the Mollie API.");
+
                 return Ok();
             }
 
@@ -55,6 +57,8 @@ namespace Mollie.Checkout.Webhooks
 
             if(config == null)
             {
+                _log.Error($"Configuration with LanguageID {languageId} has no config.");
+
                 return Ok();
             }
 
@@ -66,6 +70,8 @@ namespace Mollie.Checkout.Webhooks
             
             if(result == null)
             {
+                _log.Error($"Mollie Payment with ID {molliePaymentId} has no result.");
+
                 return Ok();
             }
 
@@ -73,6 +79,8 @@ namespace Mollie.Checkout.Webhooks
 
             if (metaData == null)
             {
+                _log.Error($"There is no Metadata available.");
+
                 return Ok();
             }
 
@@ -81,6 +89,8 @@ namespace Mollie.Checkout.Webhooks
 
             if(orderGroup == null)
             {
+                _log.Error($"Cart with ID {metaData.OrderId} does not exist.");
+
                 return Ok();
             }
 
@@ -92,11 +102,15 @@ namespace Mollie.Checkout.Webhooks
                 {
                     orderGroupPayment.ProviderTransactionID = molliePaymentId;
 
-                    // Store mollie payment status..
+                    // Store Mollie Payment Status
                     if (orderGroupPayment.Properties.ContainsKey(OtherPaymentFields.MolliePaymentStatus))
+                    {
                         orderGroupPayment.Properties[OtherPaymentFields.MolliePaymentStatus] = result.Status;
+                    }
                     else
+                    {
                         orderGroupPayment.Properties.Add(OtherPaymentFields.MolliePaymentStatus, result.Status);
+                    }
 
                     switch (result.Status)
                     {
@@ -110,7 +124,7 @@ namespace Mollie.Checkout.Webhooks
                             orderGroupPayment.Status = PaymentStatus.Processed.ToString();
                             _orderRepository.Save(orderGroup);
 
-                            HandlePaymentSuccessAsync(_mollieCheckoutService, orderGroup, orderGroupPayment);
+                            await HandlePaymentSuccessAsync(_mollieCheckoutService, orderGroup, orderGroupPayment);
 
                             break;
                         case MolliePaymentStatus.Canceled:

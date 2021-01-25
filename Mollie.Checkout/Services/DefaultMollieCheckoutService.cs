@@ -18,11 +18,6 @@ namespace Mollie.Checkout.Services
             _orderRepository = orderRepository;
         }
 
-        public void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment)
-        {
-            // Do nothing, leave cart as is with failed payment.
-        }
-
         public void HandlePaymentSuccess(IOrderGroup orderGroup, IPayment payment)
         {
             var cart = orderGroup as ICart;
@@ -33,6 +28,7 @@ namespace Mollie.Checkout.Services
                     .Where(x => x.Status.Equals(PaymentStatus.Processed.ToString()));
 
                 var totalProcessedAmount = processedPayments.Sum(x => x.Amount);
+
                 // If the Cart is completely paid
                 if (totalProcessedAmount == orderGroup.GetTotal(_orderGroupCalculator).Amount)
                 {
@@ -41,6 +37,7 @@ namespace Mollie.Checkout.Services
                         cart.Properties["IsUsePaymentPlan"].Equals(true)) ?
                             SaveAsPaymentPlan(cart) :
                             _orderRepository.SaveAsPurchaseOrder(cart);
+
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
                     // Delete cart
@@ -49,6 +46,11 @@ namespace Mollie.Checkout.Services
                     cart.AdjustInventoryOrRemoveLineItems((item, validationIssue) => { });
                 }
             }
+        }
+
+        public void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment)
+        {
+            // Do nothing, leave cart as is with failed payment.
         }
 
         private OrderReference SaveAsPaymentPlan(ICart cart)

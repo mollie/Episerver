@@ -20,7 +20,6 @@ namespace Mollie.Checkout
 
         private readonly ServiceAccessor<HttpContextBase> _httpContextAccessor;
 
-
         public MollieCheckoutGateway()
             : this(ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>(),
                 ServiceLocator.Current.GetInstance<IPaymentDescriptionGenerator>(),
@@ -68,6 +67,7 @@ namespace Mollie.Checkout
             }
             
             var cart = orderGroup as ICart;
+
             // The order which is created by Commerce Manager
             if (cart == null && orderGroup is IPurchaseOrder)
             {
@@ -88,8 +88,6 @@ namespace Mollie.Checkout
 
             // CHECKOUT
             return ProcessPaymentCheckout(cart, payment);
-
-
         }
 
         private PaymentProcessingResult ProcessPaymentCheckout(ICart cart, IPayment payment)
@@ -99,16 +97,14 @@ namespace Mollie.Checkout
             var request = _httpContextAccessor().Request;
             var baseUrl = string.Format("{0}://{1}", request.Url.Scheme, request.Url.Authority);
 
-#if DEBUG
-            baseUrl = "http://84.107.134.180";
-#endif
-
             var urlBuilder = new UriBuilder(baseUrl);
-            urlBuilder.Path = $"api/molliewebhook/{languageId}";
+
+            urlBuilder.Path = $"{Constants.Webhooks.MollieCheckoutWebhookUrl}/{languageId}";
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             var paymentClient = new Api.Client.PaymentClient(checkoutConfiguration.ApiKey);
+
             var paymentRequest = new Api.Models.Payment.Request.PaymentRequest
             {
                 Amount = new Api.Models.Amount(cart.Currency.CurrencyCode, payment.Amount),
@@ -119,6 +115,7 @@ namespace Mollie.Checkout
             };
 
             var paymentResponse = paymentClient.CreatePaymentAsync(paymentRequest).Result;
+
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
             {
                 payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = paymentResponse.Id;
@@ -131,6 +128,7 @@ namespace Mollie.Checkout
             _orderRepository.Save(cart);
 
             var message = $"---Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout.Href}";
+
             _logger.Information(message);
 
             return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse.Links.Checkout.Href);
@@ -145,9 +143,6 @@ namespace Mollie.Checkout
         {
             throw new NotImplementedException("Capture not implemented yet");
         }
-
-
-
 
         private string GetOrderNumber(IOrderGroup orderGroup)
         {
