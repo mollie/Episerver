@@ -14,7 +14,6 @@ namespace Mollie.Checkout
             var otherPaymentMetaClass = OrderContext.Current.OtherPaymentMetaClass;
             var metaDataContext = OrderContext.MetaDataContext;
 
-
             var languageIdField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.LanguageId);
             if (languageIdField == null)
             {
@@ -36,6 +35,14 @@ namespace Mollie.Checkout
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentStatus,
                     Constants.OtherPaymentFields.MolliePaymentStatus, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
+                otherPaymentMetaClass.AddField(metaField);
+            }
+
+            var molliePaymentMethodField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentMethod);
+            if (molliePaymentMethodField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentMethod,
+                    Constants.OtherPaymentFields.MolliePaymentMethod, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
                 otherPaymentMetaClass.AddField(metaField);
             }
         }
