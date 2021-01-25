@@ -5,6 +5,7 @@ using Mediachase.Commerce.Orders;
 using Mediachase.Commerce.Plugins.Payment;
 using Mollie.Checkout.Services;
 using System;
+using System.Web;
 
 namespace Mollie.Checkout
 {
@@ -17,23 +18,28 @@ namespace Mollie.Checkout
         private readonly ICheckoutMetaDataFactory _checkoutMetaDataFactory;
         private readonly IOrderRepository _orderRepository;
 
+        private readonly ServiceAccessor<HttpContextBase> _httpContextAccessor;
+
         public MollieCheckoutGateway()
             : this(ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>(),
                 ServiceLocator.Current.GetInstance<IPaymentDescriptionGenerator>(),
                 ServiceLocator.Current.GetInstance<ICheckoutMetaDataFactory>(),
-                ServiceLocator.Current.GetInstance<IOrderRepository>())
+                ServiceLocator.Current.GetInstance<IOrderRepository>(),
+                ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>())
         { }
 
         public MollieCheckoutGateway(
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
             IPaymentDescriptionGenerator paymentDescriptionGenerator,
             ICheckoutMetaDataFactory checkoutMetaDataFactory,
-            IOrderRepository orderRepository)
+            IOrderRepository orderRepository,
+            ServiceAccessor<HttpContextBase> httpContextAcessor)
         {
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _paymentDescriptionGenerator = paymentDescriptionGenerator;
             _checkoutMetaDataFactory = checkoutMetaDataFactory;
             _orderRepository = orderRepository;
+            _httpContextAccessor = httpContextAcessor;
         }
 
         /// <summary>
@@ -50,7 +56,9 @@ namespace Mollie.Checkout
         public PaymentProcessingResult ProcessPayment(IOrderGroup orderGroup, IPayment payment)
         {
             if (null == orderGroup)
+            {
                 throw new ArgumentNullException(nameof(orderGroup));
+            }
 
             if (!payment.Properties.ContainsKey(Constants.OtherPaymentFields.LanguageId) || 
                 string.IsNullOrWhiteSpace(payment.Properties[Constants.OtherPaymentFields.LanguageId] as string))
@@ -58,9 +66,8 @@ namespace Mollie.Checkout
                 throw new Exception("Payment propery LanguageId is not set");
             }
             
-
-            
             var cart = orderGroup as ICart;
+
             // The order which is created by Commerce Manager
             if (cart == null && orderGroup is IPurchaseOrder)
             {
@@ -81,26 +88,34 @@ namespace Mollie.Checkout
 
             // CHECKOUT
             return ProcessPaymentCheckout(cart, payment);
-
-
         }
 
         private PaymentProcessingResult ProcessPaymentCheckout(ICart cart, IPayment payment)
         {
-            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(
-                payment.Properties[Constants.OtherPaymentFields.LanguageId] as string);
+            var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
+
+            var request = _httpContextAccessor().Request;
+            var baseUrl = string.Format("{0}://{1}", request.Url.Scheme, request.Url.Authority);
+
+            var urlBuilder = new UriBuilder(baseUrl);
+
+            urlBuilder.Path = $"{Constants.Webhooks.MollieCheckoutWebhookUrl}/{languageId}";
+
+            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             var paymentClient = new Api.Client.PaymentClient(checkoutConfiguration.ApiKey);
+
             var paymentRequest = new Api.Models.Payment.Request.PaymentRequest
             {
                 Amount = new Api.Models.Amount(cart.Currency.CurrencyCode, payment.Amount),
                 Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
-                WebhookUrl = "http://foundation/api/webhook",
+                WebhookUrl = urlBuilder.ToString(),
                 Metadata = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration)
             };
 
             var paymentResponse = paymentClient.CreatePaymentAsync(paymentRequest).Result;
+
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
             {
                 payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = paymentResponse.Id;
@@ -113,6 +128,7 @@ namespace Mollie.Checkout
             _orderRepository.Save(cart);
 
             var message = $"---Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout.Href}";
+
             _logger.Information(message);
 
             return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse.Links.Checkout.Href);
@@ -127,9 +143,6 @@ namespace Mollie.Checkout
         {
             throw new NotImplementedException("Capture not implemented yet");
         }
-
-
-
 
         private string GetOrderNumber(IOrderGroup orderGroup)
         {
