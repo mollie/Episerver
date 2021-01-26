@@ -29,6 +29,7 @@ Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceMa
 </p>
 </details>
 
+
 <details><summary>2. Configure Payment in CommerceManager</summary>
 <p>
 
