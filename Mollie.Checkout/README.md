@@ -20,7 +20,11 @@ The Mollie.Checkout package helps with the implementation of [Mollie Checkout](h
 
 ## Integration in Foundation 
 
-<details><summary>1. Install Packages</summary>
+<details>
+<summary>
+1. Install Packages
+
+</summary>
 <p>
 
 Install package [Mollie.Checkout] in the __Foundation__ project and the __Foundation.CommerceManager__ project  
