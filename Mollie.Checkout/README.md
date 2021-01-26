@@ -20,11 +20,7 @@ The Mollie.Checkout package helps with the implementation of [Mollie Checkout](h
 
 ## Integration in Foundation 
 
-<details>
-<summary>
-1. Install Packages
-
-</summary>
+<details><summary>1. Install Packages</summary>
 <p>
 
 Install package [Mollie.Checkout] in the __Foundation__ project and the __Foundation.CommerceManager__ project  
@@ -32,6 +28,8 @@ Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceMa
 
 </p>
 </details>
+<br/>
+<br/>
 
 
 <details><summary>2. Configure Payment in CommerceManager</summary>
