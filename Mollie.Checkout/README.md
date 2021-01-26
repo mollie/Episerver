@@ -23,8 +23,8 @@ The Mollie.Checkout package helps with the implementation of [Mollie Checkout](h
 <details><summary>1. Install Packages</summary>
 <p>
 
-    Install package [Mollie.Checkout] in the __Foundation__ project and the __Foundation.CommerceManager__ project  
-    Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceManager__ project
+Install package [Mollie.Checkout] in the __Foundation__ project and the __Foundation.CommerceManager__ project  
+Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceManager__ project
 
 </p>
 </details>
@@ -36,14 +36,14 @@ In Episerver CommerceManager go to Administration >> Order System >> Payments >>
 Click __New__ to add a new payment 
 
 Fill (at least) the following fields:
-##### On the Overview tab:_
+#### On the Overview tab:_
 - Name 
 - System Keyword: Type __MollieCheckout__ 
 - Language
 - Class Name: Select __Mollie.Checkout.MollieCheckoutGateway__
 - Payment class: Select __Mediachase.Commerce.Orders.OtherPayment__
 - IsActive: Select __Yes__
-#####On the Markets tab:
+#### On the Markets tab:
 - Select markets to enable this paymentmethod for.
 
 Click OK to Save, then open the payment again and navigate to the Parameters tab, and enter:
@@ -57,7 +57,7 @@ Click OK to Save, then open the payment again and navigate to the Parameters tab
 <details><summary>3. Create MollieCheckoutPaymentOption</summary>
 <p>
 
-###### In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckoutPaymentOption.cs__
+In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckoutPaymentOption.cs__
 
 ```csharp
     public class MollieCheckoutPaymentOption : PaymentOptionBase
@@ -114,9 +114,11 @@ Click OK to Save, then open the payment again and navigate to the Parameters tab
 <details><summary>4. Enable MollieCheckoutPaymentOption</summary>
 <p>
 
-###### In __Foundation\\Infrastructure\\InitializeSite.cs__ add
+In __Foundation\\Infrastructure\\InitializeSite.cs__ add
 
 ```csharp
    _services.AddTransient<IPaymentMethod, MollieCheckoutPaymentOption>();
 ```
 
+</p>
+</details>
