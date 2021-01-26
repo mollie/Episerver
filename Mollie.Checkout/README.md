@@ -50,8 +50,8 @@ The Mollie.Checkout package helps with the implementation of [Mollie Checkout](h
     - Redirect URL: 
 </details>
 
-<details>
-    <summary>3. Create MollieCheckoutPaymentOption</summary>
+<details><summary>3. Create MollieCheckoutPaymentOption</summary>
+<p>
 
     In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckoutPaymentOption.cs__
 
@@ -102,6 +102,8 @@ The Mollie.Checkout package helps with the implementation of [Mollie Checkout](h
             }
         }
     ``` 
+</p>
+</details>
 
 ### 4. Enable MollieCheckoutPaymentOption
 
