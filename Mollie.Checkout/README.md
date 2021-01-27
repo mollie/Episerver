@@ -15,8 +15,18 @@ The Mollie.Checkout package helps with the implementation of [Mollie Checkout](h
 
 ## How it works / Flow
 
-***Foundation flow
-
+- Customer adds a product to the shoppingcart and navigates to the checkout page.
+- On the checkout page the payment option 'Mollie Checkout' is available, and the customer selects this.
+- The customer clicks on 'PLACE ORDER'
+    - A payment is created using the Mollie Payments API (whitch returns a URL to redirect the customer to)
+    - The customer is redirected to the Mollie Checkout page
+- The customer completes the payment on Millie Checkout
+- (Background) Updates on the payment are sent to a webhook by mollie
+    - When the payment is successful an order is created for the cart.
+- The customer is redirected to the 'Redirect page' specified in the mollie configuration.
+    - This could be the order confirmation page
+    - This also could be a page that waits for the payment to be processed, and redirects the user if a payment is received.
+    
 
 ## Integration in Foundation 
 
@@ -28,7 +38,6 @@ Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceMa
 
 </p>
 </details>
-<br/>
 
 <details><summary>2. Configure Payment in CommerceManager</summary>
 <p>
@@ -54,6 +63,7 @@ Click OK to Save, then open the payment again and navigate to the Parameters tab
 
 </p>
 </details>
+
 
 <details><summary>3. Create MollieCheckoutPaymentOption</summary>
 <p>
@@ -111,14 +121,132 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
 </p>
 </details>
 
+<details><summary>4. Create view</summary>
+<p>
 
-<details><summary>4. Enable MollieCheckoutPaymentOption</summary>
+In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMethod.cshtml__
+
+```html
+
+@model  Foundation.Features.Checkout.Payments.MollieCheckoutPaymentOption
+
+@Html.HiddenFor(model => model.PaymentMethodId)
+
+<br />
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info square-box">
+            Mollie Payment method
+        </div>
+    </div>
+</div>
+
+```
+
+</p>
+</details>
+
+
+<details><summary>5. Enable MollieCheckoutPaymentOption</summary>
 <p>
 
 In __Foundation\\Infrastructure\\InitializeSite.cs__ add
 
 ```csharp
    _services.AddTransient<IPaymentMethod, MollieCheckoutPaymentOption>();
+```
+
+</p>
+</details>
+
+
+<details><summary>6. Handle redirect to Mollie</summary>
+<p>
+
+After the processing of the pauments by Episerver, the mollie checkout payment will return a PaymentProcessingResult with IsSuccessful = true en een RedirectUrl.
+In Foundation the user needs to be redirected to this Redirect url (url to the Mollie checkout page )
+
+See the [CheckoutService.cs](https://dev.azure.com/arlanet/Mollie/_git/Mollie?path=%2FFoundation%2FFeatures%2FCheckout%2FServices%2FCheckoutService.cs) for an example of this on line 208
+
+```csharp
+
+    // Do we need a redirect to payment provider
+    if (processPayments.Any(x => x.IsSuccessful && !string.IsNullOrWhiteSpace(x.RedirectUrl)))
+    {
+        var payment = processPayments.First(x => x.IsSuccessful && !string.IsNullOrWhiteSpace(x.RedirectUrl));
+        HttpContext.Current.Response.Redirect(payment.RedirectUrl, true);
+        return null;
+    }
+
+```
+
+</p>
+</details>
+
+
+<details><summary>7. Implement IMollieCheckoutService</summary>
+<p>
+
+When a payment status update (paid, cancelled, etc..) is received from Mollie this service is called. 
+Implement logic here to convert the cart to an order when the payment was successful.
+
+See a sample implementation here:
+
+```csharp
+
+    [ServiceConfiguration(typeof(IMollieCheckoutService))]
+    public class MollieCheckoutService : IMollieCheckoutService
+    {
+        private readonly IOrderGroupCalculator _orderGroupCalculator;
+        private readonly IOrderRepository _orderRepository;
+
+        public MollieCheckoutService(IOrderGroupCalculator orderGroupCalculator, IOrderRepository orderRepository)
+        {
+            _orderGroupCalculator = orderGroupCalculator;
+            _orderRepository = orderRepository;
+        }
+
+        public void HandlePaymentSuccess(IOrderGroup orderGroup, IPayment payment)
+        {
+            var cart = orderGroup as ICart;
+
+            if (cart != null)
+            {
+                var processedPayments = orderGroup.GetFirstForm().Payments
+                    .Where(x => x.Status.Equals(PaymentStatus.Processed.ToString()));
+
+                var totalProcessedAmount = processedPayments.Sum(x => x.Amount);
+
+                // If the Cart is completely paid
+                if (totalProcessedAmount == orderGroup.GetTotal(_orderGroupCalculator).Amount)
+                {
+                    // Create order
+                    var orderReference = (cart.Properties["IsUsePaymentPlan"] != null &&
+                        cart.Properties["IsUsePaymentPlan"].Equals(true)) ?
+                            SaveAsPaymentPlan(cart) :
+                            _orderRepository.SaveAsPurchaseOrder(cart);
+
+                    var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
+
+                    // Delete cart
+                    _orderRepository.Delete(cart.OrderLink);
+
+                    cart.AdjustInventoryOrRemoveLineItems((item, validationIssue) => { });
+                }
+            }
+        }
+
+        public void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment)
+        {
+            // Do nothing, leave cart as is with failed payment.
+        }
+
+        private OrderReference SaveAsPaymentPlan(ICart cart)
+        {
+            throw new NotImplementedException("");
+        }
+    }
+
 ```
 
 </p>
