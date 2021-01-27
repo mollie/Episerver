@@ -1,5 +1,5 @@
 # Episerver Mollie Checkout integration
-
+<hr/>
 
 ## Intro
 
