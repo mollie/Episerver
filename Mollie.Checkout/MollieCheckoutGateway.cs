@@ -1,8 +1,10 @@
 ﻿using EPiServer.Commerce.Order;
 using EPiServer.Logging;
+using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce.Orders;
 using Mediachase.Commerce.Plugins.Payment;
+using Mediachase.Commerce.Security;
 using Mollie.Checkout.Services;
 using System;
 using System.Web;
@@ -125,10 +127,12 @@ namespace Mollie.Checkout
                 payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, paymentResponse.Id);
             }
 
+            var message = $"--Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout.Href}";
+
+            AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
+
             _orderRepository.Save(cart);
-
-            var message = $"---Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout.Href}";
-
+                        
             _logger.Information(message);
 
             return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse.Links.Checkout.Href);
@@ -144,12 +148,17 @@ namespace Mollie.Checkout
             throw new NotImplementedException("Capture not implemented yet");
         }
 
-        private string GetOrderNumber(IOrderGroup orderGroup)
+        private void AddNoteToOrder(IOrderGroup orderGroup, string title, string detail, Guid customerId)
         {
-            if (!string.IsNullOrWhiteSpace(orderGroup.Properties["OrderNumber"] as string))
-                return orderGroup.Properties["OrderNumber"] as string;
+            var note = orderGroup.CreateOrderNote();
 
-            return orderGroup.OrderLink.OrderGroupId.ToString();
+            note.Type = OrderNoteTypes.System.ToString();
+            note.CustomerId = customerId != Guid.Empty ? customerId : PrincipalInfo.CurrentPrincipal.GetContactId();
+            note.Title = !string.IsNullOrEmpty(title) ? title : detail.Substring(0, Math.Min(detail.Length, 24)) + "...";
+            note.Detail = detail;
+            note.Created = DateTime.UtcNow;
+
+            orderGroup.Notes.Add(note);
         }
     }
 }
