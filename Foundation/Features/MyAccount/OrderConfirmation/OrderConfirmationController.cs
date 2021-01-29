@@ -14,6 +14,7 @@ namespace Foundation.Features.MyAccount.OrderConfirmation
     public class OrderConfirmationController : OrderConfirmationControllerBase<OrderConfirmationPage>
     {
         private readonly ICampaignService _campaignService;
+        private readonly IPurchaseOrderRepository _purchaseOrderRepository;
 
         public OrderConfirmationController(
             ICampaignService campaignService,
@@ -26,16 +27,23 @@ namespace Foundation.Features.MyAccount.OrderConfirmation
             _campaignService = campaignService;
         }
 
-        public ActionResult Index(OrderConfirmationPage currentPage, string notificationMessage, int? orderNumber)
+        public ActionResult Index(OrderConfirmationPage currentPage, string notificationMessage, string orderNumber)
         {
             IPurchaseOrder order = null;
             if (PageEditing.PageIsInEditMode)
             {
                 order = _confirmationService.CreateFakePurchaseOrder();
             }
-            else if (orderNumber.HasValue)
+            else if (!string.IsNullOrWhiteSpace(orderNumber))
             {
-                order = _confirmationService.GetOrder(orderNumber.Value);
+                if (int.TryParse(orderNumber, out int orderId))
+                {
+                    order = _confirmationService.GetOrder(orderId);
+                }
+                else
+                {
+                    order = _purchaseOrderRepository.Load(orderNumber);
+                }
             }
 
             if (order != null && order.CustomerId == _customerService.CurrentContactId)
