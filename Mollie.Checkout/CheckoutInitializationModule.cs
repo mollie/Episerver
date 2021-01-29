@@ -45,6 +45,14 @@ namespace Mollie.Checkout
                     Constants.OtherPaymentFields.MolliePaymentMethod, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
                 otherPaymentMetaClass.AddField(metaField);
             }
+
+            var molliePaymentResultField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentFullResult);
+            if (molliePaymentResultField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentFullResult,
+                    Constants.OtherPaymentFields.MolliePaymentFullResult, string.Empty, MetaDataType.LongString, int.MaxValue, true, false, false, false);
+                otherPaymentMetaClass.AddField(metaField);
+            }
         }
 
         public void Uninitialize(InitializationEngine context)

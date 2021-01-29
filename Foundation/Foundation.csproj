@@ -2288,6 +2288,7 @@
     <Content Include="modules\_protected\episerver-labs-grid-view\web.config" />
     <Content Include="Features\CatalogContent\DynamicCatalogContent\DynamicProduct\_ProductDetail.cshtml" />
     <Content Include="Features\Checkout\_MollieCheckoutPaymentMethod.cshtml" />
+    <Content Include="Features\MyAccount\OrderConfirmation\_MollieCheckoutConfirmation.cshtml" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

@@ -6,6 +6,7 @@ using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Response;
 using Mollie.Checkout.Models;
 using Mollie.Checkout.Services;
+using Newtonsoft.Json;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -113,6 +114,11 @@ namespace Mollie.Checkout.Webhooks
                     }
 
                     orderGroupPayment.Properties[OtherPaymentFields.MolliePaymentMethod] = result.Method;
+                    orderGroupPayment.Properties[OtherPaymentFields.MolliePaymentFullResult] = JsonConvert.SerializeObject(result);
+
+                    // Add note to the order
+                    OrderNoteHelper.AddNoteToOrder(orderGroup, "Mollie Payment update", 
+                        $"--Mollie Payment update received. New Status is {result.Status}", Guid.Empty);
 
                     switch (result.Status)
                     {
