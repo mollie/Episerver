@@ -103,7 +103,7 @@ namespace Mollie.Checkout
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            var paymentClient = new Api.Client.PaymentClient(checkoutConfiguration.ApiKey);
+            var paymentClient = new Api.Client.PaymentClient(checkoutConfiguration.ApiKey);            
 
             var paymentRequest = new Api.Models.Payment.Request.PaymentRequest
             {
@@ -111,8 +111,11 @@ namespace Mollie.Checkout
                 Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
                 WebhookUrl = urlBuilder.ToString(),
-                Metadata = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration)
             };
+
+            var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
+
+            paymentRequest.SetMetadata(metaData);
 
             var paymentResponse = paymentClient.CreatePaymentAsync(paymentRequest).Result;
 

@@ -75,9 +75,9 @@ namespace Mollie.Checkout.Webhooks
                 return Ok();
             }
 
-            CheckoutMetaDataModel metaData = new CheckoutMetaDataModel(result.Metadata);
+            CheckoutMetaDataModel metaDataResponse = result.GetMetadata<CheckoutMetaDataModel>();
 
-            if (metaData == null)
+            if (metaDataResponse == null)
             {
                 _log.Error($"There is no Metadata available.");
 
@@ -85,11 +85,11 @@ namespace Mollie.Checkout.Webhooks
             }
 
             // Get Cart with ID
-            var orderGroup = _orderRepository.Load<ICart>(metaData.CartId);
+            var orderGroup = _orderRepository.Load<ICart>(metaDataResponse.CartId);
 
             if(orderGroup == null)
             {
-                _log.Error($"Cart with ID {metaData.CartId} does not exist.");
+                _log.Error($"Cart with ID {metaDataResponse.CartId} does not exist.");
 
                 return Ok();
             }
