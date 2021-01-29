@@ -65,7 +65,7 @@ Click OK to Save, then open the payment again and navigate to the Parameters tab
 </details>
 
 
-<details><summary>3. Create MollieCheckoutPaymentOption</summary>
+<details><summary>3. Create MollieCheckout Payment method</summary>
 <p>
 
 In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckoutPaymentOption.cs__
@@ -118,12 +118,6 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
     }
 ``` 
 
-</p>
-</details>
-
-<details><summary>4. Create view</summary>
-<p>
-
 In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMethod.cshtml__
 
 ```html
@@ -143,24 +137,18 @@ In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMet
 
 ```
 
-</p>
-</details>
-
-
-<details><summary>5. Enable MollieCheckoutPaymentOption</summary>
-<p>
-
 In __Foundation\\Infrastructure\\InitializeSite.cs__ add
 
 ```csharp
    _services.AddTransient<IPaymentMethod, MollieCheckoutPaymentOption>();
 ```
 
+
 </p>
 </details>
 
 
-<details><summary>6. Handle redirect to Mollie</summary>
+<details><summary>4. Handle redirect to Mollie</summary>
 <p>
 
 After the processing of the pauments by Episerver, the mollie checkout payment will return a PaymentProcessingResult with IsSuccessful = true en een RedirectUrl.
@@ -184,7 +172,7 @@ See the [CheckoutService.cs](https://dev.azure.com/arlanet/Mollie/_git/Mollie?pa
 </details>
 
 
-<details><summary>7. Implement IMollieCheckoutService</summary>
+<details><summary>5. Implement IMollieCheckoutService</summary>
 <p>
 
 When a payment status update (paid, cancelled, etc..) is received from Mollie this service is called. 
@@ -246,6 +234,99 @@ See a sample implementation here:
             throw new NotImplementedException("");
         }
     }
+
+```
+
+</p>
+</details>
+
+
+<details><summary>6. Change the Foundation Order-Confirmation controller</summary>
+<p>
+
+Change the Foundation Order-Confirmation page to accept the order trackingnumber instead of the order Id. \
+See a sample of the changed OrderConfirmationController here:
+
+```csharp
+
+    public class OrderConfirmationController : OrderConfirmationControllerBase<OrderConfirmationPage>
+    {
+        private readonly ICampaignService _campaignService;
+        private readonly IPurchaseOrderRepository _purchaseOrderRepository;
+        public OrderConfirmationController(
+            ICampaignService campaignService,
+            ConfirmationService confirmationService,
+            IAddressBookService addressBookService,
+            IOrderGroupCalculator orderGroupCalculator,
+            UrlResolver urlResolver, 
+            ICustomerService customerService,
+            IPurchaseOrderRepository purchaseOrderRepository) :
+            base(confirmationService, addressBookService, orderGroupCalculator, urlResolver, customerService)
+        {
+            _campaignService = campaignService;
+            _purchaseOrderRepository = purchaseOrderRepository;
+        }
+        public ActionResult Index(OrderConfirmationPage currentPage, string notificationMessage, string orderNumber)
+        {
+            IPurchaseOrder order = null;
+            if (PageEditing.PageIsInEditMode)
+            {
+                order = _confirmationService.CreateFakePurchaseOrder();
+            }
+            else if (!string.IsNullOrWhiteSpace(orderNumber))
+            {
+                if (int.TryParse(orderNumber, out int orderId))
+                {
+                    order = _confirmationService.GetOrder(orderId);
+                }
+                else
+                {
+                    order = _purchaseOrderRepository.Load(orderNumber);
+                }
+            }
+
+            if (order != null && order.CustomerId == _customerService.CurrentContactId)
+            {
+                var viewModel = CreateViewModel(currentPage, order);
+                viewModel.NotificationMessage = notificationMessage;
+
+                _campaignService.UpdateLastOrderDate();
+                _campaignService.UpdatePoint(decimal.ToInt16(viewModel.SubTotal.Amount));
+
+                return View(viewModel);
+            }
+
+            return Redirect(Url.ContentUrl(ContentReference.StartPage));
+        }
+    }
+
+```
+
+</p>
+</details>
+
+
+<details><summary>7. Add a payment confirmation view</summary>
+<p>
+    
+On the Foundation order-confirmation page a view is shown with some information about the payments for order.
+
+Add a new view ____MollieCheckoutConfirmation.cshtml__ to __Foundation\\Features\\MyAccount\\OrderConfirmation
+
+```html
+
+@model EPiServer.Commerce.Order.IPayment 
+
+<div>
+    <h4>@Html.Translate("/OrderConfirmation/PaymentDetails")</h4>
+    <p>
+        @{ 
+            var method = Model.Properties[Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod] as string;
+        }
+        Paid by:  @(method ?? "Mollie Checkout")
+        
+    </p>
+</div>
 
 ```
 
