@@ -21,10 +21,13 @@ namespace Foundation.Features.MyAccount.OrderConfirmation
             ConfirmationService confirmationService,
             IAddressBookService addressBookService,
             IOrderGroupCalculator orderGroupCalculator,
-            UrlResolver urlResolver, ICustomerService customerService) :
+            UrlResolver urlResolver, 
+            ICustomerService customerService,
+            IPurchaseOrderRepository purchaseOrderRepository) :
             base(confirmationService, addressBookService, orderGroupCalculator, urlResolver, customerService)
         {
             _campaignService = campaignService;
+            _purchaseOrderRepository = purchaseOrderRepository;
         }
 
         public ActionResult Index(OrderConfirmationPage currentPage, string notificationMessage, string orderNumber)
