@@ -24,6 +24,8 @@
             public const string MolliePaymentStatus = "MolliePaymentStatus";
 
             public const string MolliePaymentMethod = "MolliePaymentMethod";
+
+            public const string MolliePaymentFullResult = "MolliePaymentFullResult";
         }
 
         public static class MolliePaymentStatus

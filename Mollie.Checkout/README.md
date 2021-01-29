@@ -311,7 +311,7 @@ See a sample of the changed OrderConfirmationController here:
     
 On the Foundation order-confirmation page a view is shown with some information about the payments for order.
 
-Add a new view ____MollieCheckoutConfirmation.cshtml__ to __Foundation\\Features\\MyAccount\\OrderConfirmation
+Add a new view ___MollieCheckoutConfirmation.cshtml__ to __Foundation\\Features\\MyAccount\\OrderConfirmation__
 
 ```html
 

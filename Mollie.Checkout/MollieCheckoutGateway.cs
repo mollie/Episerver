@@ -129,7 +129,7 @@ namespace Mollie.Checkout
 
             var message = $"--Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout.Href}";
 
-            AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
+            OrderNoteHelper.AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
             _orderRepository.Save(cart);
                         
@@ -148,17 +148,17 @@ namespace Mollie.Checkout
             throw new NotImplementedException("Capture not implemented yet");
         }
 
-        private void AddNoteToOrder(IOrderGroup orderGroup, string title, string detail, Guid customerId)
-        {
-            var note = orderGroup.CreateOrderNote();
+        //private void AddNoteToOrder(IOrderGroup orderGroup, string title, string detail, Guid customerId)
+        //{
+        //    var note = orderGroup.CreateOrderNote();
 
-            note.Type = OrderNoteTypes.System.ToString();
-            note.CustomerId = customerId != Guid.Empty ? customerId : PrincipalInfo.CurrentPrincipal.GetContactId();
-            note.Title = !string.IsNullOrEmpty(title) ? title : detail.Substring(0, Math.Min(detail.Length, 24)) + "...";
-            note.Detail = detail;
-            note.Created = DateTime.UtcNow;
+        //    note.Type = OrderNoteTypes.System.ToString();
+        //    note.CustomerId = customerId != Guid.Empty ? customerId : PrincipalInfo.CurrentPrincipal.GetContactId();
+        //    note.Title = !string.IsNullOrEmpty(title) ? title : detail.Substring(0, Math.Min(detail.Length, 24)) + "...";
+        //    note.Detail = detail;
+        //    note.Created = DateTime.UtcNow;
 
-            orderGroup.Notes.Add(note);
-        }
+        //    orderGroup.Notes.Add(note);
+        //}
     }
 }

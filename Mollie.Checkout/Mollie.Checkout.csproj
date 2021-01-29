@@ -244,6 +244,7 @@
     <Compile Include="Services\ICheckoutMetaDataFactory.cs" />
     <Compile Include="Services\IMollieCheckoutService.cs" />
     <Compile Include="Services\IPaymentDescriptionGenerator.cs" />
+    <Compile Include="Services\OrderNoteHelper.cs" />
     <Compile Include="Webhooks\MollieCheckoutWebhookApiController.cs" />
   </ItemGroup>
   <ItemGroup>
