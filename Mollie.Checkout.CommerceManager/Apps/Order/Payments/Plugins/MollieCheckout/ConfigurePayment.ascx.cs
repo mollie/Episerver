@@ -26,6 +26,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 profileIDTextBox.Text = GetParameterByName(Constants.Fields.ProfileIDField)?.Value ?? string.Empty;
                 redirectURLTextBox.Text = GetParameterByName(Constants.Fields.RedirectURLField)?.Value ?? string.Empty;
 
+                useOrdersApiRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value ?? "False";
+
                 var assemblyVersionService = ServiceLocator.Current.GetInstance<IAssemblyVersionService>();
 
                 versionValueLabel.Text = assemblyVersionService.CreateVersionString();
@@ -41,6 +43,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 if (paymentMethodDto != null && paymentMethodDto.PaymentMethodParameter != null)
                 {
                     var paymentMethodId = Guid.Empty;
+
                     if (paymentMethodDto.PaymentMethod.Count > 0)
                     {
                         paymentMethodId = paymentMethodDto.PaymentMethod[0].PaymentMethodId;
@@ -50,6 +53,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                     SetParamValue(paymentMethodId, Constants.Fields.ApiKeyField, apiKeyTextbox.Text);
                     SetParamValue(paymentMethodId, Constants.Fields.ProfileIDField, profileIDTextBox.Text);
                     SetParamValue(paymentMethodId, Constants.Fields.RedirectURLField, redirectURLTextBox.Text);
+                    SetParamValue(paymentMethodId, Constants.Fields.UseOrdersApiField, useOrdersApiRadioButtonList.SelectedValue);
                 }
             }
         }
@@ -75,11 +79,13 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             if (param != null)
             {
                 param.Value = value;
+
                 PaymentManager.SavePayment(paymentMethodDto);
             }
             else
             {
                 var newRow = paymentMethodDto.PaymentMethodParameter.NewPaymentMethodParameterRow();
+
                 newRow.PaymentMethodId = paymentMethodId;
                 newRow.Parameter = paramName;
                 newRow.Value = value;
