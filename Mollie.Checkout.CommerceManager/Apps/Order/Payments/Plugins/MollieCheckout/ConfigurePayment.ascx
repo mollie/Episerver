@@ -62,7 +62,7 @@
     </tr>
         <tr>
         <td class="FormLabelCell center">
-            <strong><asp:Literal ID="useOrdersApiLabel" Text="Use Orders API (yes/no)" runat="server"></asp:Literal></strong>
+            <strong><asp:Literal ID="useOrdersApiLabel" Text="Use Orders API" runat="server"></asp:Literal></strong>
         </td>
         <td class="FormFieldCell">
             <asp:RadioButtonList ID="useOrdersApiRadioButtonList" runat="server" RepeatDirection="Horizontal" Width="120px">
