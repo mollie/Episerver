@@ -31,13 +31,21 @@ namespace Mollie.Checkout.Services
 
         private CheckoutConfiguration ReadConfiguration(PaymentMethodDto paymentMethodDto)
         {
+            var useOrdersApi = false;
+
+            if (bool.TryParse(paymentMethodDto.GetParameter(Constants.Fields.UseOrdersApiField)?.Value, out var useordersApiResult))
+            {
+                useOrdersApi = useordersApiResult;
+            }
+
             return new CheckoutConfiguration
             {
                 Environment = paymentMethodDto.GetParameter(Constants.Fields.EnvironmentField)?.Value ?? "test",
                 ApiKey = paymentMethodDto.GetParameter(Constants.Fields.ApiKeyField)?.Value ?? string.Empty,
                 ProfileId = paymentMethodDto.GetParameter(Constants.Fields.ProfileIDField)?.Value ?? string.Empty,
                 RedirectUrl = paymentMethodDto.GetParameter(Constants.Fields.RedirectURLField)?.Value ?? string.Empty,
-                VersionStrings = _assemblyVersionService.CreateVersionString()
+                VersionStrings = _assemblyVersionService.CreateVersionString(),
+                UseOrdersApi = useOrdersApi
             };
         }
     }

@@ -114,6 +114,24 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         protected global::System.Web.UI.WebControls.RequiredFieldValidator requiredRedirectURLValidator;
 
         /// <summary>
+        /// useOrdersApiLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal useOrdersApiLabel;
+
+        /// <summary>
+        /// useOrdersApiRadioButtonList control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RadioButtonList useOrdersApiRadioButtonList;
+
+        /// <summary>
         /// versionLabel control.
         /// </summary>
         /// <remarks>

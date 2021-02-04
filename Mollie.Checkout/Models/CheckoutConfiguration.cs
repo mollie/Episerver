@@ -11,5 +11,7 @@
         public string VersionStrings { get; set; }
 
         public string RedirectUrl { get; set; }
+
+        public bool UseOrdersApi { get; set; }
     }
 }

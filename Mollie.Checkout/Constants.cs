@@ -13,6 +13,8 @@
             public const string ProfileIDField = "ProfileID";
 
             public const string RedirectURLField = "RedirectURL";
+
+            public const string UseOrdersApiField = "UseOrdersApi";
         }
 
         public static class OtherPaymentFields
