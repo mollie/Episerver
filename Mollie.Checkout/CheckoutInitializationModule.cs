@@ -15,6 +15,7 @@ namespace Mollie.Checkout
             var metaDataContext = OrderContext.MetaDataContext;
 
             var languageIdField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.LanguageId);
+
             if (languageIdField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.LanguageId,
@@ -23,6 +24,7 @@ namespace Mollie.Checkout
             }
 
             var molliePaymentIdField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentId);
+
             if (molliePaymentIdField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentId,
@@ -30,8 +32,9 @@ namespace Mollie.Checkout
                 otherPaymentMetaClass.AddField(metaField);
             }
 
-            var mollieStatusField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentStatus);
-            if (mollieStatusField == null)
+            var molliePaymentStatusField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentStatus);
+
+            if (molliePaymentStatusField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentStatus,
                     Constants.OtherPaymentFields.MolliePaymentStatus, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
@@ -39,6 +42,7 @@ namespace Mollie.Checkout
             }
 
             var molliePaymentMethodField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentMethod);
+
             if (molliePaymentMethodField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentMethod,
@@ -47,6 +51,7 @@ namespace Mollie.Checkout
             }
 
             var molliePaymentResultField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentFullResult);
+
             if (molliePaymentResultField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentFullResult,

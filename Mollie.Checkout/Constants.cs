@@ -47,9 +47,30 @@
             public const string Failed = "failed";
         }
 
+        public static class MollieOrderStatus
+        {
+            public const string Created = "created";
+
+            public const string Pending = "pending";
+
+            public const string Paid = "paid";
+
+            public const string Authorized = "authorized";
+
+            public const string Shipping = "shipping";
+
+            public const string Canceled = "canceled";
+
+            public const string Expired = "expired";
+
+            public const string Completed = "completed";
+        }
+
         public static class Webhooks
         {
-            public const string MollieCheckoutWebhookUrl = "api/molliecheckoutwebhook";
+            public const string MolliePaymentsWebhookUrl = "api/molliepaymentswebhook";
+
+            public const string MollieOrdersWebhookUrl = "api/mollieorderswebhook";
         }
     }
 }

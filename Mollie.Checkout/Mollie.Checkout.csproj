@@ -243,9 +243,12 @@
     <Compile Include="Services\ICheckoutConfigurationLoader.cs" />
     <Compile Include="Services\ICheckoutMetaDataFactory.cs" />
     <Compile Include="Services\IMollieCheckoutService.cs" />
+    <Compile Include="Services\IOrderGroupPaymentService.cs" />
     <Compile Include="Services\IPaymentDescriptionGenerator.cs" />
+    <Compile Include="Services\OrderGroupPaymentService.cs" />
     <Compile Include="Services\OrderNoteHelper.cs" />
-    <Compile Include="Webhooks\MollieCheckoutWebhookApiController.cs" />
+    <Compile Include="Webhooks\MollieOrdersWebhookApiController.cs" />
+    <Compile Include="Webhooks\MolliePaymentsWebhookApiController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
