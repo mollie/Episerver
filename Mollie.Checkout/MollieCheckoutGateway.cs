@@ -105,7 +105,7 @@ namespace Mollie.Checkout
 
             var urlBuilder = new UriBuilder(baseUrl);
 
-            urlBuilder.Path = $"{Constants.Webhooks.MollieCheckoutWebhookUrl}/{languageId}";
+            urlBuilder.Path = $"{Constants.Webhooks.MolliePaymentsWebhookUrl}/{languageId}";
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 

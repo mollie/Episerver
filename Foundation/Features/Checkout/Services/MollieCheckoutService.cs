@@ -3,6 +3,7 @@ using EPiServer.ServiceLocation;
 using Mediachase.Commerce.Orders;
 using System;
 using System.Linq;
+using static Mollie.Checkout.Constants;
 
 namespace Mollie.Checkout.Services
 {
@@ -45,6 +46,42 @@ namespace Mollie.Checkout.Services
 
                     cart.AdjustInventoryOrRemoveLineItems((item, validationIssue) => { });
                 }
+            }
+        }
+
+        public void UpdateOrderStatus(IOrderGroup orderGroup, string mollieStatus)
+        {
+            if(orderGroup == null)
+            {
+                throw new ArgumentNullException(nameof(orderGroup));
+            }
+
+            if(string.IsNullOrEmpty(mollieStatus))
+            {
+                throw new ArgumentException(nameof(mollieStatus));
+            }
+
+            switch (mollieStatus)
+            {
+                case MollieOrderStatus.Created:
+                case MollieOrderStatus.Pending:
+                case MollieOrderStatus.Authorized:
+                case MollieOrderStatus.Paid:
+                case MollieOrderStatus.Shipping:
+                    orderGroup.OrderStatus = OrderStatus.InProgress;
+                    _orderRepository.Save(orderGroup);
+                    break;
+                case MollieOrderStatus.Completed:
+                    orderGroup.OrderStatus = OrderStatus.Completed;
+                    _orderRepository.Save(orderGroup);
+                    break;
+                case MollieOrderStatus.Canceled:
+                case MollieOrderStatus.Expired:
+                    orderGroup.OrderStatus = OrderStatus.Cancelled;
+                    _orderRepository.Save(orderGroup);
+                    break;
+                default:
+                    break;
             }
         }
 
