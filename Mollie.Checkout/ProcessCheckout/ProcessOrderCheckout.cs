@@ -60,7 +60,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var urlBuilder = new UriBuilder(baseUrl)
             {
-                Path = $"{Constants.Webhooks.MollieCheckoutWebhookUrl}/{languageId}"
+                Path = $"{Constants.Webhooks.MollieOrdersWebhookUrl}/{languageId}"
             };
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
