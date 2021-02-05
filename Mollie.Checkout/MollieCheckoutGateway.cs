@@ -8,6 +8,7 @@ using Mediachase.Commerce.Security;
 using Mollie.Checkout.Services;
 using System;
 using System.Web;
+using Mollie.Checkout.ProcessCheckout;
 
 namespace Mollie.Checkout
 {
@@ -89,7 +90,10 @@ namespace Mollie.Checkout
             }
 
             // CHECKOUT
-            return ProcessPaymentCheckout(cart, payment);
+            var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
+            var processCheckout = ProcessCheckoutFactory.GetInstance(languageId);
+
+            return processCheckout.Process(cart, payment);
         }
 
         private PaymentProcessingResult ProcessPaymentCheckout(ICart cart, IPayment payment)
