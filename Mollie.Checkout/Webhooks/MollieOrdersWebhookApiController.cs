@@ -1,9 +1,6 @@
 ﻿using EPiServer.Commerce.Order;
 using EPiServer.Logging;
 using EPiServer.ServiceLocation;
-using Mediachase.Commerce.Catalog.Managers;
-using Mediachase.Commerce.Orders;
-using Mediachase.Commerce.Orders.Managers;
 using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Response;
 using Mollie.Checkout.Models;
@@ -12,7 +9,6 @@ using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
-using static Mollie.Checkout.Constants;
 
 namespace Mollie.Checkout.Webhooks
 {
@@ -23,6 +19,7 @@ namespace Mollie.Checkout.Webhooks
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderGroupPaymentService _orderGroupPaymentService;
+        private readonly IMollieCheckoutService _mollieCheckoutService;
 
         public MollieOrdersWebhookApiController()
         {
@@ -30,6 +27,7 @@ namespace Mollie.Checkout.Webhooks
             _checkoutConfigurationLoader = ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>();
             _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
             _orderGroupPaymentService = ServiceLocator.Current.GetInstance<IOrderGroupPaymentService>();
+            _mollieCheckoutService = ServiceLocator.Current.GetInstance<IMollieCheckoutService>();
         }
 
         [HttpGet]
@@ -67,8 +65,8 @@ namespace Mollie.Checkout.Webhooks
             // Get Order Client with API Key
             var orderClient = new OrderClient(config.ApiKey);
 
-            // Get Order from Mollie with API Key
-            var orderResult = await orderClient.GetOrderAsync(mollieOrderId);
+            // Get Order from Mollie with API Key with Embedded enabled
+            var orderResult = await orderClient.GetOrderAsync(mollieOrderId, true, true, true);
 
             if (orderResult == null)
             {
@@ -97,34 +95,19 @@ namespace Mollie.Checkout.Webhooks
             }
 
             // Update Cart/Order Status            
-            switch(orderResult.Status)
-            {
-                case MollieOrderStatus.Created:
-                case MollieOrderStatus.Pending:
-                case MollieOrderStatus.Authorized:
-                case MollieOrderStatus.Paid:
-                case MollieOrderStatus.Shipping:
-                    orderGroup.OrderStatus = OrderStatus.InProgress;
-                    _orderRepository.Save(orderGroup);
-                    break;
-                case MollieOrderStatus.Completed:
-                    orderGroup.OrderStatus = OrderStatus.Completed;
-                    _orderRepository.Save(orderGroup);
-                    break;
-                case MollieOrderStatus.Canceled:
-                case MollieOrderStatus.Expired:
-                    orderGroup.OrderStatus = OrderStatus.Cancelled;
-                    _orderRepository.Save(orderGroup);
-                    break;
-            }
+            _mollieCheckoutService.UpdateOrderStatus(orderGroup, orderResult.Status);
 
             // Update Payments
-
             var orderGroupPayments = orderGroup.GetFirstForm().Payments;
 
-            foreach (var orderGroupPayment in orderGroupPayments)
+            var mollieOrderPayments = orderResult.Embedded?.Payments;
+
+            foreach (var molliePayment in mollieOrderPayments)
             {
-                // await HandlePaymentUpdateAsync(_orderGroupPaymentService, orderGroupPayment, )
+                foreach (var orderGroupPayment in orderGroupPayments)
+                {
+                    await HandlePaymentUpdateAsync(_orderGroupPaymentService, orderGroup, orderGroupPayment, molliePayment);
+                }
             }
 
             return Ok();
@@ -134,20 +117,19 @@ namespace Mollie.Checkout.Webhooks
             IOrderGroupPaymentService orderGroupPaymentService,
             IOrderGroup orderGroup,
             IPayment payment,
-            PaymentResponse paymentResponse,
-            string molliePaymentId)
+            PaymentResponse paymentResponse)
         {
             try
             {
                 await Task.Factory.StartNew(() =>
                 {
-                    orderGroupPaymentService.UpdateStatus(orderGroup, payment, paymentResponse, molliePaymentId);
+                    orderGroupPaymentService.UpdateStatus(orderGroup, payment, paymentResponse);
                     return true;
                 });
             }
             catch(Exception ex)
             {
-                _log.Error("Error handling payment success", ex);
+                _log.Error("Error handling Payment Update", ex);
             }
         }
     }

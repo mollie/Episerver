@@ -22,7 +22,7 @@ namespace Mollie.Checkout.Services
             _mollieCheckoutService = mollieCheckoutService;
         }
 
-        public void UpdateStatus(IOrderGroup orderGroup, IPayment orderGroupPayment, PaymentResponse paymentResponse, string molliePaymentId)
+        public void UpdateStatus(IOrderGroup orderGroup, IPayment orderGroupPayment, PaymentResponse paymentResponse)
         {
             if(orderGroup == null)
             {
@@ -39,14 +39,9 @@ namespace Mollie.Checkout.Services
                 throw new ArgumentNullException(nameof(paymentResponse));
             }
 
-            if(string.IsNullOrEmpty(molliePaymentId))
+            if (orderGroupPayment.Properties[OtherPaymentFields.MolliePaymentId].ToString() == paymentResponse.Id)
             {
-                throw new ArgumentNullException(nameof(molliePaymentId));
-            }
-
-            if (orderGroupPayment.Properties[OtherPaymentFields.MolliePaymentId].ToString() == molliePaymentId)
-            {
-                orderGroupPayment.ProviderTransactionID = molliePaymentId;
+                orderGroupPayment.ProviderTransactionID = paymentResponse.Id;
 
                 // Store Mollie Payment Status
                 if (orderGroupPayment.Properties.ContainsKey(OtherPaymentFields.MolliePaymentStatus))

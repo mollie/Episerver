@@ -5,6 +5,6 @@ namespace Mollie.Checkout.Services
 {
     public interface IOrderGroupPaymentService
     {
-        void UpdateStatus(IOrderGroup orderGroup, IPayment orderGroupPayment, PaymentResponse paymentResponse, string molliePaymentId);
+        void UpdateStatus(IOrderGroup orderGroup, IPayment orderGroupPayment, PaymentResponse paymentResponse);
     }
 }

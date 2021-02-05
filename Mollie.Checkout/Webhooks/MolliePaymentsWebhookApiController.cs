@@ -99,9 +99,10 @@ namespace Mollie.Checkout.Webhooks
 
             var orderGroupPayments = orderGroup.GetFirstForm().Payments;
 
+            // Update Payments
             foreach (var orderGroupPayment in orderGroupPayments)
             {
-                await HandlePaymentUpdateAsync(_orderGroupPaymentService, orderGroup, orderGroupPayment, paymentResponse, molliePaymentId);
+                await HandlePaymentUpdateAsync(_orderGroupPaymentService, orderGroup, orderGroupPayment, paymentResponse);
             }
 
             return Ok();
@@ -111,14 +112,13 @@ namespace Mollie.Checkout.Webhooks
             IOrderGroupPaymentService orderGroupPaymentService,
             IOrderGroup orderGroup,
             IPayment payment,
-            PaymentResponse paymentResponse,
-            string molliePaymentId)
+            PaymentResponse paymentResponse)
         {
             try
             {
                 await Task.Factory.StartNew(() =>
                 {
-                    orderGroupPaymentService.UpdateStatus(orderGroup, payment, paymentResponse, molliePaymentId);
+                    orderGroupPaymentService.UpdateStatus(orderGroup, payment, paymentResponse);
                     return true;
                 });
             }
