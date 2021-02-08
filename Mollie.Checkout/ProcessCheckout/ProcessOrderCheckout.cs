@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using EPiServer.Commerce.Order;
 using Mollie.Checkout.ProcessCheckout.Interfaces;
@@ -7,18 +8,15 @@ using EPiServer.Logging;
 using EPiServer.ServiceLocation;
 using Mollie.Checkout.Services;
 using System.Web;
-using EPiServer;
-using EPiServer.Commerce.Catalog.ContentTypes;
-using EPiServer.Commerce.Catalog.Linking;
-using EPiServer.Core;
 using EPiServer.Security;
-using EPiServer.Web;
-using EPiServer.Web.Routing;
 using Mediachase.Commerce.Customers;
 using Mediachase.Commerce.Markets;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Commerce.Security;
 using Mollie.Api.Models.Order;
+using Mollie.Api.Models.Payment;
+using Mollie.Checkout.ProcessCheckout.Helpers;
+using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Newtonsoft.Json;
 
 namespace Mollie.Checkout.ProcessCheckout
@@ -31,11 +29,10 @@ namespace Mollie.Checkout.ProcessCheckout
         private readonly ICheckoutMetaDataFactory _checkoutMetaDataFactory;
         private readonly IOrderRepository _orderRepository;
         private readonly IMarketService _marketService;
-        private readonly IRelationRepository _relationRepository;
-        private readonly IContentLoader _contentLoader;
-        private readonly UrlResolver _urlResolver;
         private readonly ServiceAccessor<HttpContextBase> _httpContextAccessor;
         private readonly CustomerContext _customerContext;
+        private readonly IProductImageUrlFinder _productImageUrlFinder;
+        private readonly IProductUrlGetter _productUrlGetter;
 
         public ProcessOrderCheckout()
         {
@@ -44,9 +41,8 @@ namespace Mollie.Checkout.ProcessCheckout
             _checkoutMetaDataFactory = ServiceLocator.Current.GetInstance<ICheckoutMetaDataFactory>();
             _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
             _marketService = ServiceLocator.Current.GetInstance<IMarketService>();
-            _relationRepository = ServiceLocator.Current.GetInstance<IRelationRepository>();
-            _contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
-            _urlResolver = ServiceLocator.Current.GetInstance<UrlResolver>();
+            _productImageUrlFinder = ServiceLocator.Current.GetInstance<IProductImageUrlFinder>();
+            _productUrlGetter = ServiceLocator.Current.GetInstance<IProductUrlGetter>();
             _httpContextAccessor = ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>();
             _customerContext = CustomerContext.Current;
         }
@@ -81,7 +77,8 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var orderRequest = new OrderRequest
             {
-                Amount = new Api.Models.Amount(cart.Currency.CurrencyCode, payment.Amount),
+                Amount = new Api.Models.Amount(cart.Currency.CurrencyCode, cart.GetTotal().Amount),
+                Method = PaymentMethod.Ideal, //TODO: Need input, what payment method?
                 BillingAddress = new OrderAddressDetails
                 {
                     OrganizationName = billingAddress.Organization,
@@ -89,7 +86,7 @@ namespace Mollie.Checkout.ProcessCheckout
                     City = billingAddress.City,
                     Region = billingAddress.RegionName,
                     PostalCode = billingAddress.PostalCode,
-                    Country = billingAddress.CountryCode,
+                    Country = billingAddress.CountryCode?.Length == 3 ? CountryCodeMapper.MapToTwoLetterIsoRegion(billingAddress.CountryCode) : billingAddress.CountryCode,
                     GivenName = billingAddress.FirstName,
                     FamilyName = billingAddress.LastName,
                     Email = billingAddress.Email,
@@ -102,7 +99,7 @@ namespace Mollie.Checkout.ProcessCheckout
                     City = shippingAddress.City,
                     Region = shippingAddress.RegionName,
                     PostalCode = shippingAddress.PostalCode,
-                    Country = shippingAddress.CountryCode,
+                    Country = shippingAddress.CountryCode?.Length == 3 ? CountryCodeMapper.MapToTwoLetterIsoRegion(shippingAddress.CountryCode) : shippingAddress.CountryCode,
                     GivenName = shippingAddress.FirstName,
                     FamilyName = shippingAddress.LastName,
                     Email = shippingAddress.Email,
@@ -110,14 +107,12 @@ namespace Mollie.Checkout.ProcessCheckout
                 },
                 Metadata = JsonConvert.SerializeObject(metadata),
                 ConsumerDateOfBirth = currentContact?.BirthDate,
-                Locale = "nl_NL", //TODO: figure out locale
+                Locale = GetLocale(languageId),
                 OrderNumber = orderNumber,
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={orderNumber}",
                 WebhookUrl = urlBuilder.ToString(),
                 Lines = GetOrderLines(cart)
             };
-
-            var temp = orderRequest.Lines.ToArray();
 
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
 
@@ -152,7 +147,6 @@ namespace Mollie.Checkout.ProcessCheckout
             var shippingAddress = shipment.ShippingAddress;
             var orderLines = cart.GetAllLineItems();
             var market = _marketService.GetMarket(cart.MarketId);
-            var shipmentLines = shipment.LineItems;
 
             foreach (var orderLine in orderLines)
             {
@@ -161,102 +155,51 @@ namespace Mollie.Checkout.ProcessCheckout
                     Type = "physical",
                     Sku = orderLine.Code,
                     Name = orderLine.DisplayName,
-                    ProductUrl = GetUrl(orderLine.GetEntryContent()),
-                    ImageUrl = GetImageUrl(orderLine.GetEntryContent()),
+                    ProductUrl = _productUrlGetter.Get(orderLine.GetEntryContent()),
+                    ImageUrl = _productImageUrlFinder.Find(orderLine.GetEntryContent()),
                     Quantity = (int) orderLine.Quantity,
                     VatRate = (orderLine.TaxCategoryId == null ? 0 : GetVatRate(orderLine.TaxCategoryId.Value)).ToString("0.00"),
                     UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.PlacedPrice),
                     TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetLineItemPrices(cart.Currency).DiscountedPrice),
                     DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetEntryDiscount()),
+                    //TODO: Why is it returning 0 vat?
                     VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount)
                 };
             }
 
-            //foreach (var shipmentLine in shipmentLines)
-            //{
-            //    yield return new OrderLineRequest
-            //    {
-            //        Type = "shipping_fee",
-            //        Sku = shipmentLine.Code,
-            //        Name = shipmentLine.DisplayName,
-            //        Quantity = (int)shipmentLine.Quantity,
-            //        VatRate = (shipmentLine.TaxCategoryId == null ? 0 : GetVatRate(shipmentLine.TaxCategoryId.Value)).ToString("0.00"),
-            //        UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, shipmentLine.PlacedPrice),
-            //        TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, shipmentLine.GetLineItemPrices(cart.Currency).DiscountedPrice),
-            //        DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, shipmentLine.GetEntryDiscount()),
-            //        VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, shipmentLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount)
-            //    };
-            //}
+            var shippingTotal = cart.GetShippingTotal().Amount;
+
+            if (shippingTotal > 0)
+            {
+                yield return new OrderLineRequest
+                {
+                    Type = "shipping_fee",
+                    Name = "Shipping",
+                    TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, shippingTotal),
+                    UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, shippingTotal),
+                    DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, cart.GetShippingDiscountTotal().Amount),
+                    Quantity = 1,
+                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, 0),
+                    VatRate = "0"
+                };
+
+            }
 
             var orderDiscountTotal = cart.GetOrderDiscountTotal();
-            if (orderDiscountTotal.Amount == 0)
-            {
-                yield break;
-            }
 
-            yield return new OrderLineRequest
+            if (orderDiscountTotal > 0)
             {
-                Type = "discount",
-                TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderDiscountTotal.Amount)
-            };
-        }
-
-        private string GetImageUrl(EntryContentBase entry)
-        {
-            if (!(entry is IAssetContainer assetContainer))
-            {
-                return SiteDefinition.Current.SiteUrl.ToString();
-            }
-
-            var productImageUrl = assetContainer.CommerceMediaCollection.Select(media =>
-            {
-                if (!_contentLoader.TryGet<IContentMedia>(media.AssetLink, out var contentMedia))
+                yield return new OrderLineRequest
                 {
-                    return new KeyValuePair<string, string>(string.Empty, string.Empty);
-                }
-
-                var type = "Image";
-                var url = _urlResolver.GetUrl(media.AssetLink, null, new VirtualPathArguments {ContextMode = ContextMode.Default});
-                if (contentMedia is IContentVideo)
-                {
-                    type = "Video";
-                }
-
-                return new KeyValuePair<string, string>(type, url);
-
-            }).FirstOrDefault(m => m.Key == "Image");
-
-            if (string.IsNullOrWhiteSpace(productImageUrl.Value))
-            {
-                return SiteDefinition.Current.SiteUrl.ToString();
+                    Type = "discount",
+                    Name = "Order Level Discount",
+                    TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, -orderDiscountTotal.Amount),
+                    UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, -orderDiscountTotal.Amount),
+                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, 0),
+                    Quantity = 1,
+                    VatRate = "0"
+                };
             }
-
-            var absoluteUrl = new Uri(SiteDefinition.Current.SiteUrl, productImageUrl.Value);
-
-            return absoluteUrl.ToString();
-        }
-
-        private string GetUrl(EntryContentBase entry)
-        {
-            var productLink = entry is VariationContent
-                ? entry.GetParentProducts(_relationRepository).FirstOrDefault()
-                : entry.ContentLink;
-
-            if (productLink == null)
-            {
-                return string.Empty;
-            }
-
-            var urlBuilder = new UrlBuilder(_urlResolver.GetUrl(productLink));
-
-            if (entry.Code != null && entry is VariationContent)
-            {
-                urlBuilder.QueryCollection.Add("variationCode", entry.Code);
-            }
-
-            var absoluteUrl = new Uri(SiteDefinition.Current.SiteUrl, urlBuilder.ToString());
-
-            return absoluteUrl.ToString();
         }
 
         private static double GetVatRate(int taxCategoryId)
@@ -265,6 +208,13 @@ namespace Mollie.Checkout.ProcessCheckout
             var tax = taxDto?.TaxValue?.FirstOrDefault();
 
             return tax?.Percentage ?? 0;
+        }
+
+        private static string GetLocale(string languageId)
+        {
+            var cultureInfo = new CultureInfo(languageId);
+
+            return cultureInfo.TextInfo.CultureName;
         }
     }
 }

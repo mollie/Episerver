@@ -8,7 +8,7 @@ using Mediachase.Commerce.Security;
 using Mollie.Checkout.Services;
 using System;
 using System.Web;
-using Mollie.Checkout.ProcessCheckout;
+using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 
 namespace Mollie.Checkout
 {
@@ -22,13 +22,15 @@ namespace Mollie.Checkout
         private readonly IOrderRepository _orderRepository;
 
         private readonly ServiceAccessor<HttpContextBase> _httpContextAccessor;
+        private readonly IProcessCheckoutFactory _processCheckoutFactory;
 
         public MollieCheckoutGateway()
             : this(ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>(),
                 ServiceLocator.Current.GetInstance<IPaymentDescriptionGenerator>(),
                 ServiceLocator.Current.GetInstance<ICheckoutMetaDataFactory>(),
                 ServiceLocator.Current.GetInstance<IOrderRepository>(),
-                ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>())
+                ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>(),
+                ServiceLocator.Current.GetInstance<IProcessCheckoutFactory>())
         { }
 
         public MollieCheckoutGateway(
@@ -36,13 +38,15 @@ namespace Mollie.Checkout
             IPaymentDescriptionGenerator paymentDescriptionGenerator,
             ICheckoutMetaDataFactory checkoutMetaDataFactory,
             IOrderRepository orderRepository,
-            ServiceAccessor<HttpContextBase> httpContextAcessor)
+            ServiceAccessor<HttpContextBase> httpContextAcessor,
+            IProcessCheckoutFactory processCheckoutFactory)
         {
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _paymentDescriptionGenerator = paymentDescriptionGenerator;
             _checkoutMetaDataFactory = checkoutMetaDataFactory;
             _orderRepository = orderRepository;
             _httpContextAccessor = httpContextAcessor;
+            _processCheckoutFactory = processCheckoutFactory;
         }
 
         /// <summary>
@@ -91,7 +95,7 @@ namespace Mollie.Checkout
 
             // CHECKOUT
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
-            var processCheckout = ProcessCheckoutFactory.GetInstance(languageId);
+            var processCheckout = _processCheckoutFactory.GetInstance(languageId);
 
             return processCheckout.Process(cart, payment);
         }
