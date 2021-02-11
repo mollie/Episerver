@@ -1,0 +1,107 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Web.Helpers;
+using EPiServer.Commerce.Order;
+using EPiServer.Logging;
+using EPiServer.ServiceLocation;
+using Mollie.Api.Models.Order;
+using Mollie.Api.Models.Shipment;
+using Mollie.Checkout.ProcessShipment.Interfaces;
+using Mollie.Checkout.Services;
+
+namespace Mollie.Checkout.ProcessShipment
+{
+    [ServiceConfiguration(typeof(IMollieShipmentCreator))]
+    public class MollieShipmentCreator : IMollieShipmentCreator
+    {
+        private readonly ILogger _logger = LogManager.GetLogger(typeof(MollieShipmentCreator));
+        private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
+
+        public MollieShipmentCreator(
+            ICheckoutConfigurationLoader checkoutConfigurationLoader)
+        {
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
+        }
+
+        public void Create(
+            IPurchaseOrder purchaseOrder,
+            List<IShipment> shipments)
+        {
+            var languageId = purchaseOrder.Properties[Constants.MollieOrder.LanguageId] as string;
+            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
+            var mollieOrderId = purchaseOrder.Properties[Constants.MollieOrder.MollieOrderId] as string;
+            var orderClient = new Api.Client.OrderClient(checkoutConfiguration.ApiKey);
+
+            var mollieOrder = orderClient.GetOrderAsync(mollieOrderId).GetAwaiter().GetResult();
+            if (mollieOrder?.Lines == null || !mollieOrder.Lines.Any())
+            {
+                _logger.Log(Level.Information, $"Mollie order not found for EPiServer order {purchaseOrder.OrderNumber}.");
+                return;
+            }
+
+            var shipmentTrackingNumber = shipments.FirstOrDefault()?.ShipmentTrackingNumber;
+            if (string.IsNullOrWhiteSpace(shipmentTrackingNumber))
+            {
+                _logger.Log(Level.Information, $"No tracking number available for EPiServer order {purchaseOrder.OrderNumber}.");
+            }
+
+            var shipmentRequest = new ShipmentRequest
+            {
+                Tracking = new TrackingObject
+                {
+                    Carrier = "Onbekend",
+                    Code = shipmentTrackingNumber
+                },
+                Lines = GetShipmentLines(
+                    purchaseOrder, 
+                    shipments,
+                    mollieOrder.Lines)
+            };
+
+            var shipmentClient = new Api.Client.ShipmentClient(checkoutConfiguration.ApiKey);
+            shipmentClient.CreateShipmentAsync(mollieOrderId, shipmentRequest);
+        }
+
+        private IEnumerable<ShipmentLineRequest> GetShipmentLines(
+            IPurchaseOrder purchaseOrder,
+            IReadOnlyCollection<IShipment> shipments,
+            IEnumerable<OrderLineResponse> mollieOrderLines)
+        {
+            foreach (var mollieOrderLine in mollieOrderLines)
+            {
+                if (string.IsNullOrWhiteSpace(mollieOrderLine.Metadata))
+                {
+                    _logger.Log(Level.Error, $"Metadata missing for Mollie order line {mollieOrderLine.Id}.");
+                    continue;
+                }
+
+                var metadata = Json.Decode(mollieOrderLine.Metadata);
+                string orderNumber = metadata.order_id;
+                int lineItemId = metadata.line_id;
+
+                if (purchaseOrder.OrderNumber != orderNumber)
+                {
+                    _logger.Log(Level.Error, $"EPiServer order {purchaseOrder.OrderNumber} does not match order number in Mollie order line metadata {orderNumber}.");
+                    continue;
+                }
+
+                foreach (var shipment in shipments)
+                {
+                    var lineItem = shipment.LineItems.FirstOrDefault(l => l.LineItemId == lineItemId);
+                    if (lineItem == null)
+                    {
+                        _logger.Log(Level.Information, $"Line item {lineItemId} not found in EPiServer order {purchaseOrder.OrderNumber}.");
+                        continue;
+                    }
+
+                    yield return new ShipmentLineRequest
+                    {
+                        Id = mollieOrderLine.Id,
+                        Amount = new Api.Models.Amount(purchaseOrder.Currency.CurrencyCode, lineItem.GetLineItemPrices(purchaseOrder.Currency).DiscountedPrice),
+                        Quantity = (int)lineItem.Quantity
+                    };
+                }
+            }
+        }
+    }
+}

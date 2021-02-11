@@ -229,6 +229,7 @@
   <ItemGroup>
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="DefaultShipmentProcessorInterceptor.cs" />
     <Compile Include="ProcessCheckout\Helpers\CountryCodeMapper.cs" />
     <Compile Include="ProcessCheckout\Helpers\Interfaces\IProcessCheckoutFactory.cs" />
     <Compile Include="ProcessCheckout\Interfaces\IProcessCheckout.cs" />
@@ -244,6 +245,8 @@
     <Compile Include="ProcessCheckout\ProcessPaymentCheckout.cs" />
     <Compile Include="ProcessCheckout\Helpers\ProductImageUrlFinder.cs" />
     <Compile Include="ProcessCheckout\Helpers\ProductUrlGetter.cs" />
+    <Compile Include="ProcessShipment\Interfaces\IMollieShipmentCreator.cs" />
+    <Compile Include="ProcessShipment\MollieShipmentCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AssemblyVersionService.cs" />
     <Compile Include="Services\DefaultCheckoutConfigurationLoader.cs" />
@@ -257,6 +260,7 @@
     <Compile Include="Services\IPaymentDescriptionGenerator.cs" />
     <Compile Include="Services\OrderGroupPaymentService.cs" />
     <Compile Include="Services\OrderNoteHelper.cs" />
+    <Compile Include="MollieShipmentProcessor.cs" />
     <Compile Include="Webhooks\MollieOrdersWebhookApiController.cs" />
     <Compile Include="Webhooks\MolliePaymentsWebhookApiController.cs" />
   </ItemGroup>

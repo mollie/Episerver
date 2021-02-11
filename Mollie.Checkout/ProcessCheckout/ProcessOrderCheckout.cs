@@ -152,9 +152,16 @@ namespace Mollie.Checkout.ProcessCheckout
             var shippingAddress = shipment.ShippingAddress;
             var orderLines = cart.GetAllLineItems();
             var market = _marketService.GetMarket(cart.MarketId);
+            var orderNumber = cart.OrderNumber();
 
             foreach (var orderLine in orderLines)
             {
+                var metadata = new
+                {
+                    order_id = orderNumber,
+                    line_id = orderLine.LineItemId
+                };
+
                 yield return new OrderLineRequest
                 {
                     Type = "physical",
@@ -168,7 +175,8 @@ namespace Mollie.Checkout.ProcessCheckout
                     TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetLineItemPrices(cart.Currency).DiscountedPrice),
                     DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetEntryDiscount()),
                     //TODO: Why is it returning 0 vat?
-                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount)
+                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount),
+                    Metadata = JsonConvert.SerializeObject(metadata)
                 };
             }
 
@@ -187,7 +195,6 @@ namespace Mollie.Checkout.ProcessCheckout
                     VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, 0),
                     VatRate = "0"
                 };
-
             }
 
             var orderDiscountTotal = cart.GetOrderDiscountTotal();

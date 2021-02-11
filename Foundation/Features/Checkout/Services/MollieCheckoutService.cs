@@ -42,6 +42,7 @@ namespace Mollie.Checkout.Services
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
                     purchaseOrder.Properties[MollieOrder.MollieOrderId] = cart.Properties[MollieOrder.MollieOrderId];
+                    purchaseOrder.Properties[MollieOrder.LanguageId] = payment.Properties[OtherPaymentFields.LanguageId];
 
                     // Delete cart
                     _orderRepository.Delete(cart.OrderLink);
@@ -51,7 +52,10 @@ namespace Mollie.Checkout.Services
             }
         }
 
-        public void UpdateCart(ICart cart, string mollieStatus, string mollieOrderId)
+        public void UpdateCart(
+            ICart cart, 
+            string mollieStatus, 
+            string mollieOrderId)
         {
             if(cart == null)
             {

@@ -33,6 +33,7 @@
         public static class MollieOrder
         {
             public const string MollieOrderId = "MollieOrderId";
+            public const string LanguageId = "LanguageId";
         }
 
         public static class MolliePaymentStatus

@@ -102,6 +102,15 @@ namespace Mollie.Checkout
 
                 purchaseOrderMetaClass.AddField(metaField);
             }
+
+            var languageIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.LanguageId);
+
+            if (languageIdField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.LanguageId,
+                    Constants.OtherPaymentFields.LanguageId, string.Empty, MetaDataType.ShortString, 10, true, false, false, false);
+                purchaseOrderMetaClass.AddField(metaField);
+            }
         }
     }
 }
