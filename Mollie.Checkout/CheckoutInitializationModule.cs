@@ -11,6 +11,18 @@ namespace Mollie.Checkout
     {
         public void Initialize(InitializationEngine context)
         {
+            InitializeOtherPaymentMetaClass();
+            InitializeCartMetaClass();
+            InitializePurchaseOrderMetaClass();
+        }
+
+        public void Uninitialize(InitializationEngine context)
+        {
+            // Do nothing
+        }
+
+        private void InitializeOtherPaymentMetaClass()
+        {
             var otherPaymentMetaClass = OrderContext.Current.OtherPaymentMetaClass;
             var metaDataContext = OrderContext.MetaDataContext;
 
@@ -60,9 +72,36 @@ namespace Mollie.Checkout
             }
         }
 
-        public void Uninitialize(InitializationEngine context)
+        private void InitializeCartMetaClass()
         {
-            // Do nothing
+            var shoppingCartMetaClass = OrderContext.Current.ShoppingCartMetaClass;
+            var metaDataContext = OrderContext.MetaDataContext;
+
+            var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.MollieOrderId);
+
+            if (mollieOrderIdField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.MollieOrderId,
+                    Constants.MollieOrder.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
+
+                shoppingCartMetaClass.AddField(metaField);
+            }
+        }
+
+        private void InitializePurchaseOrderMetaClass()
+        {
+            var purchaseOrderMetaClass = OrderContext.Current.PurchaseOrderMetaClass;
+            var metaDataContext = OrderContext.MetaDataContext;
+
+            var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.MollieOrderId);
+
+            if (mollieOrderIdField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.MollieOrderId,
+                    Constants.MollieOrder.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
+
+                purchaseOrderMetaClass.AddField(metaField);
+            }
         }
     }
 }
