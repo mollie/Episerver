@@ -94,8 +94,8 @@ namespace Mollie.Checkout.Webhooks
                 return Ok();
             }
 
-            // Update Cart/Order Status            
-            _mollieCheckoutService.UpdateOrderStatus(orderGroup, orderResult.Status);
+            // Update Cart/Order            
+            _mollieCheckoutService.UpdateOrder(orderGroup, orderResult.Status, orderResult.Id);
 
             // Update Payments
             var orderGroupPayments = orderGroup.GetFirstForm().Payments;

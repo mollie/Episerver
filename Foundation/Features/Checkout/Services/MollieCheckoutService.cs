@@ -49,7 +49,7 @@ namespace Mollie.Checkout.Services
             }
         }
 
-        public void UpdateOrderStatus(IOrderGroup orderGroup, string mollieStatus)
+        public void UpdateOrder(IOrderGroup orderGroup, string mollieStatus, string mollieOrderId)
         {
             if(orderGroup == null)
             {
@@ -61,6 +61,11 @@ namespace Mollie.Checkout.Services
                 throw new ArgumentException(nameof(mollieStatus));
             }
 
+            if (string.IsNullOrEmpty(mollieOrderId))
+            {
+                throw new ArgumentException(nameof(mollieOrderId));
+            }
+
             switch (mollieStatus)
             {
                 case MollieOrderStatus.Created:
@@ -69,20 +74,21 @@ namespace Mollie.Checkout.Services
                 case MollieOrderStatus.Paid:
                 case MollieOrderStatus.Shipping:
                     orderGroup.OrderStatus = OrderStatus.InProgress;
-                    _orderRepository.Save(orderGroup);
                     break;
                 case MollieOrderStatus.Completed:
                     orderGroup.OrderStatus = OrderStatus.Completed;
-                    _orderRepository.Save(orderGroup);
                     break;
                 case MollieOrderStatus.Canceled:
                 case MollieOrderStatus.Expired:
                     orderGroup.OrderStatus = OrderStatus.Cancelled;
-                    _orderRepository.Save(orderGroup);
                     break;
                 default:
                     break;
             }
+
+            orderGroup.Properties[MollieOrder.MollieOrderId] = mollieOrderId;
+
+            _orderRepository.Save(orderGroup);
         }
 
         public void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment)
