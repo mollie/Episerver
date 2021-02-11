@@ -41,6 +41,8 @@ namespace Mollie.Checkout.Services
 
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
+                    purchaseOrder.Properties[MollieOrder.MollieOrderId] = cart.Properties[MollieOrder.MollieOrderId];
+
                     // Delete cart
                     _orderRepository.Delete(cart.OrderLink);
 
@@ -49,11 +51,11 @@ namespace Mollie.Checkout.Services
             }
         }
 
-        public void UpdateOrder(IOrderGroup orderGroup, string mollieStatus, string mollieOrderId)
+        public void UpdateCart(ICart cart, string mollieStatus, string mollieOrderId)
         {
-            if(orderGroup == null)
+            if(cart == null)
             {
-                throw new ArgumentNullException(nameof(orderGroup));
+                throw new ArgumentNullException(nameof(cart));
             }
 
             if(string.IsNullOrEmpty(mollieStatus))
@@ -73,22 +75,22 @@ namespace Mollie.Checkout.Services
                 case MollieOrderStatus.Authorized:
                 case MollieOrderStatus.Paid:
                 case MollieOrderStatus.Shipping:
-                    orderGroup.OrderStatus = OrderStatus.InProgress;
+                    cart.OrderStatus = OrderStatus.InProgress;
                     break;
                 case MollieOrderStatus.Completed:
-                    orderGroup.OrderStatus = OrderStatus.Completed;
+                    cart.OrderStatus = OrderStatus.Completed;
                     break;
                 case MollieOrderStatus.Canceled:
                 case MollieOrderStatus.Expired:
-                    orderGroup.OrderStatus = OrderStatus.Cancelled;
+                    cart.OrderStatus = OrderStatus.Cancelled;
                     break;
                 default:
                     break;
             }
 
-            orderGroup.Properties[MollieOrder.MollieOrderId] = mollieOrderId;
+            cart.Properties[MollieOrder.MollieOrderId] = mollieOrderId;
 
-            _orderRepository.Save(orderGroup);
+            _orderRepository.Save(cart);
         }
 
         public void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment)

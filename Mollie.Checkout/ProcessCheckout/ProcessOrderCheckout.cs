@@ -118,18 +118,23 @@ namespace Mollie.Checkout.ProcessCheckout
 
             orderRequest.SetMetadata(metaData);
 
-            var orderResponse = orderClient.CreateOrderAsync(orderRequest).GetAwaiter().GetResult();
+            var createOrderResponse = orderClient.CreateOrderAsync(orderRequest).GetAwaiter().GetResult();
 
-            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
+            var getOrderResponse = orderClient.GetOrderAsync(createOrderResponse.Id, true, false, false).Result;
+
+            foreach (var molliePayment in getOrderResponse.Embedded?.Payments)
             {
-                payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = orderResponse.Id;
-            }
-            else
-            {
-                payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, orderResponse.Id);
+                if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
+                {
+                    payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = molliePayment.Id;
+                }
+                else
+                {
+                    payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, molliePayment.Id);
+                }
             }
 
-            var message = $"--Mollie Create Order is successful. Redirect end user to {orderResponse.Links.Checkout.Href}";
+            var message = $"--Mollie Create Order is successful. Redirect end user to {getOrderResponse.Links.Checkout.Href}";
 
             OrderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
@@ -137,7 +142,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, orderResponse.Links.Checkout.Href);
+            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse.Links.Checkout.Href);
         }
 
         private IEnumerable<OrderLineRequest> GetOrderLines(
@@ -158,7 +163,7 @@ namespace Mollie.Checkout.ProcessCheckout
                     ProductUrl = _productUrlGetter.Get(orderLine.GetEntryContent()),
                     ImageUrl = _productImageUrlFinder.Find(orderLine.GetEntryContent()),
                     Quantity = (int) orderLine.Quantity,
-                    VatRate = (orderLine.TaxCategoryId == null ? 0 : GetVatRate(orderLine.TaxCategoryId.Value)).ToString("0.00"),
+                    VatRate = "0.00", // (orderLine.TaxCategoryId == null ? 0 : GetVatRate(orderLine.TaxCategoryId.Value)).ToString("0.00"),
                     UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.PlacedPrice),
                     TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetLineItemPrices(cart.Currency).DiscountedPrice),
                     DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetEntryDiscount()),

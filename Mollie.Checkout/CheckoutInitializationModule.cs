@@ -13,6 +13,7 @@ namespace Mollie.Checkout
         {
             InitializeOtherPaymentMetaClass();
             InitializeCartMetaClass();
+            InitializePurchaseOrderMetaClass();
         }
 
         public void Uninitialize(InitializationEngine context)
@@ -84,6 +85,22 @@ namespace Mollie.Checkout
                     Constants.MollieOrder.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
 
                 shoppingCartMetaClass.AddField(metaField);
+            }
+        }
+
+        private void InitializePurchaseOrderMetaClass()
+        {
+            var purchaseOrderMetaClass = OrderContext.Current.PurchaseOrderMetaClass;
+            var metaDataContext = OrderContext.MetaDataContext;
+
+            var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.MollieOrderId);
+
+            if (mollieOrderIdField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.MollieOrderId,
+                    Constants.MollieOrder.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
+
+                purchaseOrderMetaClass.AddField(metaField);
             }
         }
     }

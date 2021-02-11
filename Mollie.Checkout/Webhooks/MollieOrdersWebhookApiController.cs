@@ -9,6 +9,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
+using static Mollie.Checkout.Constants;
 
 namespace Mollie.Checkout.Webhooks
 {
@@ -74,6 +75,7 @@ namespace Mollie.Checkout.Webhooks
 
                 return Ok();
             }
+            var ship = new ShipmentClient(config.ApiKey);
 
             CheckoutMetaDataModel metaDataResponse = orderResult.GetMetadata<CheckoutMetaDataModel>();
 
@@ -84,21 +86,21 @@ namespace Mollie.Checkout.Webhooks
                 return Ok();
             }
 
-            // Get Cart/Order with ID
-            var orderGroup = _orderRepository.Load<ICart>(metaDataResponse.CartId);
+            // Get Cart with ID
+            var cart = _orderRepository.Load<ICart>(metaDataResponse.CartId);
 
-            if (orderGroup == null)
+            if (cart == null)
             {
                 _log.Error($"Cart with ID {metaDataResponse.CartId} does not exist.");
 
                 return Ok();
             }
 
-            // Update Cart/Order            
-            _mollieCheckoutService.UpdateOrder(orderGroup, orderResult.Status, orderResult.Id);
+            // Update Cart            
+            _mollieCheckoutService.UpdateCart(cart, orderResult.Status, orderResult.Id);
 
             // Update Payments
-            var orderGroupPayments = orderGroup.GetFirstForm().Payments;
+            var orderGroupPayments = cart.GetFirstForm().Payments;
 
             var mollieOrderPayments = orderResult.Embedded?.Payments;
 
@@ -106,7 +108,7 @@ namespace Mollie.Checkout.Webhooks
             {
                 foreach (var orderGroupPayment in orderGroupPayments)
                 {
-                    await HandlePaymentUpdateAsync(_orderGroupPaymentService, orderGroup, orderGroupPayment, molliePayment);
+                    await HandlePaymentUpdateAsync(_orderGroupPaymentService, cart, orderGroupPayment, molliePayment);
                 }
             }
 

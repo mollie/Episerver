@@ -8,6 +8,6 @@ namespace Mollie.Checkout.Services
 
         void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment);
 
-        void UpdateOrder(IOrderGroup orderGroup, string mollieStatus, string mollieOrderId);
+        void UpdateCart(ICart cart, string mollieStatus, string mollieOrderId);
     }    
 }
