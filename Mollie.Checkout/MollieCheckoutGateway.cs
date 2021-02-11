@@ -1,51 +1,23 @@
 ﻿using EPiServer.Commerce.Order;
-using EPiServer.Logging;
-using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce.Orders;
 using Mediachase.Commerce.Plugins.Payment;
-using Mediachase.Commerce.Security;
-using Mollie.Checkout.Services;
 using System;
-using System.Web;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 
 namespace Mollie.Checkout
 {
     public class MollieCheckoutGateway : AbstractPaymentGateway, IPaymentPlugin
     {
-        private readonly ILogger _logger = LogManager.GetLogger(typeof(MollieCheckoutGateway));
-
-        private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
-        private readonly IPaymentDescriptionGenerator _paymentDescriptionGenerator;
-        private readonly ICheckoutMetaDataFactory _checkoutMetaDataFactory;
-        private readonly IOrderRepository _orderRepository;
-
-        private readonly ServiceAccessor<HttpContextBase> _httpContextAccessor;
         private readonly IProcessCheckoutFactory _processCheckoutFactory;
 
         public MollieCheckoutGateway()
-            : this(ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>(),
-                ServiceLocator.Current.GetInstance<IPaymentDescriptionGenerator>(),
-                ServiceLocator.Current.GetInstance<ICheckoutMetaDataFactory>(),
-                ServiceLocator.Current.GetInstance<IOrderRepository>(),
-                ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>(),
-                ServiceLocator.Current.GetInstance<IProcessCheckoutFactory>())
+            : this(ServiceLocator.Current.GetInstance<IProcessCheckoutFactory>())
         { }
 
         public MollieCheckoutGateway(
-            ICheckoutConfigurationLoader checkoutConfigurationLoader,
-            IPaymentDescriptionGenerator paymentDescriptionGenerator,
-            ICheckoutMetaDataFactory checkoutMetaDataFactory,
-            IOrderRepository orderRepository,
-            ServiceAccessor<HttpContextBase> httpContextAcessor,
             IProcessCheckoutFactory processCheckoutFactory)
         {
-            _checkoutConfigurationLoader = checkoutConfigurationLoader;
-            _paymentDescriptionGenerator = paymentDescriptionGenerator;
-            _checkoutMetaDataFactory = checkoutMetaDataFactory;
-            _orderRepository = orderRepository;
-            _httpContextAccessor = httpContextAcessor;
             _processCheckoutFactory = processCheckoutFactory;
         }
 
