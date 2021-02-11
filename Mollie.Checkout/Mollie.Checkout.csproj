@@ -229,15 +229,21 @@
   <ItemGroup>
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="ProcessCheckout\Helpers\CountryCodeMapper.cs" />
+    <Compile Include="ProcessCheckout\Helpers\Interfaces\IProcessCheckoutFactory.cs" />
     <Compile Include="ProcessCheckout\Interfaces\IProcessCheckout.cs" />
     <Compile Include="Models\CheckoutConfiguration.cs" />
     <Compile Include="Models\CheckoutMetaDataModel.cs" />
     <Compile Include="MollieCheckoutGateway.cs" />
     <Compile Include="OrderGroupExtensions.cs" />
     <Compile Include="PaymentMethodDtoExtensions.cs" />
-    <Compile Include="ProcessCheckout\ProcessCheckoutFactory.cs" />
+    <Compile Include="ProcessCheckout\Helpers\Interfaces\IProductUrlGetter.cs" />
+    <Compile Include="ProcessCheckout\Helpers\Interfaces\IProductImageUrlFinder.cs" />
+    <Compile Include="ProcessCheckout\Helpers\ProcessCheckoutFactory.cs" />
     <Compile Include="ProcessCheckout\ProcessOrderCheckout.cs" />
     <Compile Include="ProcessCheckout\ProcessPaymentCheckout.cs" />
+    <Compile Include="ProcessCheckout\Helpers\ProductImageUrlFinder.cs" />
+    <Compile Include="ProcessCheckout\Helpers\ProductUrlGetter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AssemblyVersionService.cs" />
     <Compile Include="Services\DefaultCheckoutConfigurationLoader.cs" />
