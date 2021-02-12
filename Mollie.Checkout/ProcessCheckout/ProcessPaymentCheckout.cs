@@ -7,6 +7,10 @@ using EPiServer.ServiceLocation;
 using Mediachase.Commerce.Security;
 using Mollie.Checkout.Services;
 using System.Web;
+using System.Net.Http;
+using Mollie.Api.Client;
+using Mollie.Api.Models.Payment.Request;
+using Mollie.Api.Models;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -19,6 +23,7 @@ namespace Mollie.Checkout.ProcessCheckout
         private readonly ICheckoutMetaDataFactory _checkoutMetaDataFactory;
         private readonly IOrderRepository _orderRepository;
         private readonly ServiceAccessor<HttpContextBase> _httpContextAccessor;
+        private readonly HttpClient _httpClient;
 
         public ProcessPaymentCheckout()
         {
@@ -27,6 +32,7 @@ namespace Mollie.Checkout.ProcessCheckout
             _checkoutMetaDataFactory = ServiceLocator.Current.GetInstance<ICheckoutMetaDataFactory>();
             _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
             _httpContextAccessor = ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>();
+            _httpClient = ServiceLocator.Current.GetInstance<HttpClient>();
         }
 
         public PaymentProcessingResult Process(ICart cart, IPayment payment)
@@ -43,11 +49,11 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            var paymentClient = new Api.Client.PaymentClient(checkoutConfiguration.ApiKey);
+            var paymentClient = new PaymentClient(checkoutConfiguration.ApiKey, _httpClient);
 
-            var paymentRequest = new Api.Models.Payment.Request.PaymentRequest
+            var paymentRequest = new PaymentRequest
             {
-                Amount = new Api.Models.Amount(cart.Currency.CurrencyCode, payment.Amount),
+                Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
                 Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
                 WebhookUrl = urlBuilder.ToString()
@@ -57,7 +63,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             paymentRequest.SetMetadata(metaData);
 
-            var paymentResponse = paymentClient.CreatePaymentAsync(paymentRequest).Result;
+            var paymentResponse = paymentClient.CreatePaymentAsync(paymentRequest).GetAwaiter().GetResult();
 
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
             {

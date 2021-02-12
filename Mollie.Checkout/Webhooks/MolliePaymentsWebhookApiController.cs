@@ -1,36 +1,36 @@
 ﻿using EPiServer.Commerce.Order;
 using EPiServer.Logging;
-using EPiServer.ServiceLocation;
-using Mediachase.Commerce.Orders;
 using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Response;
 using Mollie.Checkout.Models;
 using Mollie.Checkout.Services;
-using Newtonsoft.Json;
 using System;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
-using static Mollie.Checkout.Constants;
 
 namespace Mollie.Checkout.Webhooks
 {
     [RoutePrefix(Constants.Webhooks.MolliePaymentsWebhookUrl)]
     public class MolliePaymentsWebhookApiController : ApiController
     {
-        private readonly ILogger _log;
+        private readonly ILogger _log = LogManager.GetLogger(typeof(MolliePaymentsWebhookApiController));
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IOrderRepository _orderRepository;
-        private readonly IMollieCheckoutService _mollieCheckoutService;
         private readonly IOrderGroupPaymentService _orderGroupPaymentService;
+        private readonly HttpClient _httpClient;
 
-        public MolliePaymentsWebhookApiController()
+        public MolliePaymentsWebhookApiController(
+            ICheckoutConfigurationLoader checkoutConfigurationLoader,
+            IOrderRepository orderRepository,
+            IOrderGroupPaymentService orderGroupPaymentService,
+            HttpClient httpClient)
         {
-            _log = LogManager.GetLogger(typeof(MolliePaymentsWebhookApiController));
-            _checkoutConfigurationLoader = ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>();
-            _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
-            _mollieCheckoutService = ServiceLocator.Current.GetInstance<IMollieCheckoutService>();
-            _orderGroupPaymentService = ServiceLocator.Current.GetInstance<IOrderGroupPaymentService>();
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _orderRepository = orderRepository;
+            _orderGroupPaymentService = orderGroupPaymentService;
+            _httpClient = httpClient;
         }
 
         [HttpGet]
@@ -66,7 +66,7 @@ namespace Mollie.Checkout.Webhooks
             }
 
             // Get Payment Client with API Key
-            var paymentClient = new PaymentClient(config.ApiKey);
+            var paymentClient = new PaymentClient(config.ApiKey, _httpClient);
 
             // Get Payment from Mollie with API Key
             var paymentResponse = await paymentClient.GetPaymentAsync(molliePaymentId);
