@@ -1,14 +1,12 @@
-﻿using EPiServer.ServiceLocation;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 
 namespace Mollie.Checkout.Services
 {
-    [ServiceConfiguration(typeof(IAssemblyVersionService))]
-    public class AssemblyVersionService : IAssemblyVersionService
+    public static class AssemblyVersionUtils
     {
-        public string CreateVersionString()
+        public static string CreateVersionString()
         {
             var mollieCheckoutVersion = GetAssemblyVersion("Mollie.Checkout.dll");
             var episerverVersion = GetAssemblyVersion("EPiServer.dll");
@@ -17,7 +15,7 @@ namespace Mollie.Checkout.Services
             return $"MollieEpiserver/{mollieCheckoutVersion} EpiserverCommerce/{episerverCommerceVersion} Episerver/{episerverVersion}";
         }
 
-        private string GetAssemblyVersion(string asssembly)
+        private static string GetAssemblyVersion(string asssembly)
         {
             if (string.IsNullOrWhiteSpace(asssembly))
             {

@@ -30,6 +30,12 @@
             public const string MolliePaymentFullResult = "MolliePaymentFullResult";
         }
 
+        public static class MollieOrder
+        {
+            public const string MollieOrderId = "MollieOrderId";
+            public const string LanguageId = "LanguageId";
+        }
+
         public static class MolliePaymentStatus
         {
             public const string Open = "open";

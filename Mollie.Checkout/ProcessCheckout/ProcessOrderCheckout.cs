@@ -18,6 +18,9 @@ using Mollie.Api.Models.Payment;
 using Mollie.Checkout.ProcessCheckout.Helpers;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Newtonsoft.Json;
+using System.Net.Http;
+using Mollie.Api.Client;
+using Mollie.Api.Models;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -33,6 +36,7 @@ namespace Mollie.Checkout.ProcessCheckout
         private readonly CustomerContext _customerContext;
         private readonly IProductImageUrlFinder _productImageUrlFinder;
         private readonly IProductUrlGetter _productUrlGetter;
+        private readonly HttpClient _httpClient;
 
         public ProcessOrderCheckout()
         {
@@ -45,6 +49,7 @@ namespace Mollie.Checkout.ProcessCheckout
             _productUrlGetter = ServiceLocator.Current.GetInstance<IProductUrlGetter>();
             _httpContextAccessor = ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>();
             _customerContext = CustomerContext.Current;
+            _httpClient = ServiceLocator.Current.GetInstance<HttpClient>();
         }
 
         public PaymentProcessingResult Process(ICart cart, IPayment payment)
@@ -60,7 +65,7 @@ namespace Mollie.Checkout.ProcessCheckout
             };
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
-            var orderClient = new Api.Client.OrderClient(checkoutConfiguration.ApiKey);
+            var orderClient = new OrderClient(checkoutConfiguration.ApiKey, _httpClient);
 
             var shipment = cart.GetFirstShipment();
             var billingAddress = payment.BillingAddress;
@@ -77,7 +82,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var orderRequest = new OrderRequest
             {
-                Amount = new Api.Models.Amount(cart.Currency.CurrencyCode, cart.GetTotal().Amount),
+                Amount = new Amount(cart.Currency.CurrencyCode, cart.GetTotal().Amount),
                 Method = PaymentMethod.Ideal, //TODO: Need input, what payment method?
                 BillingAddress = new OrderAddressDetails
                 {
@@ -118,18 +123,23 @@ namespace Mollie.Checkout.ProcessCheckout
 
             orderRequest.SetMetadata(metaData);
 
-            var orderResponse = orderClient.CreateOrderAsync(orderRequest).GetAwaiter().GetResult();
+            var createOrderResponse = orderClient.CreateOrderAsync(orderRequest).GetAwaiter().GetResult();
 
-            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
+            var getOrderResponse = orderClient.GetOrderAsync(createOrderResponse.Id, true, false, false).GetAwaiter().GetResult();
+
+            foreach (var molliePayment in getOrderResponse.Embedded?.Payments)
             {
-                payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = orderResponse.Id;
-            }
-            else
-            {
-                payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, orderResponse.Id);
+                if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
+                {
+                    payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = molliePayment.Id;
+                }
+                else
+                {
+                    payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, molliePayment.Id);
+                }
             }
 
-            var message = $"--Mollie Create Order is successful. Redirect end user to {orderResponse.Links.Checkout.Href}";
+            var message = $"--Mollie Create Order is successful. Redirect end user to {getOrderResponse.Links.Checkout.Href}";
 
             OrderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
@@ -137,7 +147,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, orderResponse.Links.Checkout.Href);
+            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse.Links.Checkout.Href);
         }
 
         private IEnumerable<OrderLineRequest> GetOrderLines(
@@ -147,9 +157,16 @@ namespace Mollie.Checkout.ProcessCheckout
             var shippingAddress = shipment.ShippingAddress;
             var orderLines = cart.GetAllLineItems();
             var market = _marketService.GetMarket(cart.MarketId);
+            var orderNumber = cart.OrderNumber();
 
             foreach (var orderLine in orderLines)
             {
+                var metadata = new
+                {
+                    order_id = orderNumber,
+                    line_code = orderLine.Code
+                };
+
                 yield return new OrderLineRequest
                 {
                     Type = "physical",
@@ -158,12 +175,13 @@ namespace Mollie.Checkout.ProcessCheckout
                     ProductUrl = _productUrlGetter.Get(orderLine.GetEntryContent()),
                     ImageUrl = _productImageUrlFinder.Find(orderLine.GetEntryContent()),
                     Quantity = (int) orderLine.Quantity,
-                    VatRate = (orderLine.TaxCategoryId == null ? 0 : GetVatRate(orderLine.TaxCategoryId.Value)).ToString("0.00"),
+                    VatRate = "0.00", // (orderLine.TaxCategoryId == null ? 0 : GetVatRate(orderLine.TaxCategoryId.Value)).ToString("0.00"),
                     UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.PlacedPrice),
                     TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetLineItemPrices(cart.Currency).DiscountedPrice),
                     DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetEntryDiscount()),
                     //TODO: Why is it returning 0 vat?
-                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount)
+                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount),
+                    Metadata = JsonConvert.SerializeObject(metadata)
                 };
             }
 
@@ -175,14 +193,13 @@ namespace Mollie.Checkout.ProcessCheckout
                 {
                     Type = "shipping_fee",
                     Name = "Shipping",
-                    TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, shippingTotal),
-                    UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, shippingTotal),
-                    DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, cart.GetShippingDiscountTotal().Amount),
+                    TotalAmount = new Amount(cart.Currency.CurrencyCode, shippingTotal),
+                    UnitPrice = new Amount(cart.Currency.CurrencyCode, shippingTotal),
+                    DiscountAmount = new Amount(cart.Currency.CurrencyCode, cart.GetShippingDiscountTotal().Amount),
                     Quantity = 1,
-                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, 0),
+                    VatAmount = new Amount(cart.Currency.CurrencyCode, 0),
                     VatRate = "0"
                 };
-
             }
 
             var orderDiscountTotal = cart.GetOrderDiscountTotal();
@@ -193,9 +210,9 @@ namespace Mollie.Checkout.ProcessCheckout
                 {
                     Type = "discount",
                     Name = "Order Level Discount",
-                    TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, -orderDiscountTotal.Amount),
-                    UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, -orderDiscountTotal.Amount),
-                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, 0),
+                    TotalAmount = new Amount(cart.Currency.CurrencyCode, -orderDiscountTotal.Amount),
+                    UnitPrice = new Amount(cart.Currency.CurrencyCode, -orderDiscountTotal.Amount),
+                    VatAmount = new Amount(cart.Currency.CurrencyCode, 0),
                     Quantity = 1,
                     VatRate = "0"
                 };

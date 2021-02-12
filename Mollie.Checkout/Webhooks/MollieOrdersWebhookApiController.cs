@@ -1,11 +1,11 @@
 ﻿using EPiServer.Commerce.Order;
 using EPiServer.Logging;
-using EPiServer.ServiceLocation;
 using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Response;
 using Mollie.Checkout.Models;
 using Mollie.Checkout.Services;
 using System;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -15,19 +15,25 @@ namespace Mollie.Checkout.Webhooks
     [RoutePrefix(Constants.Webhooks.MollieOrdersWebhookUrl)]
     public class MollieOrdersWebhookApiController : ApiController
     {
-        private readonly ILogger _log;
+        private readonly ILogger _log = LogManager.GetLogger(typeof(MollieOrdersWebhookApiController));
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderGroupPaymentService _orderGroupPaymentService;
         private readonly IMollieCheckoutService _mollieCheckoutService;
+        private readonly HttpClient _httpClient;
 
-        public MollieOrdersWebhookApiController()
+        public MollieOrdersWebhookApiController(
+            ICheckoutConfigurationLoader checkoutConfigurationLoader,
+            IOrderRepository orderRepository,
+            IOrderGroupPaymentService orderGroupPaymentService,
+            IMollieCheckoutService mollieCheckoutService,
+            HttpClient httpClient)
         {
-            _log = LogManager.GetLogger(typeof(MollieOrdersWebhookApiController));
-            _checkoutConfigurationLoader = ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>();
-            _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
-            _orderGroupPaymentService = ServiceLocator.Current.GetInstance<IOrderGroupPaymentService>();
-            _mollieCheckoutService = ServiceLocator.Current.GetInstance<IMollieCheckoutService>();
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _orderRepository = orderRepository;
+            _orderGroupPaymentService = orderGroupPaymentService;
+            _mollieCheckoutService = mollieCheckoutService;
+            _httpClient = httpClient;
         }
 
         [HttpGet]
@@ -63,10 +69,10 @@ namespace Mollie.Checkout.Webhooks
             }
 
             // Get Order Client with API Key
-            var orderClient = new OrderClient(config.ApiKey);
+            var orderClient = new OrderClient(config.ApiKey, _httpClient);
 
             // Get Order from Mollie with API Key with Embedded enabled
-            var orderResult = await orderClient.GetOrderAsync(mollieOrderId, true, true, true);
+            var orderResult = await orderClient.GetOrderAsync(mollieOrderId, true, true, true).ConfigureAwait(false);
 
             if (orderResult == null)
             {
@@ -84,21 +90,21 @@ namespace Mollie.Checkout.Webhooks
                 return Ok();
             }
 
-            // Get Cart/Order with ID
-            var orderGroup = _orderRepository.Load<ICart>(metaDataResponse.CartId);
+            // Get Cart with ID
+            var cart = _orderRepository.Load<ICart>(metaDataResponse.CartId);
 
-            if (orderGroup == null)
+            if (cart == null)
             {
                 _log.Error($"Cart with ID {metaDataResponse.CartId} does not exist.");
 
                 return Ok();
             }
 
-            // Update Cart/Order Status            
-            _mollieCheckoutService.UpdateOrderStatus(orderGroup, orderResult.Status);
+            // Update Cart            
+            _mollieCheckoutService.UpdateCart(cart, orderResult.Status, orderResult.Id);
 
             // Update Payments
-            var orderGroupPayments = orderGroup.GetFirstForm().Payments;
+            var orderGroupPayments = cart.GetFirstForm().Payments;
 
             var mollieOrderPayments = orderResult.Embedded?.Payments;
 
@@ -106,7 +112,7 @@ namespace Mollie.Checkout.Webhooks
             {
                 foreach (var orderGroupPayment in orderGroupPayments)
                 {
-                    await HandlePaymentUpdateAsync(_orderGroupPaymentService, orderGroup, orderGroupPayment, molliePayment);
+                    await HandlePaymentUpdateAsync(_orderGroupPaymentService, cart, orderGroupPayment, molliePayment);
                 }
             }
 
