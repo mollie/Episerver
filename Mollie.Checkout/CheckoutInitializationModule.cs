@@ -77,12 +77,12 @@ namespace Mollie.Checkout
             var shoppingCartMetaClass = OrderContext.Current.ShoppingCartMetaClass;
             var metaDataContext = OrderContext.MetaDataContext;
 
-            var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.MollieOrderId);
+            var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.Cart.MollieOrderId);
 
             if (mollieOrderIdField == null)
             {
-                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.MollieOrderId,
-                    Constants.MollieOrder.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.Cart.MollieOrderId,
+                    Constants.Cart.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
 
                 shoppingCartMetaClass.AddField(metaField);
             }

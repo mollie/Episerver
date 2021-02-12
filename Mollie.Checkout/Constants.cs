@@ -19,21 +19,26 @@
 
         public static class OtherPaymentFields
         {
-            public const string LanguageId = "LanguageId";
+            public const string LanguageId = "LanguageIdPayment";
 
-            public const string MolliePaymentId = "MolliePaymentId";
+            public const string MolliePaymentId = "MolliePaymentIdPayment";
 
-            public const string MolliePaymentStatus = "MolliePaymentStatus";
+            public const string MolliePaymentStatus = "MolliePaymentStatusPayment";
 
-            public const string MolliePaymentMethod = "MolliePaymentMethod";
+            public const string MolliePaymentMethod = "MolliePaymentMethodPayment";
 
-            public const string MolliePaymentFullResult = "MolliePaymentFullResult";
+            public const string MolliePaymentFullResult = "MolliePaymentFullResultPayment";
+        }
+
+        public static class Cart
+        {
+            public const string MollieOrderId = "MollieOrderIdCart";
         }
 
         public static class MollieOrder
         {
-            public const string MollieOrderId = "MollieOrderId";
-            public const string LanguageId = "LanguageId";
+            public const string MollieOrderId = "MollieOrderIdOrder";
+            public const string LanguageId = "LanguageIdOrder";
         }
 
         public static class MolliePaymentStatus
