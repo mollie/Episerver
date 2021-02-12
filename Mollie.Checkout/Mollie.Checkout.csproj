@@ -230,7 +230,9 @@
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="IocConfigurableModule.cs" />
-    <Compile Include="ProcessShipment\DefaultShipmentProcessorInterceptor.cs" />
+    <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />
+    <Compile Include="ProcessRefund\ProcessPaymentRefund.cs" />
+    <Compile Include="ProcessShipment\ShipmentProcessorInterceptor.cs" />
     <Compile Include="ProcessCheckout\Helpers\CountryCodeMapper.cs" />
     <Compile Include="ProcessCheckout\Helpers\Interfaces\IProcessCheckoutFactory.cs" />
     <Compile Include="ProcessCheckout\Interfaces\IProcessCheckout.cs" />
@@ -269,8 +271,6 @@
     <None Include="Mollie.Checkout.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ProcessReturn\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
