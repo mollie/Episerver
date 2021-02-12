@@ -108,7 +108,7 @@ namespace Mollie.Checkout
             if (languageIdField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.LanguageId,
-                    Constants.OtherPaymentFields.LanguageId, string.Empty, MetaDataType.ShortString, 10, true, false, false, false);
+                    Constants.MollieOrder.LanguageId, string.Empty, MetaDataType.ShortString, 10, true, false, false, false);
                 purchaseOrderMetaClass.AddField(metaField);
             }
         }

@@ -40,6 +40,7 @@ namespace Mollie.Checkout.ProcessShipment
             }
 
             var shipmentTrackingNumber = shipments.FirstOrDefault()?.ShipmentTrackingNumber;
+            var shippingMethodName = shipments.FirstOrDefault()?.ShippingMethodName;
             if (string.IsNullOrWhiteSpace(shipmentTrackingNumber))
             {
                 _logger.Log(Level.Information, $"No tracking number available for EPiServer order {purchaseOrder.OrderNumber}.");
@@ -49,7 +50,7 @@ namespace Mollie.Checkout.ProcessShipment
             {
                 Tracking = new TrackingObject
                 {
-                    Carrier = "Onbekend",
+                    Carrier = shippingMethodName,
                     Code = shipmentTrackingNumber
                 },
                 Lines = GetShipmentLines(
@@ -77,7 +78,7 @@ namespace Mollie.Checkout.ProcessShipment
 
                 var metadata = Json.Decode(mollieOrderLine.Metadata);
                 string orderNumber = metadata.order_id;
-                int lineItemId = metadata.line_id;
+                string code = metadata.line_code;
 
                 if (purchaseOrder.OrderNumber != orderNumber)
                 {
@@ -87,10 +88,10 @@ namespace Mollie.Checkout.ProcessShipment
 
                 foreach (var shipment in shipments)
                 {
-                    var lineItem = shipment.LineItems.FirstOrDefault(l => l.LineItemId == lineItemId);
+                    var lineItem = shipment.LineItems.FirstOrDefault(l => l.Code == code);
                     if (lineItem == null)
                     {
-                        _logger.Log(Level.Information, $"Line item {lineItemId} not found in EPiServer order {purchaseOrder.OrderNumber}.");
+                        _logger.Log(Level.Information, $"Line item with code {code} not found in EPiServer order {purchaseOrder.OrderNumber}.");
                         continue;
                     }
 

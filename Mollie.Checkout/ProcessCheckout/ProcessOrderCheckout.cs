@@ -159,7 +159,7 @@ namespace Mollie.Checkout.ProcessCheckout
                 var metadata = new
                 {
                     order_id = orderNumber,
-                    line_id = orderLine.LineItemId
+                    line_code = orderLine.Code
                 };
 
                 yield return new OrderLineRequest

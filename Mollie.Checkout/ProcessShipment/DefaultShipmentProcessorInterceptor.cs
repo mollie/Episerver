@@ -3,7 +3,7 @@ using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
 using EPiServer.ServiceLocation;
 
-namespace Mollie.Checkout
+namespace Mollie.Checkout.ProcessShipment
 {
     [ModuleDependency(typeof(EPiServer.Web.InitializationModule))]
     public class DefaultShipmentProcessorInterceptor : IConfigurableModule

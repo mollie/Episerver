@@ -44,6 +44,8 @@ namespace Mollie.Checkout.Services
                     purchaseOrder.Properties[MollieOrder.MollieOrderId] = cart.Properties[MollieOrder.MollieOrderId];
                     purchaseOrder.Properties[MollieOrder.LanguageId] = payment.Properties[OtherPaymentFields.LanguageId];
 
+                    _orderRepository.Save(purchaseOrder);
+
                     // Delete cart
                     _orderRepository.Delete(cart.OrderLink);
 

@@ -25,9 +25,11 @@ namespace Mollie.Checkout
         public OrderProcessingResult CompleteShipment(IPurchaseOrder purchaseOrder, IEnumerable<IShipment> shipments)
         {
             var shipmentsList = shipments.ToList();
+            var orderProcessingResult = _defaultShipmentProcessor.CompleteShipment(purchaseOrder, shipmentsList);
+
             _mollieShipmentCreator.Create(purchaseOrder, shipmentsList);
 
-            return _defaultShipmentProcessor.CompleteShipment(purchaseOrder, shipmentsList);
+            return orderProcessingResult;
         }
 
         public OrderProcessingResult ReleaseShipment(IPurchaseOrder purchaseOrder, IEnumerable<IShipment> shipments)

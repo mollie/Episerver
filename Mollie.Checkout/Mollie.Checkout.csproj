@@ -229,7 +229,7 @@
   <ItemGroup>
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="DefaultShipmentProcessorInterceptor.cs" />
+    <Compile Include="ProcessShipment\DefaultShipmentProcessorInterceptor.cs" />
     <Compile Include="ProcessCheckout\Helpers\CountryCodeMapper.cs" />
     <Compile Include="ProcessCheckout\Helpers\Interfaces\IProcessCheckoutFactory.cs" />
     <Compile Include="ProcessCheckout\Interfaces\IProcessCheckout.cs" />
