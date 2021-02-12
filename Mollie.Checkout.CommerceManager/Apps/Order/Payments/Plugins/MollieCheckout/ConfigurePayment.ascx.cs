@@ -1,5 +1,4 @@
-﻿using EPiServer.ServiceLocation;
-using Mediachase.Commerce.Orders.Dto;
+﻿using Mediachase.Commerce.Orders.Dto;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Web.Console.BaseClasses;
 using Mediachase.Web.Console.Interfaces;
@@ -27,6 +26,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 redirectURLTextBox.Text = GetParameterByName(Constants.Fields.RedirectURLField)?.Value ?? string.Empty;
 
                 useOrdersApiRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value ?? "False";
+                useCreditcardComponentsRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseCreditcardComponentsField)?.Value ?? "False";
 
                 versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
             }
@@ -52,6 +52,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                     SetParamValue(paymentMethodId, Constants.Fields.ProfileIDField, profileIDTextBox.Text);
                     SetParamValue(paymentMethodId, Constants.Fields.RedirectURLField, redirectURLTextBox.Text);
                     SetParamValue(paymentMethodId, Constants.Fields.UseOrdersApiField, useOrdersApiRadioButtonList.SelectedValue);
+                    SetParamValue(paymentMethodId, Constants.Fields.UseCreditcardComponentsField, useCreditcardComponentsRadioButtonList.SelectedValue);
                 }
             }
         }

@@ -15,6 +15,8 @@
             public const string RedirectURLField = "RedirectURL";
 
             public const string UseOrdersApiField = "UseOrdersApi";
+
+            public const string UseCreditcardComponentsField = "UseCreditcardComponents";
         }
 
         public static class OtherPaymentFields
