@@ -228,7 +228,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CheckoutInitializationModule.cs" />
-    <Compile Include="ClientApi\PaymentMethodsApiController.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="IocConfigurableModule.cs" />
     <Compile Include="ProcessShipment\DefaultShipmentProcessorInterceptor.cs" />
