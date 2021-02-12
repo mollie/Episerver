@@ -28,9 +28,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
                 useOrdersApiRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value ?? "False";
 
-                var assemblyVersionService = ServiceLocator.Current.GetInstance<IAssemblyVersionService>();
-
-                versionValueLabel.Text = assemblyVersionService.CreateVersionString();
+                versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
             }
         }
 

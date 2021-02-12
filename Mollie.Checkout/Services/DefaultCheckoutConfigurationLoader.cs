@@ -9,13 +9,6 @@ namespace Mollie.Checkout.Services
     [ServiceConfiguration(typeof(ICheckoutConfigurationLoader))]
     public class DefaultCheckoutConfigurationLoader : ICheckoutConfigurationLoader
     {
-        private readonly IAssemblyVersionService _assemblyVersionService;
-
-        public DefaultCheckoutConfigurationLoader(IAssemblyVersionService assemblyVersionService)
-        {
-            _assemblyVersionService = assemblyVersionService;
-        }
-
         public CheckoutConfiguration GetConfiguration(string languageId)
         {
             var paymentMethodDto = PaymentManager.GetPaymentMethodBySystemName(
@@ -44,7 +37,7 @@ namespace Mollie.Checkout.Services
                 ApiKey = paymentMethodDto.GetParameter(Constants.Fields.ApiKeyField)?.Value ?? string.Empty,
                 ProfileId = paymentMethodDto.GetParameter(Constants.Fields.ProfileIDField)?.Value ?? string.Empty,
                 RedirectUrl = paymentMethodDto.GetParameter(Constants.Fields.RedirectURLField)?.Value ?? string.Empty,
-                VersionStrings = _assemblyVersionService.CreateVersionString(),
+                VersionStrings = AssemblyVersionUtils.CreateVersionString(),
                 UseOrdersApi = useOrdersApi
             };
         }
