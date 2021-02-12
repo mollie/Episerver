@@ -4,11 +4,147 @@
 
 @Html.HiddenFor(model => model.PaymentMethodId)
 
+@{
+    var conf = Model.Configuration;
+    var profileId = conf.ProfileId;
+
+
+}
+
 <br />
 <div class="row">
-    <div class="col-12">
-        <div class="alert alert-info square-box">
-            Mollie checkout..
+    <div class="col-12 checkout-mollie">
+
+        <div id="paymentcontainer">
+
         </div>
+
+       
+
+
+        @*<ul id="options">
+                @foreach (var method in Model.MethodsAsync().Result)
+                {
+                    <li>
+                        @method.Description
+                    </li>
+                }
+            </ul>*@
+
+
+
+
+        <!--<ul id="accordion">
+            <li>
+                <label for="second">iDeal</label>
+                <input type="radio" name="accordion" id="ideal">
+                <div class="content">
+                    <p>-->
+        <!-- Tab Content -->
+        <!--</p>
+            </div>
+        </li>
+        <li>
+            <label for="second">CreditCard</label>
+            <input type="radio" name="accordion" id="creditcard">
+            <div class="content">
+                <p>-->
+        <!-- Tab Content -->
+        <!--</p>
+                </div>
+            </li>
+        </ul>-->
+        @*<div class="wrapper">
+                <form method="post" class="form" id="mcForm">
+                    <div class="form-fields">
+                        <div class="form-group form-group--card-holder">
+                            <label class="label" for="card-holder">Card holder</label>
+                            <div id="card-holder"></div>
+                            <div id="card-holder-error" class="field-error" role="alert"></div>
+                        </div>
+
+                        <div class="form-group form-group--card-number">
+                            <label class="label" for="card-number">Card number</label>
+                            <div id="card-number"></div>
+                            <div id="card-number-error" class="field-error" role="alert"></div>
+                        </div>
+
+                        <div class="form-group form-group--expiry-date">
+                            <label class="label" for="expiry-date">Expiry date</label>
+                            <div id="expiry-date"></div>
+                            <div id="expiry-date-error" class="field-error" role="alert"></div>
+                        </div>
+
+                        <div class="form-group form-group--verification-code">
+                            <label class="label" for="verification-code">Verification code</label>
+                            <div id="verification-code"></div>
+                            <div id="verification-code-error" class="field-error" role="alert"></div>
+                        </div>
+                    </div>
+
+                    <button id="submit-button" class="submit-button" type="submit">
+                        Pay
+                    </button>
+
+                    <div id="form-error" class="form-error" role="alert"></div>
+                </form>
+            </div>*@
+
     </div>
 </div>
+
+
+
+<script language="javascript">
+
+    var target = document.querySelector('#paymentcontainer');
+    if (target !== undefined) {
+        window.fetch('http://localhost:53396/molliecheckout/PaymentMethods?languageId=en', {
+            method: 'GET',
+            headers: {
+                'pragma': 'no-cache',
+                'cache-control': 'no-cache'
+            }
+        }).then(function (res) {
+            return res.text();
+        }).then(function (html) {
+            target.innerHTML = html;
+        }).catch(function (err) {
+            console.log(err);
+        });
+    }
+
+
+
+    @*var mollie = Mollie('@profileId', { locale: 'nl_NL', testmode: true });
+
+        var options = {
+            styles : {
+                base: {
+                    color: '#eee',
+                    fontSize: '10px',
+                    '::placeholder' : {
+                        color: 'rgba(68, 68, 68, 0.2)',
+                    }
+                },
+                valid: {
+                    color: '#090',
+                }
+            }
+        };
+
+
+    var cardNumber = mollie.createComponent('cardNumber');
+    cardNumber.mount('#card-number');
+
+    var cardHolder = mollie.createComponent('cardHolder');
+    cardHolder.mount('#card-holder');
+
+    var expiryDate = mollie.createComponent('expiryDate');
+    expiryDate.mount('#expiry-date');
+
+    var verificationCode = mollie.createComponent('verificationCode');
+    verificationCode.mount('#verification-code');
+
+        *@
+</script>

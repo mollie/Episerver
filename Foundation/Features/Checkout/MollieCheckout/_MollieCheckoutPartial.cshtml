@@ -1,0 +1,15 @@
+﻿
+@model List<Mollie.Checkout.Models.PaymentMethod>
+    
+
+
+@foreach (var method in Model)
+{
+    <div class="row">
+        <label class="checkbox">@method.Description</label>
+        <input class="radio" id="availableMethod" name="Method" type="radio" value="#@method.Id">
+        <span class="checkmark"></span>
+    </div>
+}
+
+

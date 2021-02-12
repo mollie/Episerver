@@ -1025,6 +1025,7 @@
     <Compile Include="Features\CatalogContent\Services\PricingService.cs" />
     <Compile Include="Features\Checkout\CheckoutPage.cs" />
     <Compile Include="Features\Checkout\FoundationPlacedPriceProcessor.cs" />
+    <Compile Include="Features\Checkout\MollieCheckout\MollieCheckoutController.cs" />
     <Compile Include="Features\Checkout\Payments\MollieCheckoutPaymentOption.cs" />
     <Compile Include="Features\Checkout\Payments\PaymentOptionViewModelBinder.cs" />
     <Compile Include="Features\Checkout\Payments\BudgetPaymentGateway.cs" />
@@ -1458,7 +1459,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Views\MollieCheckout\" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\customers.xml" />
     <Content Include="App_Data\markets.xml" />
@@ -2289,6 +2292,9 @@
     <Content Include="Features\CatalogContent\DynamicCatalogContent\DynamicProduct\_ProductDetail.cshtml" />
     <Content Include="Features\Checkout\_MollieCheckoutPaymentMethod.cshtml" />
     <Content Include="Features\MyAccount\OrderConfirmation\_MollieCheckoutConfirmation.cshtml" />
+    <Content Include="Features\Checkout\tmp\_idealMolliePartial.cshtml" />
+    <Content Include="Features\Checkout\tmp\_creditcardMolliePartial.cshtml" />
+    <Content Include="Features\Checkout\MollieCheckout\_MollieCheckoutPartial.cshtml" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

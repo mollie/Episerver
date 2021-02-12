@@ -1,3 +1,4 @@
+@using EPiServer.Framework.Web.Mvc.Html
 @model IContentViewModel<IContent>
 
 @{
@@ -39,6 +40,8 @@ else
 @Html.Partial("_QuickViewModal")
 
 <script src="~/Assets/js/main.min.js"></script>
+<script src="https://js.mollie.com/v1/mollie.js"></script>
+
 
 @RenderSection("AdditionalScripts", required: false)
 @Html.RequiredClientResources("Footer")
