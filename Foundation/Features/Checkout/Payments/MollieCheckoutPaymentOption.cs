@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using EPiServer.Commerce.Order;
 using EPiServer.Framework.Localization;
-using EPiServer.GoogleAnalytics.Services.REST.Requests;
 using EPiServer.ServiceLocation;
 using Foundation.Commerce.Markets;
 using Mediachase.Commerce;
+using Mediachase.Commerce.BackgroundTasks;
 using Mediachase.Commerce.Orders;
+using Mollie.Checkout.Helpers;
 using Mollie.Checkout.Models;
 using Mollie.Checkout.Services;
 using PaymentMethod = Mollie.Checkout.Models.PaymentMethod;
@@ -22,10 +20,8 @@ namespace Foundation.Features.Checkout.Payments
 
         protected readonly LanguageService _languageService;
         protected readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
-        protected readonly IPaymentMethodsService _paymentMethodsService;
-
-
-
+        private readonly IPaymentMethodsService _paymentMethodsService;
+        
         public MollieCheckoutPaymentOption()
             : this(LocalizationService.Current,
                 ServiceLocator.Current.GetInstance<IOrderGroupFactory>(),
@@ -34,9 +30,7 @@ namespace Foundation.Features.Checkout.Payments
                 ServiceLocator.Current.GetInstance<IPaymentService>(),
                 ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>(),
                 ServiceLocator.Current.GetInstance<IPaymentMethodsService>())
-        {
-
-        }
+        { }
 
         public MollieCheckoutPaymentOption(
             LocalizationService localizationService,
@@ -52,10 +46,16 @@ namespace Foundation.Features.Checkout.Payments
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _paymentMethodsService = paymentMethodsService;
 
-            //var languageId = _languageService.GetCurrentLanguage().Name;
-            //_molliePaymentMethods = paymentMethodsService.LoadMethods(languageId).GetAwaiter().GetResult();
+            InitValues();
+        }
 
-            //int x = _molliePaymentMethods.Count;
+
+        public void InitValues()
+        {
+            Configuration = _checkoutConfigurationLoader.GetConfiguration(_languageService.GetCurrentLanguage().Name);
+            
+            PaymentMethods = AsyncHelper.RunSync(() =>
+                _paymentMethodsService.LoadMethods(_languageService.GetCurrentLanguage().Name));
         }
 
         public override bool ValidateData() => true;
@@ -78,44 +78,16 @@ namespace Foundation.Features.Checkout.Payments
             return payment;
         }
 
+        public IEnumerable<PaymentMethod> PaymentMethods { get; set; }
+        public CheckoutConfiguration Configuration { get; set; }
 
-        public CheckoutConfiguration Configuration
-        {
-            get
-            {
-                var languageId = _languageService.GetCurrentLanguage().Name;
-                return _checkoutConfigurationLoader.GetConfiguration(languageId);
-            }
-        }
-
-        //public async Task<List<PaymentMethod>> MethodsAsync()
-        //{
-        //    var methods = await _paymentMethodsService.LoadMethods("en");
-
-        //    return methods;
-        //}
-
-
-
-        //public List<PaymentMethod> Methods
+        //public CheckoutConfiguration Configuration
         //{
         //    get
         //    {
-        //        using (var client = new HttpClient())
-        //        {
-        //            var result = client.GetAsync("http://mollie.local/api/paymentmethods/get").Result;
-        //            if (result.IsSuccessStatusCode)
-        //            {
-        //                var readTask = result.Content.ReadAsAsync<IList<PaymentMethod>>();
-        //                readTask.Wait();
-
-        //                return readTask.Result.ToList();
-        //            }
-        //        }
-
-        //        return null;
+        //        var languageId = _languageService.GetCurrentLanguage().Name;
+        //        return _checkoutConfigurationLoader.GetConfiguration(languageId);
         //    }
         //}
-
     }
 }

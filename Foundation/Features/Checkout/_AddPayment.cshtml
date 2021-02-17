@@ -37,6 +37,17 @@
                            data-url="@Url.Action("RemovePayment", "Checkout", null)"></i>
                     </div>
                 </div>
+
+                <div class="row">
+                    <div class="col-12" style="padding-top: 20px;">
+                        @{
+                            var partialView = string.Format("_{0}PaymentMethodDetails", payment.SystemKeyword);
+                            Html.RenderPartial(partialView, payment);
+                        }
+                    </div>
+                </div>
+
+                
             }
         </div>
     </div>

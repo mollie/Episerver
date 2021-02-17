@@ -2290,11 +2290,12 @@
     <Content Include="modules\_protected\episerver-labs-content-manager\web.config" />
     <Content Include="modules\_protected\episerver-labs-grid-view\web.config" />
     <Content Include="Features\CatalogContent\DynamicCatalogContent\DynamicProduct\_ProductDetail.cshtml" />
-    <Content Include="Features\Checkout\_MollieCheckoutPaymentMethod.cshtml" />
+    <Content Include="Features\Checkout\_MollieCheckoutPaymentMethodDetails.cshtml" />
     <Content Include="Features\MyAccount\OrderConfirmation\_MollieCheckoutConfirmation.cshtml" />
     <Content Include="Features\Checkout\tmp\_idealMolliePartial.cshtml" />
     <Content Include="Features\Checkout\tmp\_creditcardMolliePartial.cshtml" />
     <Content Include="Features\Checkout\MollieCheckout\_MollieCheckoutPartial.cshtml" />
+    <Content Include="Features\Checkout\_MollieCheckoutPaymentMethod.cshtml" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

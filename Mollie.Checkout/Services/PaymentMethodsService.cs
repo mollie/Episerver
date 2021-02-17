@@ -5,6 +5,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Components.DictionaryAdapter.Xml;
+using EPiServer.Commerce.Order;
+using EPiServer.Logging;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mollie.Api.Client;
@@ -17,17 +20,17 @@ namespace Mollie.Checkout.Services
 {
     public interface IPaymentMethodsService
     {
+        Task<bool> LoadPaymentMethods(IEnumerable<Models.PaymentMethod> paymentMethods, string languageId);
+
         Task<List<Models.PaymentMethod>> LoadMethods(string languageId);
-
-
-        List<Models.PaymentMethod> LoadMethodsSync(string languageId);
-
     }
 
 
     [ServiceConfiguration(typeof(IPaymentMethodsService))]
     public class PaymentMethodService : IPaymentMethodsService
     {
+        private readonly ILogger _logger = LogManager.GetLogger(typeof(PaymentMethodService));
+
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
        
 
@@ -36,42 +39,66 @@ namespace Mollie.Checkout.Services
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
         }
 
-        public List<Models.PaymentMethod> LoadMethodsSync(string languageId)
-        {
-            var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
-            IPaymentMethodClient client = new Mollie.Api.Client.PaymentMethodClient(config.ApiKey);
-            
-            var locale = "nl-NL";
-
-            // Get Payment Methods
-            var result = client.GetPaymentMethodListAsync(locale: locale).GetAwaiter().GetResult();
-            return result.Items.Select(x => new Models.PaymentMethod
-            {
-                Id = x.Id,
-                Description = x.Description,
-                ImageSize1x = x.Image?.Size1x,
-                ImageSvg = x.Image?.Svg
-            }).ToList();
-        }
-
-
         public async Task<List<Models.PaymentMethod>> LoadMethods(string languageId)
         { 
+            // Load configuration
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            IPaymentMethodClient client = new Mollie.Api.Client.PaymentMethodClient(config.ApiKey);
-
-            var locale = "nl-NL";
-            
-            // Get Payment Methods
-            var result = await client.GetPaymentMethodListAsync(locale: locale);
-            return result.Items.Select(x => new Models.PaymentMethod
+            // ToDo: Find a better way to map these languages.
+            string locale;
+            switch (languageId)
             {
-                Id = x.Id,
-                Description = x.Description,
-                ImageSize1x = x.Image?.Size1x,
-                ImageSvg =  x.Image?.Svg
-            }).ToList();
+                case "nl":
+                    locale = "nl-NL";
+                    break;
+                default:
+                    locale = "en-US";
+                    break;
+            }
+
+            // Get Payment Methods
+            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey);
+            var result = await client.GetPaymentMethodListAsync(locale: locale);
+            
+            return result.Items.Select(MapToModel).ToList();
+        }
+
+        public async Task<bool> LoadPaymentMethods(IEnumerable<Models.PaymentMethod> paymentMethods, string languageId)
+        {
+            try
+            {
+                paymentMethods = await this.LoadMethods(languageId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.Message, ex);
+                return false;
+            }
+        }
+
+        private Models.PaymentMethod MapToModel(PaymentMethodResponse response)
+        {
+            var methodModel = new Models.PaymentMethod
+            {
+                Id = response.Id,
+                Description = response.Description,
+                ImageSize1X = response.Image?.Size1x,
+                ImageSize2X = response.Image?.Size2x,
+                ImageSvg = response.Image?.Svg,
+            };
+            
+            if (response.MinimumAmount != null)
+            {
+                methodModel.MinimumAmount = new Money(response.MinimumAmount, response.MinimumAmount.Currency);
+            }
+
+            if (response.MaximumAmount != null)
+            {
+                methodModel.MaximumAmount = new Money(response.MaximumAmount, response.MaximumAmount.Currency);
+            }
+
+            return methodModel;
         }
     }
 }

@@ -229,8 +229,8 @@
   <ItemGroup>
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Helpers\AsyncHelper.cs" />
     <Compile Include="IocConfigurableModule.cs" />
-    <Compile Include="ProcessShipment\DefaultShipmentProcessorInterceptor.cs" />
     <Compile Include="Models\PaymentMethod.cs" />
     <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />
     <Compile Include="ProcessRefund\ProcessPaymentRefund.cs" />

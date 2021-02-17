@@ -12,8 +12,9 @@ namespace Mollie.Checkout.Models
 
         public Money MaximumAmount { get; set; }
 
+        public string ImageSize1X { get; set; }
 
-        public string ImageSize1x { get; set; }
+        public string ImageSize2X { get; set; }
 
         public string ImageSvg { get; set; }
 
