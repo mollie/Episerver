@@ -13,5 +13,7 @@
         public string RedirectUrl { get; set; }
 
         public bool UseOrdersApi { get; set; }
+
+        public bool UseCreditcardComponents { get; set; }
     }
 }

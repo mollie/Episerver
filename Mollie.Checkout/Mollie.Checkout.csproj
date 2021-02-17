@@ -232,6 +232,9 @@
     <Compile Include="IocConfigurableModule.cs" />
     <Compile Include="ProcessShipment\DefaultShipmentProcessorInterceptor.cs" />
     <Compile Include="Models\PaymentMethod.cs" />
+    <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />
+    <Compile Include="ProcessRefund\ProcessPaymentRefund.cs" />
+    <Compile Include="ProcessShipment\ShipmentProcessorInterceptor.cs" />
     <Compile Include="ProcessCheckout\Helpers\CountryCodeMapper.cs" />
     <Compile Include="ProcessCheckout\Helpers\Interfaces\IProcessCheckoutFactory.cs" />
     <Compile Include="ProcessCheckout\Interfaces\IProcessCheckout.cs" />

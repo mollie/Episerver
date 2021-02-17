@@ -31,6 +31,13 @@ namespace Mollie.Checkout.Services
                 useOrdersApi = useordersApiResult;
             }
 
+            var useCreditcardComponents = false;
+
+            if (bool.TryParse(paymentMethodDto.GetParameter(Constants.Fields.UseCreditcardComponentsField)?.Value, out var useCreditcardComponentsResult))
+            {
+                useCreditcardComponents = useCreditcardComponentsResult;
+            }
+
             return new CheckoutConfiguration
             {
                 Environment = paymentMethodDto.GetParameter(Constants.Fields.EnvironmentField)?.Value ?? "test",
@@ -38,7 +45,8 @@ namespace Mollie.Checkout.Services
                 ProfileId = paymentMethodDto.GetParameter(Constants.Fields.ProfileIDField)?.Value ?? string.Empty,
                 RedirectUrl = paymentMethodDto.GetParameter(Constants.Fields.RedirectURLField)?.Value ?? string.Empty,
                 VersionStrings = AssemblyVersionUtils.CreateVersionString(),
-                UseOrdersApi = useOrdersApi
+                UseOrdersApi = useOrdersApi,
+                UseCreditcardComponents = useCreditcardComponents
             };
         }
     }

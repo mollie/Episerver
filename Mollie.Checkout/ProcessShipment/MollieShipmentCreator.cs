@@ -27,9 +27,14 @@ namespace Mollie.Checkout.ProcessShipment
             IPurchaseOrder purchaseOrder,
             List<IShipment> shipments)
         {
+            var mollieOrderId = purchaseOrder.Properties[Constants.MollieOrder.MollieOrderId] as string;
+            if (string.IsNullOrWhiteSpace(mollieOrderId))
+            {
+                return;
+            }
+
             var languageId = purchaseOrder.Properties[Constants.MollieOrder.LanguageId] as string;
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
-            var mollieOrderId = purchaseOrder.Properties[Constants.MollieOrder.MollieOrderId] as string;
             var orderClient = new Api.Client.OrderClient(checkoutConfiguration.ApiKey);
 
             var mollieOrder = orderClient.GetOrderAsync(mollieOrderId).GetAwaiter().GetResult();

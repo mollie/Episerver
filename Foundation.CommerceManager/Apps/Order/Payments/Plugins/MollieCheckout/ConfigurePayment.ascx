@@ -60,12 +60,26 @@
     <tr>
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
-        <tr>
+    <tr>
         <td class="FormLabelCell center">
             <strong><asp:Literal ID="useOrdersApiLabel" Text="Use Orders API" runat="server"></asp:Literal></strong>
         </td>
         <td class="FormFieldCell">
             <asp:RadioButtonList ID="useOrdersApiRadioButtonList" runat="server" RepeatDirection="Horizontal" Width="120px">
+                <asp:ListItem Text="Yes" Value="True" />
+                <asp:ListItem Text="No" Value="False" Enabled="true" />
+            </asp:RadioButtonList>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
+        <td class="FormLabelCell center">
+            <strong><asp:Literal ID="useCreditcardComponentsLabel" Text="Use Creditcard Components" runat="server"></asp:Literal></strong>
+        </td>
+        <td class="FormFieldCell">
+            <asp:RadioButtonList ID="useCreditcardComponentsRadioButtonList" runat="server" RepeatDirection="Horizontal" Width="120px">
                 <asp:ListItem Text="Yes" Value="True" />
                 <asp:ListItem Text="No" Value="False" Enabled="true" />
             </asp:RadioButtonList>

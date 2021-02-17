@@ -132,6 +132,24 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         protected global::System.Web.UI.WebControls.RadioButtonList useOrdersApiRadioButtonList;
 
         /// <summary>
+        /// useCreditcardComponentsLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal useCreditcardComponentsLabel;
+
+        /// <summary>
+        /// useCreditcardComponentsRadioButtonList control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RadioButtonList useCreditcardComponentsRadioButtonList;
+
+        /// <summary>
         /// versionLabel control.
         /// </summary>
         /// <remarks>

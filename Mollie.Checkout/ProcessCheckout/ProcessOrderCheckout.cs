@@ -167,6 +167,10 @@ namespace Mollie.Checkout.ProcessCheckout
                     line_code = orderLine.Code
                 };
 
+                //TODO: Check vat rate should be dependent om market
+                var varRate = (orderLine.TaxCategoryId == null ? 0 : GetVatRate(orderLine.TaxCategoryId.Value)).ToString("0.00");
+                var vatAmount = new Amount(cart.Currency.CurrencyCode, orderLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount);
+
                 yield return new OrderLineRequest
                 {
                     Type = "physical",
@@ -175,12 +179,12 @@ namespace Mollie.Checkout.ProcessCheckout
                     ProductUrl = _productUrlGetter.Get(orderLine.GetEntryContent()),
                     ImageUrl = _productImageUrlFinder.Find(orderLine.GetEntryContent()),
                     Quantity = (int) orderLine.Quantity,
-                    VatRate = "0.00", // (orderLine.TaxCategoryId == null ? 0 : GetVatRate(orderLine.TaxCategoryId.Value)).ToString("0.00"),
+                    VatRate = vatAmount > 0 ? varRate : "0.00",
                     UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.PlacedPrice),
                     TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetLineItemPrices(cart.Currency).DiscountedPrice),
                     DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetEntryDiscount()),
                     //TODO: Why is it returning 0 vat?
-                    VatAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount),
+                    VatAmount = vatAmount,
                     Metadata = JsonConvert.SerializeObject(metadata)
                 };
             }
