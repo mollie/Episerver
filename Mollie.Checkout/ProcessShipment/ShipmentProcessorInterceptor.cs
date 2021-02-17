@@ -6,7 +6,7 @@ using EPiServer.ServiceLocation;
 namespace Mollie.Checkout.ProcessShipment
 {
     [ModuleDependency(typeof(EPiServer.Web.InitializationModule))]
-    public class DefaultShipmentProcessorInterceptor : IConfigurableModule
+    public class ShipmentProcessorInterceptor : IConfigurableModule
     {
         public void ConfigureContainer(ServiceConfigurationContext context)
         {

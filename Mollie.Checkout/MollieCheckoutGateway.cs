@@ -4,21 +4,26 @@ using Mediachase.Commerce.Orders;
 using Mediachase.Commerce.Plugins.Payment;
 using System;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
+using Mollie.Checkout.ProcessRefund.Interfaces;
 
 namespace Mollie.Checkout
 {
     public class MollieCheckoutGateway : AbstractPaymentGateway, IPaymentPlugin
     {
+        private readonly IProcessPaymentRefund _processPaymentRefund;
         private readonly IProcessCheckoutFactory _processCheckoutFactory;
 
         public MollieCheckoutGateway()
-            : this(ServiceLocator.Current.GetInstance<IProcessCheckoutFactory>())
+            : this(ServiceLocator.Current.GetInstance<IProcessCheckoutFactory>(),
+                ServiceLocator.Current.GetInstance<IProcessPaymentRefund>())
         { }
 
         public MollieCheckoutGateway(
-            IProcessCheckoutFactory processCheckoutFactory)
+            IProcessCheckoutFactory processCheckoutFactory,
+            IProcessPaymentRefund processPaymentRefund)
         {
             _processCheckoutFactory = processCheckoutFactory;
+            _processPaymentRefund = processPaymentRefund;
         }
 
         /// <summary>
@@ -74,7 +79,7 @@ namespace Mollie.Checkout
 
         private PaymentProcessingResult ProcessPaymentRefund(IOrderGroup orderGroup, IPayment payment)
         {
-            throw new NotImplementedException("Refunds not implemented yet");
+            return _processPaymentRefund.Process(orderGroup, payment);
         }
 
         private PaymentProcessingResult ProcessPaymentCapture(IOrderGroup orderGroup, IPayment payment)
