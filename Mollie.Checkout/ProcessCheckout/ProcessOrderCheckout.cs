@@ -14,13 +14,13 @@ using Mediachase.Commerce.Markets;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Commerce.Security;
 using Mollie.Api.Models.Order;
-using Mollie.Api.Models.Payment;
 using Mollie.Checkout.ProcessCheckout.Helpers;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Newtonsoft.Json;
 using System.Net.Http;
 using Mollie.Api.Client;
 using Mollie.Api.Models;
+using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -56,9 +56,16 @@ namespace Mollie.Checkout.ProcessCheckout
         {
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
 
+            string selectedMethod = null;
+            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
+            {
+                selectedMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
+            }
+            
             var request = _httpContextAccessor().Request;
+            
             var baseUrl = $"{request.Url?.Scheme}://{request.Url.Authority}";
-
+            
             var urlBuilder = new UriBuilder(baseUrl)
             {
                 Path = $"{Constants.Webhooks.MollieOrdersWebhookUrl}/{languageId}"
@@ -83,7 +90,7 @@ namespace Mollie.Checkout.ProcessCheckout
             var orderRequest = new OrderRequest
             {
                 Amount = new Amount(cart.Currency.CurrencyCode, cart.GetTotal().Amount),
-                Method = PaymentMethod.Ideal, //TODO: Need input, what payment method?
+                Method = selectedMethod,
                 BillingAddress = new OrderAddressDetails
                 {
                     OrganizationName = billingAddress.Organization,

@@ -12,6 +12,7 @@ using System.Net.Http;
 using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models;
+using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -60,6 +61,11 @@ namespace Mollie.Checkout.ProcessCheckout
                 WebhookUrl = urlBuilder.ToString(),
                 Locale = GetLocale(languageId)
             };
+
+            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
+            {
+                paymentRequest.Method = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
+            }
 
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
 

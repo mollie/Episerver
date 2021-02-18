@@ -4,7 +4,7 @@ using Mediachase.Commerce.Orders;
 using Mediachase.Commerce.Security;
 using System;
 
-namespace Mollie.Checkout.Services
+namespace Mollie.Checkout.Helpers
 {
     public static class OrderNoteHelper
     {

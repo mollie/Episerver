@@ -229,7 +229,9 @@
   <ItemGroup>
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Helpers\AsyncHelper.cs" />
     <Compile Include="IocConfigurableModule.cs" />
+    <Compile Include="Models\PaymentMethod.cs" />
     <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />
     <Compile Include="ProcessRefund\ProcessPaymentRefund.cs" />
     <Compile Include="ProcessShipment\ShipmentProcessorInterceptor.cs" />
@@ -260,9 +262,11 @@
     <Compile Include="Services\IMollieCheckoutService.cs" />
     <Compile Include="Services\IOrderGroupPaymentService.cs" />
     <Compile Include="Services\IPaymentDescriptionGenerator.cs" />
+    <Compile Include="Services\IPaymentMethodsService.cs" />
     <Compile Include="Services\OrderGroupPaymentService.cs" />
-    <Compile Include="Services\OrderNoteHelper.cs" />
+    <Compile Include="Helpers\OrderNoteHelper.cs" />
     <Compile Include="MollieShipmentProcessor.cs" />
+    <Compile Include="Services\PaymentMethodsService.cs" />
     <Compile Include="Webhooks\MollieOrdersWebhookApiController.cs" />
     <Compile Include="Webhooks\MolliePaymentsWebhookApiController.cs" />
   </ItemGroup>

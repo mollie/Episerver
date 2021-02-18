@@ -4,11 +4,33 @@
 
 @Html.HiddenFor(model => model.PaymentMethodId)
 
-<br />
 <div class="row">
-    <div class="col-12">
-        <div class="alert alert-info square-box">
-            Mollie checkout..
+    <div class="col-md-12 checkout-mollie">
+        
+        <div class="molliePaymentMethods" style="padding: 20px;">
+
+            @{var selectThisOne = true;}
+            
+            @foreach (var method in Model.SubPaymentMethods)
+            {
+                if (!string.IsNullOrWhiteSpace(Model.SubPaymentMethod))
+                {
+                    selectThisOne = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
+                }
+
+                <div>
+                    <label class="checkbox">
+                        <input type="radio" name="subPaymentMethod" value="@method.Id" @(selectThisOne ? "checked" : string.Empty) />
+                        <img src="@method.ImageSize1X" alt="@method.Description" />
+                        @method.Description
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+
+                selectThisOne = false;
+            }
         </div>
+
     </div>
 </div>
+

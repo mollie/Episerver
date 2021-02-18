@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace Mollie.Checkout.Models
+﻿namespace Mollie.Checkout.Models
 {
     public class CheckoutMetaDataModel
     {
