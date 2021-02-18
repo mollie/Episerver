@@ -14,6 +14,7 @@ using Mollie.Checkout.Helpers;
 using Mollie.Checkout.ProcessCheckout;
 using Mollie.Checkout.ProcessRefund.Interfaces;
 using Mollie.Checkout.Services;
+using Mollie.Checkout.Services.Interfaces;
 
 namespace Mollie.Checkout.ProcessRefund
 {
@@ -23,16 +24,19 @@ namespace Mollie.Checkout.ProcessRefund
         private readonly IOrderRepository _orderRepository;
         private readonly HttpClient _httpClient;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
+        private readonly IOrderNoteHelper _orderNoteHelper;
         private readonly ILogger _logger = LogManager.GetLogger(typeof(ProcessOrderCheckout));
 
         public ProcessPaymentRefund(
             IOrderRepository orderRepository,
             HttpClient httpClient,
-            ICheckoutConfigurationLoader checkoutConfigurationLoader)
+            ICheckoutConfigurationLoader checkoutConfigurationLoader,
+            IOrderNoteHelper orderNoteHelper)
         {
             _orderRepository = orderRepository;
             _httpClient = httpClient;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _orderNoteHelper = orderNoteHelper;
         }
 
         public PaymentProcessingResult Process(IOrderGroup orderGroup, IPayment payment)
@@ -66,7 +70,7 @@ namespace Mollie.Checkout.ProcessRefund
 
             var message = $"--Mollie Refund Payment is successful. Refunded {refundResponse.Amount}, status {refundResponse.Status}.";
 
-            OrderNoteHelper.AddNoteToOrder(orderGroup, "Mollie Payment refund", message, PrincipalInfo.CurrentPrincipal.GetContactId());
+            _orderNoteHelper.AddNoteToOrder(orderGroup, "Mollie Payment refund", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
             _orderRepository.Save(orderGroup);
             _logger.Information(message);

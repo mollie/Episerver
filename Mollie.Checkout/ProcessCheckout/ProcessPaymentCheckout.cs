@@ -9,37 +9,69 @@ using Mediachase.Commerce.Security;
 using Mollie.Checkout.Services;
 using System.Web;
 using System.Net.Http;
-using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models;
+using Mollie.Checkout.MollieClients.Interfaces;
+using Mollie.Checkout.Services.Interfaces;
 using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
     public class ProcessPaymentCheckout : IProcessCheckout
     {
-        private readonly ILogger _logger = LogManager.GetLogger(typeof(ProcessPaymentCheckout));
-
+        private readonly ILogger _logger;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IPaymentDescriptionGenerator _paymentDescriptionGenerator;
         private readonly ICheckoutMetaDataFactory _checkoutMetaDataFactory;
         private readonly IOrderRepository _orderRepository;
         private readonly ServiceAccessor<HttpContextBase> _httpContextAccessor;
         private readonly HttpClient _httpClient;
+        private readonly IMolliePaymentClient _molliePaymentClient;
+        private readonly IOrderNoteHelper _orderNoteHelper;
 
         public ProcessPaymentCheckout()
         {
+            _logger = LogManager.GetLogger(typeof(ProcessPaymentCheckout));
             _checkoutConfigurationLoader = ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>();
             _paymentDescriptionGenerator = ServiceLocator.Current.GetInstance<IPaymentDescriptionGenerator>();
             _checkoutMetaDataFactory = ServiceLocator.Current.GetInstance<ICheckoutMetaDataFactory>();
             _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
             _httpContextAccessor = ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>();
             _httpClient = ServiceLocator.Current.GetInstance<HttpClient>();
+            _molliePaymentClient = ServiceLocator.Current.GetInstance<IMolliePaymentClient>();
+            _orderNoteHelper = ServiceLocator.Current.GetInstance<IOrderNoteHelper>();
+        }
+
+        public ProcessPaymentCheckout(
+            ILogger logger,
+            ICheckoutConfigurationLoader checkoutConfigurationLoader,
+            IPaymentDescriptionGenerator paymentDescriptionGenerator,
+            ICheckoutMetaDataFactory checkoutMetaDataFactory,
+            IOrderRepository orderRepository,
+            ServiceAccessor<HttpContextBase> httpContextAccessor,
+            HttpClient httpClient,
+            IMolliePaymentClient molliePaymentClient,
+            IOrderNoteHelper orderNoteHelper)
+        {
+            _logger = logger;
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _paymentDescriptionGenerator = paymentDescriptionGenerator;
+            _checkoutMetaDataFactory = checkoutMetaDataFactory;
+            _orderRepository = orderRepository;
+            _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClient;
+            _molliePaymentClient = molliePaymentClient;
+            _orderNoteHelper = orderNoteHelper;
         }
 
         public PaymentProcessingResult Process(ICart cart, IPayment payment)
         {
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
+
+            if (string.IsNullOrWhiteSpace(languageId))
+            {
+                throw new CultureNotFoundException("Unable to get payment language.");
+            }
 
             var request = _httpContextAccessor().Request;
             var baseUrl = $"{request.Url.Scheme}://{request.Url.Authority}";
@@ -51,7 +83,15 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            var paymentClient = new PaymentClient(checkoutConfiguration.ApiKey, _httpClient);
+            if (string.IsNullOrWhiteSpace(checkoutConfiguration?.RedirectUrl))
+            {
+                throw new ApplicationException("Redirect url configuration not set.");
+            }
+
+            if (string.IsNullOrWhiteSpace(checkoutConfiguration.ApiKey))
+            {
+                throw new ApplicationException("Api key configuration not set.");
+            }
 
             var paymentRequest = new PaymentRequest
             {
@@ -71,7 +111,8 @@ namespace Mollie.Checkout.ProcessCheckout
 
             paymentRequest.SetMetadata(metaData);
 
-            var paymentResponse = paymentClient.CreatePaymentAsync(paymentRequest).GetAwaiter().GetResult();
+            var paymentResponse = _molliePaymentClient.CreatePaymentAsync(paymentRequest, checkoutConfiguration.ApiKey, _httpClient)
+                .GetAwaiter().GetResult();
 
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
             {
@@ -84,7 +125,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var message = $"--Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout.Href}";
 
-            OrderNoteHelper.AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
+            _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
             _orderRepository.Save(cart);
 
