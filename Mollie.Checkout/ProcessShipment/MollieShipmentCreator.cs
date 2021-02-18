@@ -91,21 +91,35 @@ namespace Mollie.Checkout.ProcessShipment
                     continue;
                 }
 
-                foreach (var shipment in shipments)
+                if (code == "shipment")
                 {
-                    var lineItem = shipment.LineItems.FirstOrDefault(l => l.Code == code);
-                    if (lineItem == null)
-                    {
-                        _logger.Log(Level.Information, $"Line item with code {code} not found in EPiServer order {purchaseOrder.OrderNumber}.");
-                        continue;
-                    }
+                    var shippingTotal = purchaseOrder.GetShippingTotal().Amount;
 
                     yield return new ShipmentLineRequest
                     {
                         Id = mollieOrderLine.Id,
-                        Amount = new Api.Models.Amount(purchaseOrder.Currency.CurrencyCode, lineItem.GetLineItemPrices(purchaseOrder.Currency).DiscountedPrice),
-                        Quantity = (int)lineItem.Quantity
+                        Amount = new Api.Models.Amount(purchaseOrder.Currency.CurrencyCode, shippingTotal),
+                        Quantity = 1
                     };
+                }
+                else
+                {
+                    foreach (var shipment in shipments)
+                    {
+                        var lineItem = shipment.LineItems.FirstOrDefault(l => l.Code == code);
+                        if (lineItem == null)
+                        {
+                            _logger.Log(Level.Information, $"Line item with code {code} not found in EPiServer order {purchaseOrder.OrderNumber}.");
+                            continue;
+                        }
+
+                        yield return new ShipmentLineRequest
+                        {
+                            Id = mollieOrderLine.Id,
+                            Amount = new Api.Models.Amount(purchaseOrder.Currency.CurrencyCode, lineItem.GetLineItemPrices(purchaseOrder.Currency).DiscountedPrice),
+                            Quantity = (int)lineItem.Quantity
+                        };
+                    }
                 }
             }
         }
