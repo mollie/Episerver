@@ -24,19 +24,7 @@ namespace Mollie.Checkout.Services
             // Load configuration
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            // ToDo: Find a better way to map these languages.
-            string locale;
-            switch (languageId)
-            {
-                case "nl":
-                    locale = "nl-NL";
-                    break;
-                default:
-                    locale = "en-US";
-                    break;
-            }
-
-            locale = "nl-NL";
+            string locale = LanguageUtils.GetLocale(languageId);
 
             // Get Payment Methods
             IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey);
