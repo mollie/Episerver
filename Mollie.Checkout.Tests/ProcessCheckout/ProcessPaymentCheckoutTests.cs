@@ -1,26 +1,26 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mollie.Checkout.ProcessCheckout;
-using Mollie.Checkout.Services;
 using System.Collections;
 using System.Globalization;
-using EPiServer.Commerce.Order;
-using EPiServer.Logging;
-using EPiServer.ServiceLocation;
-using System.Web;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
+using EPiServer.Commerce.Order;
 using EPiServer.Commerce.Storage;
+using EPiServer.Logging;
+using EPiServer.ServiceLocation;
 using FakeItEasy;
 using Mediachase.Commerce;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models.Payment.Response;
 using Mollie.Api.Models.Url;
 using Mollie.Checkout.Models;
 using Mollie.Checkout.MollieClients.Interfaces;
+using Mollie.Checkout.ProcessCheckout;
+using Mollie.Checkout.Services;
 using Mollie.Checkout.Services.Interfaces;
 
-namespace Mollie.Checkout.Tests.ProcessRefund
+namespace Mollie.Checkout.Tests.ProcessCheckout
 {
     [TestClass]
     public class ProcessPaymentCheckoutTests

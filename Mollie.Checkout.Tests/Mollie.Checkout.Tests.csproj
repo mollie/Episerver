@@ -232,7 +232,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProcessRefund\ProcessPaymentCheckoutTests.cs" />
+    <Compile Include="ProcessCheckout\ProcessPaymentCheckoutTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
