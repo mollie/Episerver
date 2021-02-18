@@ -23,6 +23,12 @@ steps:
     feedsToUse: config
     nugetConfigPath: NuGet.config
 
+- task: Npm@1
+  inputs:
+    command: 'install'
+    workingDir: Foundation
+    verbose: false
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
