@@ -119,7 +119,7 @@ namespace Mollie.Checkout.ProcessCheckout
                 },
                 Metadata = JsonConvert.SerializeObject(metadata),
                 ConsumerDateOfBirth = currentContact?.BirthDate,
-                Locale = GetLocale(languageId),
+                Locale = LanguageUtils.GetLocale(languageId),
                 OrderNumber = orderNumber,
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={orderNumber}",
                 WebhookUrl = urlBuilder.ToString(),
@@ -243,13 +243,6 @@ namespace Mollie.Checkout.ProcessCheckout
             var tax = taxDto?.TaxValue?.FirstOrDefault();
 
             return tax?.Percentage ?? 0;
-        }
-
-        private static string GetLocale(string languageId)
-        {
-            var cultureInfo = new CultureInfo(languageId);
-
-            return cultureInfo.TextInfo.CultureName;
         }
     }
 }

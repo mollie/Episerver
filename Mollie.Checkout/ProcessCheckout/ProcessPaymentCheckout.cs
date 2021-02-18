@@ -59,7 +59,7 @@ namespace Mollie.Checkout.ProcessCheckout
                 Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
                 WebhookUrl = urlBuilder.ToString(),
-                Locale = GetLocale(languageId)
+                Locale = LanguageUtils.GetLocale(languageId)
             };
 
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
@@ -91,13 +91,6 @@ namespace Mollie.Checkout.ProcessCheckout
             _logger.Information(message);
 
             return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse.Links.Checkout.Href);
-        }
-
-        private static string GetLocale(string languageId)
-        {
-            var cultureInfo = new CultureInfo(languageId);
-
-            return cultureInfo.TextInfo.CultureName;
         }
     }
 }
