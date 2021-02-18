@@ -1,5 +1,4 @@
-﻿@using EPiServer.Framework.Web.Mvc.Html
-﻿@model IContentViewModel<IContent>
+﻿﻿@model IContentViewModel<IContent>
 
 <!DOCTYPE html>
 <html lang="en" class="@(PageEditing.PageIsInEditMode ? "editMode" : "")">
@@ -36,9 +35,6 @@
     <link rel="icon" href="~/Assets/icons/episerver.png" type="image/x-icon" />
     <link rel="shortcut icon" href="~/Assets/icons/episerver.png" type="image/x-icon" />
     <link href="~/Assets/scss/main.min.css" rel="stylesheet" type="text/css" />
-    
-    <link href="~/Assets/css/mollie.css" rel="stylesheet" type="text/css" />
-
     @RenderSection("AdditionalStyles", required: false)
     @Html.RequiredClientResources("Header")
     @Html.RenderExtendedCss(Model.CurrentContent)
