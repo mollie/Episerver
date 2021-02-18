@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using EPiServer.Commerce.Order;
 using Mollie.Checkout.ProcessCheckout.Interfaces;
 using EPiServer.Logging;
@@ -56,7 +57,8 @@ namespace Mollie.Checkout.ProcessCheckout
                 Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
                 Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
-                WebhookUrl = urlBuilder.ToString()
+                WebhookUrl = urlBuilder.ToString(),
+                Locale = GetLocale(languageId)
             };
 
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
@@ -83,6 +85,13 @@ namespace Mollie.Checkout.ProcessCheckout
             _logger.Information(message);
 
             return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse.Links.Checkout.Href);
+        }
+
+        private static string GetLocale(string languageId)
+        {
+            var cultureInfo = new CultureInfo(languageId);
+
+            return cultureInfo.TextInfo.CultureName;
         }
     }
 }
