@@ -193,6 +193,12 @@ namespace Mollie.Checkout.ProcessCheckout
 
             if (shippingTotal > 0)
             {
+                var metadata = new
+                {
+                    order_id = orderNumber,
+                    line_code = "shipment"
+                };
+
                 yield return new OrderLineRequest
                 {
                     Type = "shipping_fee",
@@ -202,7 +208,8 @@ namespace Mollie.Checkout.ProcessCheckout
                     DiscountAmount = new Amount(cart.Currency.CurrencyCode, cart.GetShippingDiscountTotal().Amount),
                     Quantity = 1,
                     VatAmount = new Amount(cart.Currency.CurrencyCode, 0),
-                    VatRate = "0"
+                    VatRate = "0",
+                    Metadata = JsonConvert.SerializeObject(metadata)
                 };
             }
 
