@@ -56,9 +56,16 @@ namespace Mollie.Checkout.ProcessCheckout
         {
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
 
+            string selectedMethod = null;
+            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
+            {
+                selectedMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
+            }
+            
             var request = _httpContextAccessor().Request;
+            
             var baseUrl = $"{request.Url?.Scheme}://{request.Url.Authority}";
-
+            
             var urlBuilder = new UriBuilder(baseUrl)
             {
                 Path = $"{Constants.Webhooks.MollieOrdersWebhookUrl}/{languageId}"
@@ -83,7 +90,7 @@ namespace Mollie.Checkout.ProcessCheckout
             var orderRequest = new OrderRequest
             {
                 Amount = new Amount(cart.Currency.CurrencyCode, cart.GetTotal().Amount),
-                Method = PaymentMethod.Ideal, //TODO: Need input, what payment method?
+                Method = selectedMethod,
                 BillingAddress = new OrderAddressDetails
                 {
                     OrganizationName = billingAddress.Organization,

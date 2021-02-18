@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 using EPiServer.Commerce.Order;
 using EPiServer.Framework.Localization;
 using EPiServer.ServiceLocation;
 using Foundation.Commerce.Markets;
+using Foundation.Features.Checkout.Services;
 using Mediachase.Commerce;
 using Mediachase.Commerce.BackgroundTasks;
 using Mediachase.Commerce.Orders;
+using Mediachase.Search;
 using Mollie.Checkout.Helpers;
 using Mollie.Checkout.Models;
 using Mollie.Checkout.Services;
@@ -21,6 +25,9 @@ namespace Foundation.Features.Checkout.Payments
         protected readonly LanguageService _languageService;
         protected readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IPaymentMethodsService _paymentMethodsService;
+        private readonly ICartService _cartService;
+
+        private string _subPaymentMethodId;
         
         public MollieCheckoutPaymentOption()
             : this(LocalizationService.Current,
@@ -29,7 +36,8 @@ namespace Foundation.Features.Checkout.Payments
                 ServiceLocator.Current.GetInstance<LanguageService>(),
                 ServiceLocator.Current.GetInstance<IPaymentService>(),
                 ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>(),
-                ServiceLocator.Current.GetInstance<IPaymentMethodsService>())
+                ServiceLocator.Current.GetInstance<IPaymentMethodsService>(),
+                ServiceLocator.Current.GetInstance<ICartService>())
         { }
 
         public MollieCheckoutPaymentOption(
@@ -39,22 +47,27 @@ namespace Foundation.Features.Checkout.Payments
             LanguageService languageService,
             IPaymentService paymentService,
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
-            IPaymentMethodsService paymentMethodsService)
+            IPaymentMethodsService paymentMethodsService,
+            ICartService cartService)
             : base(localizationService, orderGroupFactory, currentMarket, languageService, paymentService)
         {
             _languageService = languageService;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _paymentMethodsService = paymentMethodsService;
+            _cartService = cartService;
 
             InitValues();
         }
+
+        public IEnumerable<PaymentMethod> SubPaymentMethods { get; private set; }
+        public CheckoutConfiguration Configuration { get; private set; }
 
 
         public void InitValues()
         {
             Configuration = _checkoutConfigurationLoader.GetConfiguration(_languageService.GetCurrentLanguage().Name);
             
-            PaymentMethods = AsyncHelper.RunSync(() =>
+            SubPaymentMethods = AsyncHelper.RunSync(() =>
                 _paymentMethodsService.LoadMethods(_languageService.GetCurrentLanguage().Name));
         }
 
@@ -74,20 +87,42 @@ namespace Foundation.Features.Checkout.Payments
             payment.TransactionType = TransactionType.Sale.ToString();
 
             payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.LanguageId, languageId);
+            
+            if (!string.IsNullOrWhiteSpace(SubPaymentMethod))
+            {
+                payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod, SubPaymentMethod);
+            }
 
             return payment;
         }
 
-        public IEnumerable<PaymentMethod> PaymentMethods { get; set; }
-        public CheckoutConfiguration Configuration { get; set; }
+        public string SubPaymentMethod 
+        {
+            get 
+            {
+                if (string.IsNullOrWhiteSpace(_subPaymentMethodId))
+                {
+                    var cartPayment = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart?.GetFirstForm()?.Payments
+                        .FirstOrDefault(p => p.PaymentMethodId == this.PaymentMethodId);
+                    _subPaymentMethodId = cartPayment?.Properties[Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod] as string;
+                }
+                return _subPaymentMethodId;
+            }
+            set => _subPaymentMethodId = value;
+        }
 
-        //public CheckoutConfiguration Configuration
-        //{
-        //    get
-        //    {
-        //        var languageId = _languageService.GetCurrentLanguage().Name;
-        //        return _checkoutConfigurationLoader.GetConfiguration(languageId);
-        //    }
-        //}
+        public string MollieDescription
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(SubPaymentMethod))
+                {
+                    return base.Description + " " + SubPaymentMethods.FirstOrDefault(x => x.Id.Equals(SubPaymentMethod,
+                        StringComparison.InvariantCultureIgnoreCase))?.Description;
+                }
+
+                return base.Description;
+            }
+        }
     }
 }

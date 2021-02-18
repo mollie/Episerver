@@ -56,9 +56,16 @@ namespace Mollie.Checkout.Services
                     break;
             }
 
+            locale = "nl-NL";
+
             // Get Payment Methods
             IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey);
-            var result = await client.GetPaymentMethodListAsync(locale: locale);
+
+            var resource = config.UseOrdersApi
+                ? Api.Models.Payment.Resource.Orders
+                : Api.Models.Payment.Resource.Payments;
+
+            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource);
             
             return result.Items.Select(MapToModel).ToList();
         }

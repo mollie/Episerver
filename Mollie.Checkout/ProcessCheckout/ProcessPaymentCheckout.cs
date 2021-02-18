@@ -59,6 +59,11 @@ namespace Mollie.Checkout.ProcessCheckout
                 WebhookUrl = urlBuilder.ToString()
             };
 
+            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
+            {
+                paymentRequest.Method = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
+            }
+
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
 
             paymentRequest.SetMetadata(metaData);

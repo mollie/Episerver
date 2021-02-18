@@ -8,12 +8,26 @@
     <div class="col-md-12 checkout-mollie">
         
         <div class="molliePaymentMethods" style="padding: 20px;">
-            @foreach (var method in Model.PaymentMethods)
+
+            @{var selectThisOne = true;}
+            
+            @foreach (var method in Model.SubPaymentMethods)
             {
-                <span>
-                    <img src="@method.ImageSize1X" />
-                    @method.Description
-                </span><br/>
+                if (!string.IsNullOrWhiteSpace(Model.SubPaymentMethod))
+                {
+                    selectThisOne = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
+                }
+
+                <div>
+                    <label class="checkbox">
+                        <input type="radio" name="subPaymentMethod" value="@method.Id" @(selectThisOne ? "checked" : string.Empty) />
+                        <img src="@method.ImageSize1X" alt="@method.Description" />
+                        @method.Description
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+
+                selectThisOne = false;
             }
         </div>
 
