@@ -13,7 +13,6 @@ using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models;
 using Mollie.Checkout.MollieClients.Interfaces;
 using Mollie.Checkout.Services.Interfaces;
-using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
