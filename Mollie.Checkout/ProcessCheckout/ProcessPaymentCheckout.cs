@@ -11,6 +11,7 @@ using System.Net.Http;
 using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models;
+using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.ProcessCheckout
 {

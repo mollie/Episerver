@@ -1,39 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Castle.Components.DictionaryAdapter.Xml;
-using EPiServer.Commerce.Order;
-using EPiServer.Logging;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mollie.Api.Client;
 using Mollie.Api.Client.Abstract;
-using Mollie.Api.Models;
-using Mollie.Api.Models.List;
 using Mollie.Api.Models.PaymentMethod;
 
 namespace Mollie.Checkout.Services
 {
-    public interface IPaymentMethodsService
-    {
-        Task<bool> LoadPaymentMethods(IEnumerable<Models.PaymentMethod> paymentMethods, string languageId);
-
-        Task<List<Models.PaymentMethod>> LoadMethods(string languageId);
-    }
-
-
     [ServiceConfiguration(typeof(IPaymentMethodsService))]
     public class PaymentMethodService : IPaymentMethodsService
     {
-        private readonly ILogger _logger = LogManager.GetLogger(typeof(PaymentMethodService));
-
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
-       
-
+        
         public PaymentMethodService(ICheckoutConfigurationLoader checkoutConfigurationLoader)
         {
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
@@ -70,20 +50,6 @@ namespace Mollie.Checkout.Services
             return result.Items.Select(MapToModel).ToList();
         }
 
-        public async Task<bool> LoadPaymentMethods(IEnumerable<Models.PaymentMethod> paymentMethods, string languageId)
-        {
-            try
-            {
-                paymentMethods = await this.LoadMethods(languageId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return false;
-            }
-        }
-
         private Models.PaymentMethod MapToModel(PaymentMethodResponse response)
         {
             var methodModel = new Models.PaymentMethod
@@ -92,7 +58,7 @@ namespace Mollie.Checkout.Services
                 Description = response.Description,
                 ImageSize1X = response.Image?.Size1x,
                 ImageSize2X = response.Image?.Size2x,
-                ImageSvg = response.Image?.Svg,
+                ImageSvg = response.Image?.Svg
             };
             
             if (response.MinimumAmount != null)

@@ -14,13 +14,13 @@ using Mediachase.Commerce.Markets;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Commerce.Security;
 using Mollie.Api.Models.Order;
-using Mollie.Api.Models.Payment;
 using Mollie.Checkout.ProcessCheckout.Helpers;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Newtonsoft.Json;
 using System.Net.Http;
 using Mollie.Api.Client;
 using Mollie.Api.Models;
+using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
