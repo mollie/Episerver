@@ -20,7 +20,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using Mollie.Api.Client;
 using Mollie.Api.Models;
-using Mollie.Checkout.Helpers;
+using Mollie.Checkout.Services.Interfaces;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -37,6 +37,8 @@ namespace Mollie.Checkout.ProcessCheckout
         private readonly IProductImageUrlFinder _productImageUrlFinder;
         private readonly IProductUrlGetter _productUrlGetter;
         private readonly HttpClient _httpClient;
+        private readonly IOrderNoteHelper _orderNoteHelper;
+
 
         public ProcessOrderCheckout()
         {
@@ -50,6 +52,7 @@ namespace Mollie.Checkout.ProcessCheckout
             _httpContextAccessor = ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>();
             _customerContext = CustomerContext.Current;
             _httpClient = ServiceLocator.Current.GetInstance<HttpClient>();
+            _orderNoteHelper = ServiceLocator.Current.GetInstance<IOrderNoteHelper>();
         }
 
         public PaymentProcessingResult Process(ICart cart, IPayment payment)
@@ -148,7 +151,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var message = $"--Mollie Create Order is successful. Redirect end user to {getOrderResponse.Links.Checkout.Href}";
 
-            OrderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
+            _orderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
             _orderRepository.Save(cart);
 

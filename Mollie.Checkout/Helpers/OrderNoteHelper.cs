@@ -3,12 +3,15 @@ using EPiServer.Security;
 using Mediachase.Commerce.Orders;
 using Mediachase.Commerce.Security;
 using System;
+using EPiServer.ServiceLocation;
+using Mollie.Checkout.Services.Interfaces;
 
 namespace Mollie.Checkout.Helpers
 {
-    public static class OrderNoteHelper
+    [ServiceConfiguration(typeof(IOrderNoteHelper))]
+    public class OrderNoteHelper : IOrderNoteHelper
     {
-        public static void AddNoteToOrder(IOrderGroup orderGroup, string title, string detail, Guid customerId)
+        public void AddNoteToOrder(IOrderGroup orderGroup, string title, string detail, Guid customerId)
         {
             var note = orderGroup.CreateOrderNote();
 
@@ -24,6 +27,5 @@ namespace Mollie.Checkout.Helpers
 
             orderGroup.Notes.Add(note);
         }
-
     }
 }
