@@ -54,7 +54,7 @@ namespace Mollie.Checkout.Services
             }
         }
 
-        public void UpdateCart(
+        public void HandleOrderStatusUpdate(
             ICart cart, 
             string mollieStatus, 
             string mollieOrderId)
@@ -94,6 +94,7 @@ namespace Mollie.Checkout.Services
                     break;
             }
 
+            cart.Properties[Constants.Cart.MollieOrderStatusField] = mollieStatus;
             cart.Properties[MollieOrder.MollieOrderId] = mollieOrderId;
 
             _orderRepository.Save(cart);

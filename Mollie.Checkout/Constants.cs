@@ -35,6 +35,7 @@
         public static class Cart
         {
             public const string MollieOrderId = "MollieOrderIdCart";
+            public const string MollieOrderStatusField = "MollieOrderStatus";
         }
 
         public static class MollieOrder
