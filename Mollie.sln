@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foundation.Social", "Founda
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mollie.Common", "Mollie.Common\Mollie.Common.csproj", "{D8160394-7266-42A5-93FE-0884C8E9C72C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mollie.Checkout.Tests", "Mollie.Checkout.Tests\Mollie.Checkout.Tests.csproj", "{F3110EF8-6F13-486D-9521-5EB2C20F8A61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{D8160394-7266-42A5-93FE-0884C8E9C72C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8160394-7266-42A5-93FE-0884C8E9C72C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8160394-7266-42A5-93FE-0884C8E9C72C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3110EF8-6F13-486D-9521-5EB2C20F8A61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3110EF8-6F13-486D-9521-5EB2C20F8A61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3110EF8-6F13-486D-9521-5EB2C20F8A61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3110EF8-6F13-486D-9521-5EB2C20F8A61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +94,7 @@ Global
 		{8E2CEFF8-7F85-4400-A87A-A4ECBBF74972} = {206EC107-EC0C-4DAB-BC93-9ADAF3FB7E30}
 		{807526DF-9F68-4257-89FB-99E97916EA8C} = {206EC107-EC0C-4DAB-BC93-9ADAF3FB7E30}
 		{D8160394-7266-42A5-93FE-0884C8E9C72C} = {735DCB13-E8B7-4D65-8217-9644A41D8A5B}
+		{F3110EF8-6F13-486D-9521-5EB2C20F8A61} = {735DCB13-E8B7-4D65-8217-9644A41D8A5B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6B0CDC98-CEBA-487F-9F41-C7ADB1EB337F}

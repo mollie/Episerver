@@ -1,17 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.props" Condition="Exists('..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7D2EED50-B8D0-45DF-8BE7-9A1E60C26B7B}</ProjectGuid>
+    <ProjectGuid>{F3110EF8-6F13-486D-9521-5EB2C20F8A61}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Mollie.Checkout</RootNamespace>
-    <AssemblyName>Mollie.Checkout</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <RootNamespace>Mollie.Checkout.Tests</RootNamespace>
+    <AssemblyName>Mollie.Checkout.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <Deterministic>false</Deterministic>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,7 +46,7 @@
       <HintPath>..\packages\AuthorizeNet.1.9.4\lib\AuthorizeNet.dll</HintPath>
     </Reference>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
-      <HintPath>..\packages\Castle.Core.4.2.1\lib\net45\Castle.Core.dll</HintPath>
+      <HintPath>..\packages\Castle.Core.4.3.1\lib\net45\Castle.Core.dll</HintPath>
     </Reference>
     <Reference Include="Castle.Windsor, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Windsor.4.1.0\lib\net45\Castle.Windsor.dll</HintPath>
@@ -94,6 +102,9 @@
     <Reference Include="EPiServer.Web.WebControls, Version=11.13.1.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
       <HintPath>..\packages\EPiServer.CMS.AspNet.11.13.1\lib\net461\EPiServer.Web.WebControls.dll</HintPath>
     </Reference>
+    <Reference Include="FakeItEasy, Version=6.0.0.0, Culture=neutral, PublicKeyToken=eff28e2146d5fd2c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FakeItEasy.6.2.1\lib\net45\FakeItEasy.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
@@ -145,6 +156,12 @@
     <Reference Include="Mediachase.WebConsoleLib, Version=13.14.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\EPiServer.Commerce.Core.13.14.0\lib\net461\Mediachase.WebConsoleLib.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\MSTest.TestFramework.2.1.1\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\MSTest.TestFramework.2.1.1\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
@@ -161,15 +178,14 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Data.SqlClient, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Data.SqlClient.4.4.0\lib\net461\System.Data.SqlClient.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Security" />
     <Reference Include="System.Security.AccessControl, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -198,12 +214,6 @@
     <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
     </Reference>
@@ -219,66 +229,31 @@
     <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CheckoutInitializationModule.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Helpers\AsyncHelper.cs" />
-    <Compile Include="IocConfigurableModule.cs" />
-    <Compile Include="MollieClients\Interfaces\IMolliePaymentClient.cs" />
-    <Compile Include="MollieClients\MolliePaymentClient.cs" />
-    <Compile Include="Models\PaymentMethod.cs" />
-    <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />
-    <Compile Include="ProcessRefund\ProcessPaymentRefund.cs" />
-    <Compile Include="ProcessShipment\ShipmentProcessorInterceptor.cs" />
-    <Compile Include="ProcessCheckout\Helpers\CountryCodeMapper.cs" />
-    <Compile Include="ProcessCheckout\Helpers\Interfaces\IProcessCheckoutFactory.cs" />
-    <Compile Include="ProcessCheckout\Interfaces\IProcessCheckout.cs" />
-    <Compile Include="Models\CheckoutConfiguration.cs" />
-    <Compile Include="Models\CheckoutMetaDataModel.cs" />
-    <Compile Include="MollieCheckoutGateway.cs" />
-    <Compile Include="OrderGroupExtensions.cs" />
-    <Compile Include="PaymentMethodDtoExtensions.cs" />
-    <Compile Include="ProcessCheckout\Helpers\Interfaces\IProductUrlGetter.cs" />
-    <Compile Include="ProcessCheckout\Helpers\Interfaces\IProductImageUrlFinder.cs" />
-    <Compile Include="ProcessCheckout\Helpers\ProcessCheckoutFactory.cs" />
-    <Compile Include="ProcessCheckout\ProcessOrderCheckout.cs" />
-    <Compile Include="ProcessCheckout\ProcessPaymentCheckout.cs" />
-    <Compile Include="ProcessCheckout\Helpers\ProductImageUrlFinder.cs" />
-    <Compile Include="ProcessCheckout\Helpers\ProductUrlGetter.cs" />
-    <Compile Include="ProcessShipment\Interfaces\IMollieShipmentCreator.cs" />
-    <Compile Include="ProcessShipment\MollieShipmentCreator.cs" />
+    <Compile Include="ProcessCheckout\ProcessPaymentCheckoutTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\AssemblyVersionUtils.cs" />
-    <Compile Include="Services\DefaultCheckoutConfigurationLoader.cs" />
-    <Compile Include="Services\DefaultCheckoutMetaDataFactory.cs" />
-    <Compile Include="Services\DefaultPaymentDescriptionGenerator.cs" />
-    <Compile Include="Services\ICheckoutConfigurationLoader.cs" />
-    <Compile Include="Services\ICheckoutMetaDataFactory.cs" />
-    <Compile Include="Services\IMollieCheckoutService.cs" />
-    <Compile Include="Services\Interfaces\IOrderNoteHelper.cs" />
-    <Compile Include="Services\IOrderGroupPaymentService.cs" />
-    <Compile Include="Services\IPaymentDescriptionGenerator.cs" />
-    <Compile Include="Services\IPaymentMethodsService.cs" />
-    <Compile Include="Services\LanguageUtils.cs" />
-    <Compile Include="Services\OrderGroupPaymentService.cs" />
-    <Compile Include="Helpers\OrderNoteHelper.cs" />
-    <Compile Include="MollieShipmentProcessor.cs" />
-    <Compile Include="Services\PaymentMethodsService.cs" />
-    <Compile Include="Webhooks\MollieOrdersWebhookApiController.cs" />
-    <Compile Include="Webhooks\MolliePaymentsWebhookApiController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Mollie.Checkout.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mollie.Checkout\Mollie.Checkout.csproj">
+      <Project>{7d2eed50-b8d0-45df-8be7-9a1e60c26b7b}</Project>
+      <Name>Mollie.Checkout</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup />
+  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.props'))" />
+    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.targets'))" />
+  </Target>
+  <Import Project="..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.2.1.1\build\net45\MSTest.TestAdapter.targets')" />
 </Project>

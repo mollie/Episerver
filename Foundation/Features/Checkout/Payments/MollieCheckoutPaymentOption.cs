@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using EPiServer.Commerce.Order;
+using EPiServer.Find.Commerce.Json;
 using EPiServer.Framework.Localization;
 using EPiServer.ServiceLocation;
 using Foundation.Commerce.Markets;
@@ -64,10 +65,21 @@ namespace Foundation.Features.Checkout.Payments
 
         public void InitValues()
         {
-            Configuration = _checkoutConfigurationLoader.GetConfiguration(_languageService.GetCurrentLanguage().Name);
-            
-            SubPaymentMethods = AsyncHelper.RunSync(() =>
-                _paymentMethodsService.LoadMethods(_languageService.GetCurrentLanguage().Name));
+            var languageId = _languageService.GetCurrentLanguage().Name;
+
+            Configuration = _checkoutConfigurationLoader.GetConfiguration(languageId);
+
+            var cart = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart;
+            if (cart != null)
+            {
+                SubPaymentMethods = AsyncHelper.RunSync(() =>
+                    _paymentMethodsService.LoadMethods(languageId, cart.GetTotal()));
+            }
+            else
+            {
+                SubPaymentMethods = AsyncHelper.RunSync(() =>
+                    _paymentMethodsService.LoadMethods(languageId));
+            }
         }
 
         public override bool ValidateData() => true;

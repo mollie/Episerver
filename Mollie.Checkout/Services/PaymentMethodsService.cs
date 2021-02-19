@@ -43,6 +43,27 @@ namespace Mollie.Checkout.Services
             return result.Items.Select(MapToModel).ToList();
         }
 
+        public async Task<List<Models.PaymentMethod>> LoadMethods(string languageId, Money cartTotal)
+        {
+            // Load configuration
+            var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
+
+            // Get Payment Methods
+            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey);
+
+            string locale = LanguageUtils.GetLocale(languageId);
+            
+            var resource = config.UseOrdersApi
+                ? Api.Models.Payment.Resource.Orders
+                : Api.Models.Payment.Resource.Payments;
+
+            var amount = new Api.Models.Amount(cartTotal.Currency.CurrencyCode, cartTotal.Amount);
+
+            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount);
+
+            return result.Items.Select(MapToModel).ToList();
+        }
+
         private Models.PaymentMethod MapToModel(PaymentMethodResponse response)
         {
             var methodModel = new Models.PaymentMethod
