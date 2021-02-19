@@ -78,11 +78,19 @@ namespace Mollie.Checkout
             var metaDataContext = OrderContext.MetaDataContext;
 
             var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.Cart.MollieOrderId);
-
             if (mollieOrderIdField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.Cart.MollieOrderId,
                     Constants.Cart.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
+
+                shoppingCartMetaClass.AddField(metaField);
+            }
+
+            var mollieOrderStatusField = MetaField.Load(metaDataContext, Constants.Cart.MollieOrderStatusField);
+            if (mollieOrderStatusField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.Cart.MollieOrderStatusField,
+                    Constants.Cart.MollieOrderStatusField, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
 
                 shoppingCartMetaClass.AddField(metaField);
             }
@@ -94,7 +102,6 @@ namespace Mollie.Checkout
             var metaDataContext = OrderContext.MetaDataContext;
 
             var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.MollieOrderId);
-
             if (mollieOrderIdField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.MollieOrderId,
@@ -104,11 +111,19 @@ namespace Mollie.Checkout
             }
 
             var languageIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.LanguageId);
-
             if (languageIdField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.LanguageId,
                     Constants.MollieOrder.LanguageId, string.Empty, MetaDataType.ShortString, 10, true, false, false, false);
+                purchaseOrderMetaClass.AddField(metaField);
+            }
+
+            var mollieOrderStatusField = MetaField.Load(metaDataContext, Constants.Cart.MollieOrderStatusField);
+            if (mollieOrderStatusField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.Cart.MollieOrderStatusField,
+                    Constants.Cart.MollieOrderStatusField, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
+
                 purchaseOrderMetaClass.AddField(metaField);
             }
         }
