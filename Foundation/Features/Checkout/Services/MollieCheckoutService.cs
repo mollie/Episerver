@@ -42,6 +42,7 @@ namespace Mollie.Checkout.Services
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
                     purchaseOrder.Properties[MollieOrder.MollieOrderId] = cart.Properties[MollieOrder.MollieOrderId];
+                    purchaseOrder.Properties[PaymentLinkMollie] = cart.Properties[PaymentLinkMollie];
                     purchaseOrder.Properties[MollieOrder.LanguageId] = payment.Properties[OtherPaymentFields.LanguageId];
 
                     _orderRepository.Save(purchaseOrder);

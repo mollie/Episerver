@@ -35,6 +35,12 @@
 			Shipping Total: <xsl:value-of select="BillingCurrency"/>&#160;<xsl:value-of select="format-number(ShippingTotal, '###,###.00')"/><br/>
 			Total Tax: <xsl:value-of select="BillingCurrency"/>&#160;<xsl:value-of select="format-number(TaxTotal, '###,###.00')"/><br/>
 			TOTAL: <xsl:value-of select="BillingCurrency"/>&#160;<xsl:value-of select="format-number(Total, '###,###.00')"/><br/>
+      <a>
+        <xsl:attribute name="href">
+          <xsl:value-of select="PaymentLinkMollie"/>
+        </xsl:attribute>
+        Pay My Order        
+      </a>
 		</div>
 	</xsl:template>
 

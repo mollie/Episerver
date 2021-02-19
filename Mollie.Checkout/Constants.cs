@@ -4,6 +4,8 @@
     {
         public const string MollieCheckoutSystemKeyword = "MollieCheckout";
 
+        public const string PaymentLinkMollie = "PaymentLinkMollie";
+
         public static class Fields
         {
             public const string EnvironmentField = "Environment";
