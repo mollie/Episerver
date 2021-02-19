@@ -46,22 +46,8 @@ namespace Mollie.Checkout.Services
             // Get Payment Methods
             IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey);
 
-            // ToDo: Find a better way to map these languages.
-            string locale;
-            switch (languageId)
-            {
-                case "nl":
-                    locale = "nl-NL";
-                    break;
-                default:
-                    locale = "en-US";
-                    break;
-            }
-
-            locale = "nl-NL";
-
+            string locale = LanguageUtils.GetLocale(languageId);
             
-
             var resource = config.UseOrdersApi
                 ? Api.Models.Payment.Resource.Orders
                 : Api.Models.Payment.Resource.Payments;
