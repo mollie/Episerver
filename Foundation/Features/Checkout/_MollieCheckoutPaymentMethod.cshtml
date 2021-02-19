@@ -2,32 +2,50 @@
 
 @model MollieCheckoutPaymentOption
 
+@{
+    var activeSubPaymentMethod = true;
+}
+
 @Html.HiddenFor(model => model.PaymentMethodId)
 
 <div class="row">
     <div class="col-md-12 checkout-mollie">
-        
         <div class="molliePaymentMethods" style="padding: 20px;">
-
-            @{var selectThisOne = true;}
-            
             @foreach (var method in Model.SubPaymentMethods)
             {
                 if (!string.IsNullOrWhiteSpace(Model.SubPaymentMethod))
                 {
-                    selectThisOne = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
+                    activeSubPaymentMethod = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
                 }
 
                 <div>
                     <label class="checkbox">
-                        <input type="radio" name="subPaymentMethod" value="@method.Id" @(selectThisOne ? "checked" : string.Empty) />
+                        <input type="radio" name="subPaymentMethod" value="@method.Id" @(activeSubPaymentMethod ? "checked" : string.Empty) @(method.Issuers != null ? "data-toggle=collapse href=#issuersList role=button aria-expanded=false aria-controls=issuersList" : string.Empty) />
                         <img src="@method.ImageSize1X" alt="@method.Description" />
                         @method.Description
                         <span class="checkmark"></span>
                     </label>
+                    @if (method.Issuers != null)
+                    {
+                        <ul id="issuersList" class="collapse" style="list-style: none;">
+                            @foreach (var issuer in method.Issuers)
+                            {
+                                <li>
+                                    <label class="checkbox">
+                                        @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id)
+                                        @*<input type="radio" name="issuers" value="@issuer.Id" />*@
+                                        <img src="@issuer.Image.Size1x" alt="@issuer.Name" />
+                                        @issuer.Name
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </li>
+
+                            }
+                        </ul>
+                    }
                 </div>
 
-                selectThisOne = false;
+                activeSubPaymentMethod = false;
             }
         </div>
 

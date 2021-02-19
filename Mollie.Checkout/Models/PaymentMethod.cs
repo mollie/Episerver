@@ -1,4 +1,6 @@
 ﻿using Mediachase.Commerce;
+using Mollie.Api.Models.Issuer;
+using System.Collections.Generic;
 
 namespace Mollie.Checkout.Models
 {
@@ -17,6 +19,8 @@ namespace Mollie.Checkout.Models
         public string ImageSize2X { get; set; }
 
         public string ImageSvg { get; set; }
+
+        public IEnumerable<IssuerResponse> Issuers { get; set; }
 
     }
 }

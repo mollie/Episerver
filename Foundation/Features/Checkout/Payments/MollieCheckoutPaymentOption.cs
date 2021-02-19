@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 using EPiServer.Commerce.Order;
 using EPiServer.Framework.Localization;
 using EPiServer.ServiceLocation;
 using Foundation.Commerce.Markets;
 using Foundation.Features.Checkout.Services;
 using Mediachase.Commerce;
-using Mediachase.Commerce.BackgroundTasks;
 using Mediachase.Commerce.Orders;
-using Mediachase.Search;
 using Mollie.Checkout.Helpers;
 using Mollie.Checkout.Models;
 using Mollie.Checkout.Services;
@@ -20,6 +17,8 @@ namespace Foundation.Features.Checkout.Payments
 {
     public class MollieCheckoutPaymentOption : PaymentOptionBase
     {
+        public string ActiveIssuer { get; set; }
+
         public override string SystemKeyword => "MollieCheckout";
 
         protected readonly LanguageService _languageService;
@@ -103,7 +102,8 @@ namespace Foundation.Features.Checkout.Payments
                 if (string.IsNullOrWhiteSpace(_subPaymentMethodId))
                 {
                     var cartPayment = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart?.GetFirstForm()?.Payments
-                        .FirstOrDefault(p => p.PaymentMethodId == this.PaymentMethodId);
+                        .FirstOrDefault(p => p.PaymentMethodId == PaymentMethodId);
+
                     _subPaymentMethodId = cartPayment?.Properties[Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod] as string;
                 }
                 return _subPaymentMethodId;

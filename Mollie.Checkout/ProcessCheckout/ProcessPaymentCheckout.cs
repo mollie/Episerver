@@ -13,6 +13,7 @@ using Mollie.Api.Client;
 using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models;
 using Mollie.Checkout.Helpers;
+using Mollie.Api.Models.Payment;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -53,19 +54,35 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var paymentClient = new PaymentClient(checkoutConfiguration.ApiKey, _httpClient);
 
+            var paymentMethod = string.Empty;
+
+            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
+            {
+                paymentMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
+            }
+
+            if(paymentMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
+            {
+                var iDealPaymentRequest = new IdealPaymentRequest
+                {
+                    Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
+                    Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
+                    RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
+                    WebhookUrl = urlBuilder.ToString(),
+                    Locale = LanguageUtils.GetLocale(languageId),
+                    Method = paymentMethod
+                };
+            }
+
             var paymentRequest = new PaymentRequest
             {
                 Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
                 Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
                 WebhookUrl = urlBuilder.ToString(),
-                Locale = LanguageUtils.GetLocale(languageId)
+                Locale = LanguageUtils.GetLocale(languageId),
+                Method = paymentMethod
             };
-
-            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
-            {
-                paymentRequest.Method = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
-            }
 
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
 
