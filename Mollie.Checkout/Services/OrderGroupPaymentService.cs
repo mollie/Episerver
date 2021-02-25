@@ -61,7 +61,7 @@ namespace Mollie.Checkout.Services
 
             // Add Note to the Order
             _orderNoteHelper.AddNoteToOrder(orderGroup, "Mollie Payment Update",
-                $"--Mollie Payment Update received. New Status is {paymentResponse.Status}", Guid.Empty);
+                $"Mollie Payment Update received. New Status is {paymentResponse.Status}", Guid.Empty);
 
             switch (paymentResponse.Status)
             {

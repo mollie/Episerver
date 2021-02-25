@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
@@ -13,10 +14,14 @@ namespace Mollie.Checkout.Services
     public class PaymentMethodService : IPaymentMethodsService
     {
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
+        private readonly HttpClient _httpClient;
         
-        public PaymentMethodService(ICheckoutConfigurationLoader checkoutConfigurationLoader)
+        public PaymentMethodService(
+            ICheckoutConfigurationLoader checkoutConfigurationLoader,
+            HttpClient httpClient)
         {
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _httpClient = httpClient;
         }
 
         public async Task<List<Models.PaymentMethod>> LoadMethods(string languageId)
@@ -27,13 +32,13 @@ namespace Mollie.Checkout.Services
             string locale = LanguageUtils.GetLocale(languageId);
 
             // Get Payment Methods
-            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey);
+            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey, _httpClient);
 
             var resource = config.UseOrdersApi
                 ? Api.Models.Payment.Resource.Orders
                 : Api.Models.Payment.Resource.Payments;
 
-            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource);
+            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, includeIssuers: true);
             
             return result.Items.Select(MapToModel).ToList();
         }
@@ -44,7 +49,7 @@ namespace Mollie.Checkout.Services
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             // Get Payment Methods
-            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey);
+            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey, _httpClient);
 
             string locale = LanguageUtils.GetLocale(languageId);
             
@@ -54,7 +59,7 @@ namespace Mollie.Checkout.Services
 
             var amount = new Api.Models.Amount(cartTotal.Currency.CurrencyCode, cartTotal.Amount);
 
-            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount);
+            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount, includeIssuers: true);
 
             return result.Items.Select(MapToModel).ToList();
         }
@@ -67,7 +72,10 @@ namespace Mollie.Checkout.Services
                 Description = response.Description,
                 ImageSize1X = response.Image?.Size1x,
                 ImageSize2X = response.Image?.Size2x,
-                ImageSvg = response.Image?.Svg
+                ImageSvg = response.Image?.Svg,
+                Issuers = response.Issuers != null ?
+                response.Issuers :
+                null
             };
             
             if (response.MinimumAmount != null)
