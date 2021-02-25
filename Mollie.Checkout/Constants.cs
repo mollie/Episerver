@@ -21,6 +21,8 @@ namespace Mollie.Checkout
             public const string UseOrdersApiField = "UseOrdersApi";
 
             public const string UseCreditcardComponentsField = "UseCreditcardComponents";
+
+            public const string OrderExpiresInDaysField = "OrderExpiresInDays";
         }
 
         public static class OtherPaymentFields

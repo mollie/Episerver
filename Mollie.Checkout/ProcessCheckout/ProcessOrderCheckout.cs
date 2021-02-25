@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using EPiServer.Commerce.Order;
 using Mollie.Checkout.ProcessCheckout.Interfaces;
@@ -130,7 +129,8 @@ namespace Mollie.Checkout.ProcessCheckout
                 OrderNumber = orderNumber,
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={orderNumber}",
                 WebhookUrl = urlBuilder.ToString(),
-                Lines = GetOrderLines(cart)
+                Lines = GetOrderLines(cart),
+                ExpiresAt = DetermineExpiredAt(checkoutConfiguration)
             };
 
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
@@ -298,6 +298,18 @@ namespace Mollie.Checkout.ProcessCheckout
             var tax = taxDto?.TaxValue?.FirstOrDefault();
 
             return tax?.Percentage ?? 0;
+        }
+
+        private static string DetermineExpiredAt(Models.CheckoutConfiguration checkoutConfiguration)
+        {
+            var cetZone = TimeZoneInfo.FindSystemTimeZoneById("W. Europe Standard Time");
+            var cetDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cetZone);
+
+            var expiresAt = cetDateTime.AddDays(checkoutConfiguration.OrderExpiresInDays <= 0 ? 
+                30 : 
+                checkoutConfiguration.OrderExpiresInDays);
+
+            return expiresAt.ToString("yyyy-MM-dd");
         }
     }
 }
