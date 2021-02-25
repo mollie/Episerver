@@ -62,7 +62,8 @@ namespace Mollie.Checkout.ProcessCheckout
         {
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
 
-            string selectedMethod = null;
+            string selectedMethod = string.Empty;
+
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
             {
                 selectedMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
@@ -136,7 +137,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             orderRequest.SetMetadata(metaData);
 
-            if (selectedMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(selectedMethod) && selectedMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieIssuer))
                 {
