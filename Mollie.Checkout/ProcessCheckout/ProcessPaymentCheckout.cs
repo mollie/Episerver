@@ -111,7 +111,7 @@ namespace Mollie.Checkout.ProcessCheckout
                 Method = paymentMethod
             };
 
-            if (paymentMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(paymentMethod) && paymentMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieIssuer))
                 {
