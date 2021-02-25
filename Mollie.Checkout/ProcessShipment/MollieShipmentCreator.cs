@@ -53,7 +53,7 @@ namespace Mollie.Checkout.ProcessShipment
             var shippingMethodName = shipments.FirstOrDefault()?.ShippingMethodName;
             if (string.IsNullOrWhiteSpace(shipmentTrackingNumber))
             {
-                _logger.Log(Level.Information, $"No tracking number available for EPiServer order {purchaseOrder.OrderNumber}.");
+                _logger.Log(Level.Information, $"No tracking available for EPiServer order {purchaseOrder.OrderNumber}.");
                 shipmentTrackingNumber = "No Tracking Available";
             }
 
