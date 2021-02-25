@@ -68,7 +68,7 @@ namespace Mollie.Checkout.ProcessCheckout
             
             var baseUrl = $"{request.Url?.Scheme}://{request.Url.Authority}";
             
-            var urlBuilder = new UriBuilder(baseUrl)
+            var urlBuilder = new UriBuilder("http://b98ec768921c.ngrok.io/")
             {
                 Path = $"{Constants.Webhooks.MollieOrdersWebhookUrl}/{languageId}"
             };
@@ -252,7 +252,10 @@ namespace Mollie.Checkout.ProcessCheckout
 
         private static string DetermineExpiredAt(Models.CheckoutConfiguration checkoutConfiguration)
         {
-            var expiresAt = DateTime.UtcNow.Date.AddDays(checkoutConfiguration.OrderExpiresInDays <= 0 ? 
+            var cetZone = TimeZoneInfo.FindSystemTimeZoneById("W. Europe Standard Time");
+            var cetDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cetZone);
+
+            var expiresAt = cetDateTime.AddDays(checkoutConfiguration.OrderExpiresInDays <= 0 ? 
                 30 : 
                 checkoutConfiguration.OrderExpiresInDays);
 
