@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Web.Helpers;
 using EPiServer.Commerce.Order;
 using EPiServer.Logging;
@@ -15,11 +17,14 @@ namespace Mollie.Checkout.ProcessShipment
     public class MollieShipmentCreator : IMollieShipmentCreator
     {
         private readonly ILogger _logger = LogManager.GetLogger(typeof(MollieShipmentCreator));
+        private readonly HttpClient _httpClient;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
 
         public MollieShipmentCreator(
+            HttpClient httpClient,
             ICheckoutConfigurationLoader checkoutConfigurationLoader)
         {
+            _httpClient = httpClient;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
         }
 
@@ -49,6 +54,7 @@ namespace Mollie.Checkout.ProcessShipment
             if (string.IsNullOrWhiteSpace(shipmentTrackingNumber))
             {
                 _logger.Log(Level.Information, $"No tracking number available for EPiServer order {purchaseOrder.OrderNumber}.");
+                shipmentTrackingNumber = "No Tracking Available";
             }
 
             var shipmentRequest = new ShipmentRequest
@@ -64,8 +70,18 @@ namespace Mollie.Checkout.ProcessShipment
                     mollieOrder.Lines)
             };
 
-            var shipmentClient = new Api.Client.ShipmentClient(checkoutConfiguration.ApiKey);
-            shipmentClient.CreateShipmentAsync(mollieOrderId, shipmentRequest);
+            var shipmentClient = new Api.Client.ShipmentClient(checkoutConfiguration.ApiKey, _httpClient);
+
+            try
+            {
+                shipmentClient.CreateShipmentAsync(mollieOrderId, shipmentRequest)
+                    .GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(Level.Error, $"Mollie shipment API throws an error {ex.Message}.");
+                throw;
+            }
         }
 
         private IEnumerable<ShipmentLineRequest> GetShipmentLines(
