@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using EPiServer.Commerce.Order;
-using EPiServer.Find.Commerce.Json;
 using EPiServer.Framework.Localization;
 using EPiServer.ServiceLocation;
 using Foundation.Commerce.Markets;
@@ -70,6 +69,7 @@ namespace Foundation.Features.Checkout.Payments
             Configuration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             var cart = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart;
+
             if (cart != null)
             {
                 SubPaymentMethods = AsyncHelper.RunSync(() =>
@@ -102,6 +102,11 @@ namespace Foundation.Features.Checkout.Payments
             if (!string.IsNullOrWhiteSpace(SubPaymentMethod))
             {
                 payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod, SubPaymentMethod);
+
+                if (SubPaymentMethod.Equals(Mollie.Checkout.Constants.MollieOrder.PaymentMethodIdeal, StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrWhiteSpace(ActiveIssuer))
+                {
+                    payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MollieIssuer, ActiveIssuer);
+                }
             }
 
             return payment;

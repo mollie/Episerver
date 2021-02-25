@@ -13,8 +13,8 @@ using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models;
 using Mollie.Checkout.MollieClients.Interfaces;
 using Mollie.Checkout.Services.Interfaces;
-using Mollie.Checkout.Helpers;
 using Mollie.Api.Models.Payment;
+using Mollie.Api.Models.Payment.Response;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -101,19 +101,6 @@ namespace Mollie.Checkout.ProcessCheckout
                 paymentMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
             }
 
-            if(paymentMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
-            {
-                var iDealPaymentRequest = new IdealPaymentRequest
-                {
-                    Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
-                    Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
-                    RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
-                    WebhookUrl = urlBuilder.ToString(),
-                    Locale = LanguageUtils.GetLocale(languageId),
-                    Method = paymentMethod
-                };
-            }
-
             var paymentRequest = new PaymentRequest
             {
                 Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
@@ -124,23 +111,61 @@ namespace Mollie.Checkout.ProcessCheckout
                 Method = paymentMethod
             };
 
+            if (paymentMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieIssuer))
+                {
+                    var issuer = payment.Properties[Constants.OtherPaymentFields.MollieIssuer] as string;
+
+                    paymentRequest = new IdealPaymentRequest
+                    {
+                        Amount = paymentRequest.Amount,
+                        Description = paymentRequest.Description,
+                        RedirectUrl = paymentRequest.RedirectUrl,
+                        WebhookUrl = paymentRequest.WebhookUrl,
+                        Locale = paymentRequest.Locale,
+                        Method = paymentRequest.Method,
+                        Issuer = issuer
+                    };
+                }
+            }
+
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
 
             paymentRequest.SetMetadata(metaData);
 
-            var paymentResponse = _molliePaymentClient.CreatePaymentAsync(paymentRequest, checkoutConfiguration.ApiKey, _httpClient)
-                .GetAwaiter().GetResult();
+            PaymentResponse paymentResponse;
+
+            try
+            {
+                paymentResponse = _molliePaymentClient.CreatePaymentAsync(paymentRequest, checkoutConfiguration.ApiKey, _httpClient).GetAwaiter().GetResult();
+
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Creating Payment in Mollie failed.", e);
+
+                throw new ArgumentException($"Creating Payment in Mollie failed.");
+            }
+
+            string molliePaymentIdMessage;
 
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
             {
-                payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = paymentResponse.Id;
+                payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = paymentResponse?.Id;
+
+                molliePaymentIdMessage = $"Mollie Payment ID updated: {paymentResponse?.Id}";
             }
             else
             {
-                payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, paymentResponse.Id);
+                payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, paymentResponse?.Id);
+
+                molliePaymentIdMessage = $"Mollie Payment ID created: {paymentResponse?.Id}";
             }
 
-            var message = $"--Mollie Create Payment is successful. Redirect end user to {paymentResponse.Links.Checkout.Href}";
+            _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment ID", molliePaymentIdMessage, PrincipalInfo.CurrentPrincipal.GetContactId());
+
+            var message = $"Mollie Create Payment is successful. Redirect end user to {paymentResponse?.Links.Checkout.Href}";
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
@@ -148,7 +173,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse.Links.Checkout.Href);
+            return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse?.Links.Checkout.Href);
         }
     }
 }

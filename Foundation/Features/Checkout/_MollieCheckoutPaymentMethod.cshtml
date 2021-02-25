@@ -27,19 +27,27 @@
                     </label>
                     @if (method.Issuers != null)
                     {
+                        var first = true;
+
                         <ul id="issuersList" class="collapse" style="list-style: none;">
                             @foreach (var issuer in method.Issuers)
                             {
                                 <li>
                                     <label class="checkbox">
-                                        @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id)
-                                        @*<input type="radio" name="issuers" value="@issuer.Id" />*@
+                                        @if (first)
+                                        {
+                                            @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id, new { id = issuer.Id, @checked = "checked" })
+                                        }
+                                        else
+                                        {
+                                            @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id, new { id = issuer.Id })
+                                        }
                                         <img src="@issuer.Image.Size1x" alt="@issuer.Name" />
                                         @issuer.Name
                                         <span class="checkmark"></span>
                                     </label>
                                 </li>
-
+                                first = false;
                             }
                         </ul>
                     }

@@ -49,7 +49,7 @@ namespace Mollie.Checkout.Services
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             // Get Payment Methods
-            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey);
+            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey, _httpClient);
 
             string locale = LanguageUtils.GetLocale(languageId);
             
@@ -59,7 +59,7 @@ namespace Mollie.Checkout.Services
 
             var amount = new Api.Models.Amount(cartTotal.Currency.CurrencyCode, cartTotal.Amount);
 
-            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount);
+            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount, includeIssuers: true);
 
             return result.Items.Select(MapToModel).ToList();
         }
