@@ -252,7 +252,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
         private static string DetermineExpiredAt(Models.CheckoutConfiguration checkoutConfiguration)
         {
-            var expiresAt = DateTime.Now.Date.AddDays(checkoutConfiguration.OrderExpiresInDays <= 0 ? 
+            var expiresAt = DateTime.UtcNow.Date.AddDays(checkoutConfiguration.OrderExpiresInDays <= 0 ? 
                 30 : 
                 checkoutConfiguration.OrderExpiresInDays);
 
