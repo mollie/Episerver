@@ -76,13 +76,21 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
         public override string SystemKeyword => "MollieCheckout";
 
         protected readonly LanguageService _languageService;
+        protected readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
+        private readonly IPaymentMethodsService _paymentMethodsService;
+        private readonly ICartService _cartService;
 
+        private string _subPaymentMethodId;
+        
         public MollieCheckoutPaymentOption()
-            : this(LocalizationService.Current, 
-                ServiceLocator.Current.GetInstance<IOrderGroupFactory>(), 
-                ServiceLocator.Current.GetInstance<ICurrentMarket>(), 
-                ServiceLocator.Current.GetInstance<LanguageService>(), 
-                ServiceLocator.Current.GetInstance<IPaymentService>())
+            : this(LocalizationService.Current,
+                ServiceLocator.Current.GetInstance<IOrderGroupFactory>(),
+                ServiceLocator.Current.GetInstance<ICurrentMarket>(),
+                ServiceLocator.Current.GetInstance<LanguageService>(),
+                ServiceLocator.Current.GetInstance<IPaymentService>(),
+                ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>(),
+                ServiceLocator.Current.GetInstance<IPaymentMethodsService>(),
+                ServiceLocator.Current.GetInstance<ICartService>())
         { }
 
         public MollieCheckoutPaymentOption(
@@ -90,10 +98,41 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
             IOrderGroupFactory orderGroupFactory,
             ICurrentMarket currentMarket,
             LanguageService languageService,
-            IPaymentService paymentService)
-        : base(localizationService, orderGroupFactory, currentMarket, languageService, paymentService)
+            IPaymentService paymentService,
+            ICheckoutConfigurationLoader checkoutConfigurationLoader,
+            IPaymentMethodsService paymentMethodsService,
+            ICartService cartService)
+            : base(localizationService, orderGroupFactory, currentMarket, languageService, paymentService)
         {
             _languageService = languageService;
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _paymentMethodsService = paymentMethodsService;
+            _cartService = cartService;
+
+            InitValues();
+        }
+
+        public IEnumerable<PaymentMethod> SubPaymentMethods { get; private set; }
+        public CheckoutConfiguration Configuration { get; private set; }
+
+
+        public void InitValues()
+        {
+            var languageId = _languageService.GetCurrentLanguage().Name;
+
+            Configuration = _checkoutConfigurationLoader.GetConfiguration(languageId);
+
+            var cart = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart;
+            if (cart != null)
+            {
+                SubPaymentMethods = AsyncHelper.RunSync(() =>
+                    _paymentMethodsService.LoadMethods(languageId, cart.GetTotal()));
+            }
+            else
+            {
+                SubPaymentMethods = AsyncHelper.RunSync(() =>
+                    _paymentMethodsService.LoadMethods(languageId));
+            }
         }
 
         public override bool ValidateData() => true;
@@ -112,8 +151,42 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
             payment.TransactionType = TransactionType.Sale.ToString();
 
             payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.LanguageId, languageId);
+            
+            if (!string.IsNullOrWhiteSpace(SubPaymentMethod))
+            {
+                payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod, SubPaymentMethod);
+            }
 
             return payment;
+        }
+
+        public string SubPaymentMethod 
+        {
+            get 
+            {
+                if (string.IsNullOrWhiteSpace(_subPaymentMethodId))
+                {
+                    var cartPayment = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart?.GetFirstForm()?.Payments
+                        .FirstOrDefault(p => p.PaymentMethodId == this.PaymentMethodId);
+                    _subPaymentMethodId = cartPayment?.Properties[Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod] as string;
+                }
+                return _subPaymentMethodId;
+            }
+            set => _subPaymentMethodId = value;
+        }
+
+        public string MollieDescription
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(SubPaymentMethod))
+                {
+                    return base.Description + " " + SubPaymentMethods.FirstOrDefault(x => x.Id.Equals(SubPaymentMethod,
+                        StringComparison.InvariantCultureIgnoreCase))?.Description;
+                }
+
+                return base.Description;
+            }
         }
     }
 ``` 
@@ -122,16 +195,39 @@ In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMet
 
 ```html
 
-@model  Foundation.Features.Checkout.Payments.MollieCheckoutPaymentOption
+@using Foundation.Features.Checkout.Payments
+
+@model MollieCheckoutPaymentOption
 
 @Html.HiddenFor(model => model.PaymentMethodId)
 
-<br />
 <div class="row">
-    <div class="col-12">
-        <div class="alert alert-info square-box">
-            Mollie Payment method
+    <div class="col-md-12 checkout-mollie">
+        
+        <div class="molliePaymentMethods" style="padding: 20px;">
+
+            @{var selectThisOne = true;}
+            
+            @foreach (var method in Model.SubPaymentMethods)
+            {
+                if (!string.IsNullOrWhiteSpace(Model.SubPaymentMethod))
+                {
+                    selectThisOne = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
+                }
+
+                <div>
+                    <label class="checkbox">
+                        <input type="radio" name="subPaymentMethod" value="@method.Id" @(selectThisOne ? "checked" : string.Empty) />
+                        <img src="@method.ImageSize1X" alt="@method.Description" />
+                        @method.Description
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+
+                selectThisOne = false;
+            }
         </div>
+
     </div>
 </div>
 
@@ -216,12 +312,63 @@ See a sample implementation here:
 
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
+                    purchaseOrder.Properties[MollieOrder.MollieOrderId] = cart.Properties[MollieOrder.MollieOrderId];
+                    purchaseOrder.Properties[MollieOrder.LanguageId] = payment.Properties[OtherPaymentFields.LanguageId];
+
+                    _orderRepository.Save(purchaseOrder);
+
                     // Delete cart
                     _orderRepository.Delete(cart.OrderLink);
 
                     cart.AdjustInventoryOrRemoveLineItems((item, validationIssue) => { });
                 }
             }
+        }
+
+        public void HandleOrderStatusUpdate(
+            ICart cart, 
+            string mollieStatus, 
+            string mollieOrderId)
+        {
+            if(cart == null)
+            {
+                throw new ArgumentNullException(nameof(cart));
+            }
+
+            if(string.IsNullOrEmpty(mollieStatus))
+            {
+                throw new ArgumentException(nameof(mollieStatus));
+            }
+
+            if (string.IsNullOrEmpty(mollieOrderId))
+            {
+                throw new ArgumentException(nameof(mollieOrderId));
+            }
+
+            switch (mollieStatus)
+            {
+                case MollieOrderStatus.Created:
+                case MollieOrderStatus.Pending:
+                case MollieOrderStatus.Authorized:
+                case MollieOrderStatus.Paid:
+                case MollieOrderStatus.Shipping:
+                    cart.OrderStatus = OrderStatus.InProgress;
+                    break;
+                case MollieOrderStatus.Completed:
+                    cart.OrderStatus = OrderStatus.Completed;
+                    break;
+                case MollieOrderStatus.Canceled:
+                case MollieOrderStatus.Expired:
+                    cart.OrderStatus = OrderStatus.Cancelled;
+                    break;
+                default:
+                    break;
+            }
+
+            cart.Properties[Constants.Cart.MollieOrderStatusField] = mollieStatus;
+            cart.Properties[MollieOrder.MollieOrderId] = mollieOrderId;
+
+            _orderRepository.Save(cart);
         }
 
         public void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment)
