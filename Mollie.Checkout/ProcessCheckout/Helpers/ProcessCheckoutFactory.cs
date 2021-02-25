@@ -18,16 +18,14 @@ namespace Mollie.Checkout.ProcessCheckout.Helpers
 
         public IProcessCheckout GetInstance(string languageId)
         {
-            return new ProcessOrderCheckout();
+            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            //var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
+            if (checkoutConfiguration.UseOrdersApi)
+            {
+                return new ProcessOrderCheckout();
+            }
 
-            //if (checkoutConfiguration.UseOrdersApi)
-            //{
-            //    return new ProcessOrderCheckout();
-            //}
-
-            //return new ProcessPaymentCheckout();
+            return new ProcessPaymentCheckout();
         }
     }
 }

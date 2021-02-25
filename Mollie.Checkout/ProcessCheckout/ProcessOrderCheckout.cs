@@ -68,7 +68,7 @@ namespace Mollie.Checkout.ProcessCheckout
             
             var baseUrl = $"{request.Url?.Scheme}://{request.Url.Authority}";
             
-            var urlBuilder = new UriBuilder("http://b98ec768921c.ngrok.io/")
+            var urlBuilder = new UriBuilder(baseUrl)
             {
                 Path = $"{Constants.Webhooks.MollieOrdersWebhookUrl}/{languageId}"
             };
