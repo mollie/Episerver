@@ -46,7 +46,8 @@ namespace Mollie.Checkout.Services
                 RedirectUrl = paymentMethodDto.GetParameter(Constants.Fields.RedirectURLField)?.Value ?? string.Empty,
                 VersionStrings = AssemblyVersionUtils.CreateVersionString(),
                 UseOrdersApi = useOrdersApi,
-                UseCreditcardComponents = useCreditcardComponents
+                UseCreditcardComponents = useCreditcardComponents,
+                OrderExpiresInDays = int.TryParse(paymentMethodDto.GetParameter(Constants.Fields.OrderExpiresInDaysField)?.Value, out var orderExpiresInDays) ? orderExpiresInDays : 30
             };
         }
     }

@@ -114,6 +114,42 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         protected global::System.Web.UI.WebControls.RequiredFieldValidator requiredRedirectURLValidator;
 
         /// <summary>
+        /// orderExpiresInDaysLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal orderExpiresInDaysLabel;
+
+        /// <summary>
+        /// orderExpiresInDaysTextBox control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox orderExpiresInDaysTextBox;
+
+        /// <summary>
+        /// orderExpiresInDaysRequiredValidator control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator orderExpiresInDaysRequiredValidator;
+
+        /// <summary>
+        /// orderExpiresInDaysRangeValidator control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RangeValidator orderExpiresInDaysRangeValidator;
+
+        /// <summary>
         /// useOrdersApiLabel control.
         /// </summary>
         /// <remarks>
