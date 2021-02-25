@@ -149,6 +149,8 @@ namespace Mollie.Checkout.ProcessCheckout
                 }
             }
 
+            cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse.Links.Checkout.Href;
+
             var message = $"--Mollie Create Order is successful. Redirect end user to {getOrderResponse.Links.Checkout.Href}";
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
