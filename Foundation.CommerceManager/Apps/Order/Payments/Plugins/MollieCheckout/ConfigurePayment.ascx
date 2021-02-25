@@ -53,7 +53,7 @@
             <strong><asp:Literal ID="redirectURLLabel" Text="Redirect URL" runat="server"></asp:Literal></strong>
         </td>
         <td class="FormFieldCell">
-            <asp:TextBox ID="redirectURLTextBox" CssClass="text" Text="30" runat="server"></asp:TextBox>
+            <asp:TextBox ID="redirectURLTextBox" CssClass="text" Text="Enter Redirect URL" runat="server"></asp:TextBox>
             <asp:RequiredFieldValidator ID="requiredRedirectURLValidator" runat="server" ControlToValidate="redirectURLTextBox" ErrorMessage="Redirect URL is required" />
         </td>
     </tr>
