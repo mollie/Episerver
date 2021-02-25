@@ -169,6 +169,8 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
+            cart.Properties[Constants.PaymentLinkMollie] = paymentResponse.Links.Checkout.Href;
+
             _orderRepository.Save(cart);
 
             _logger.Information(message);

@@ -201,6 +201,8 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var message = $"Mollie Create Order is successful. Redirect end user to {getOrderResponse?.Links.Checkout.Href}";
 
+            cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout.Href;
+
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
             _orderRepository.Save(cart);
