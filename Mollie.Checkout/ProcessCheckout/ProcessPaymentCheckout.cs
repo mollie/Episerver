@@ -101,9 +101,6 @@ namespace Mollie.Checkout.ProcessCheckout
                 paymentMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
             }
 
-                
-
-
             var paymentRequest = new PaymentRequest
             {
                 Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
@@ -185,17 +182,20 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment ID", molliePaymentIdMessage, PrincipalInfo.CurrentPrincipal.GetContactId());
 
-            var message = $"Mollie Create Payment is successful. Redirect end user to {paymentResponse?.Links.Checkout.Href}";
+
+            var message = paymentResponse?.Links.Checkout != null && !string.IsNullOrWhiteSpace(paymentResponse?.Links.Checkout.Href)
+                ? $"Mollie Create Payment is successful. Redirect end user to {paymentResponse?.Links.Checkout.Href}"
+                : $"Mollie Create Payment is successful. No redirect needed";
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
-            cart.Properties[Constants.PaymentLinkMollie] = paymentResponse.Links.Checkout.Href;
+            cart.Properties[Constants.PaymentLinkMollie] = paymentResponse.Links.Checkout?.Href;
 
             _orderRepository.Save(cart);
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse?.Links.Checkout.Href);
+            return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse?.Links.Checkout?.Href);
         }
     }
 }

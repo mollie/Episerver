@@ -72,7 +72,9 @@ namespace Mollie.Checkout.ProcessCheckout
             var request = _httpContextAccessor().Request;
             
             var baseUrl = $"{request.Url?.Scheme}://{request.Url.Authority}";
-            
+
+            baseUrl = "http://84.107.134.180/";
+
             var urlBuilder = new UriBuilder(baseUrl)
             {
                 Path = $"{Constants.Webhooks.MollieOrdersWebhookUrl}/{languageId}"
@@ -212,9 +214,12 @@ namespace Mollie.Checkout.ProcessCheckout
                 _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment ID", molliePaymentIdMessage.ToString(), PrincipalInfo.CurrentPrincipal.GetContactId());
             }
 
-            var message = $"Mollie Create Order is successful. Redirect end user to {getOrderResponse?.Links.Checkout.Href}";
+            var message = getOrderResponse?.Links.Checkout != null && !string.IsNullOrWhiteSpace(getOrderResponse?.Links.Checkout.Href)
+                ? $"Mollie Create Order is successful. Redirect end user to {getOrderResponse?.Links.Checkout.Href}"
+                : $"Mollie Create Order is successful. No redirect needed";
 
-            cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout.Href;
+            
+            cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout?.Href;
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
@@ -222,7 +227,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse?.Links.Checkout.Href);
+            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse?.Links.Checkout?.Href);
         }
 
         private IEnumerable<OrderLineRequest> GetOrderLines(

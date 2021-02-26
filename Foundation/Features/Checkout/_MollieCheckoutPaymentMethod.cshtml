@@ -157,9 +157,7 @@
 
 @helper RenderCreditCardComponents()
 {
-    <hr />
-    @Html.TextBoxFor(model => model.CreditCardComponentToken)
-    <hr />
+    @Html.HiddenFor(model => model.CreditCardComponentToken)
 
     <div class="wrapper">
         <div class="form-fields">
@@ -273,39 +271,6 @@
                 await tryGetToken();
             }
         });
-
-
-
-        //var form = document.querySelector('#jsCheckoutForm');
-        //form.addEventListener('submit', async e => {
-        //    e.preventDefault();
-
-        //    const { token, error } = await mollie.createToken();
-
-        //    if (token) {
-        //        alert(token);
-        //    }
-
-        //    if (error) {
-        //        // Something wrong happened while creating the token. Handle this situation gracefully.
-        //        return;
-        //    }
-
-        //    // Add token to the form
-        //    const tokenInput = document.createElement('input');
-        //    tokenInput.setAttribute('type', 'text');
-        //    tokenInput.setAttribute('name', 'cardToken');
-        //    tokenInput.setAttribute('value', token);
-
-        //    form.appendChild(tokenInput);
-
-        //    // Submit form to the server
-
-        //    if (form.valid()) {         //Todo: Fix!
-        //        from.submit();
-        //    }
-
-        //});
     }
 
     async function tryGetToken() {
@@ -327,22 +292,12 @@
         }
 
         if (token) {
-            alert(token);
-
-            debugger;
+            //alert(token);
 
             var tokenField = document.querySelector('#CreditCardComponentToken');
             tokenField.value = token;
-
         }
-
-
-
-
-
     }
-
-
 
     initCCComponent();
 
