@@ -123,6 +123,8 @@ namespace Foundation.Features.Checkout.Payments
             set => _subPaymentMethodId = value;
         }
 
+        public string CreditCardComponentToken { get; set; }
+
         public string MollieDescription
         {
             get

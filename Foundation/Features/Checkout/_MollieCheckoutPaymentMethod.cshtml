@@ -4,13 +4,85 @@
 
 @Html.HiddenFor(model => model.PaymentMethodId)
 
+<style>
+    .wrapper {
+        padding: 10px;
+        max-width: 600px;
+    }
+
+    .form {
+        margin: 0 auto;
+    }
+
+    .form-fields {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-gap: 5px;
+    }
+
+    .label {
+        display: inline-block;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .form-error,
+    .field-error {
+        margin-top: 8px;
+        margin-bottom: 0;
+        color: #f00;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .mollie-component {
+        width: 100%;
+        padding: 10px 15px;
+        color: #222;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        background-color: #fff;
+        box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1), 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+        transition: all 0.05s ease;
+    }
+
+        .mollie-component.has-focus {
+            border-color: #07f;
+            box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1), 0px 2px 6px 0px rgba(0, 0, 0, 0.1), 0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+        }
+
+        .mollie-component.is-invalid {
+            border-color: #f00;
+            background-color: #fff0f0;
+        }
+
+    .submit-button {
+        display: none;
+        width: 100%;
+        margin-top: 30px;
+        height: 55px;
+        border: 0;
+        background: #07f;
+        color: #fff;
+        font-weight: 500;
+        font-size: 20px;
+        border-radius: 8px;
+    }
+
+        .submit-button:not(:disabled):hover,
+        .submit-button:not(:disabled):focus {
+            outline: 0;
+            background: #0558b8;
+        }
+</style>
+
 <div class="row">
     <div class="col-md-12 checkout-mollie">
-        
-        <div class="molliePaymentMethods" style="padding: 20px;">
+
+        <div class="molliePaymentMethods">
 
             @{var selectThisOne = true;}
-            
+
             @foreach (var method in Model.SubPaymentMethods)
             {
                 if (!string.IsNullOrWhiteSpace(Model.SubPaymentMethod))
@@ -27,6 +99,13 @@
                     </label>
                 </div>
 
+                <div class="@method.Id-container">
+                    @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        @RenderCreditCardComponents()
+                    }
+                </div>
+
                 selectThisOne = false;
             }
         </div>
@@ -34,3 +113,201 @@
     </div>
 </div>
 
+@helper RenderCreditCardComponents()
+{
+    <hr />
+    @Html.TextBoxFor(model => model.CreditCardComponentToken )
+    <hr />
+
+    <div class="wrapper">
+        <div class="form-fields">
+            <div class="form-group form-group--card-holder">
+                <label class="label" for="card-holder">Card holder</label>
+                <div id="card-holder"></div>
+                <div id="card-holder-error" class="field-error" role="alert"></div>
+                <input type="checkbox" id="card-holder-valid" />
+            </div>
+            <div class="form-group form-group--card-number">
+                <label class="label" for="card-number">Card number</label>
+                <div id="card-number"></div>
+                <div id="card-number-error" class="field-error" role="alert"></div>
+                <input type="checkbox" id="card-number-valid" />
+            </div>
+            <div class="form-group form-group--expiry-date">
+                <label class="label" for="expiry-date">Expiry date</label>
+                <div id="expiry-date"></div>
+                <div id="expiry-date-error" class="field-error" role="alert"></div>
+                <input type="checkbox" id="expiry-date-valid" />
+            </div>
+            <div class="form-group form-group--verification-code">
+                <label class="label" for="verification-code">Verification code</label>
+                <div id="verification-code"></div>
+                <div id="verification-code-error" class="field-error" role="alert"></div>
+                <input type="checkbox" id="verification-code-valid" />
+            </div>
+        </div>
+
+        <button id="submit-button" class="submit-button" type="submit">
+            Pay
+        </button>
+
+        <div id="form-error" class="form-error" role="alert"></div>
+    </div>
+}
+
+<script src="https://js.mollie.com/v1/mollie.js"></script>
+
+
+<script language="javascript">
+
+    var mollie = Mollie('@Model.Configuration.ProfileId', { locale: 'nl_NL', testmode: true });
+
+    function initCCComponent() {
+
+        var cardNumber = mollie.createComponent('cardNumber');
+        cardNumber.mount('#card-number');
+
+        var cardHolder = mollie.createComponent('cardHolder');
+        cardHolder.mount('#card-holder');
+
+        var expiryDate = mollie.createComponent('expiryDate');
+        expiryDate.mount('#expiry-date');
+
+        var verificationCode = mollie.createComponent('verificationCode');
+        verificationCode.mount('#verification-code');
+
+        var tokenField = document.querySelector('#CreditCardComponentToken'); 
+
+        var cardNumberValid = document.querySelector('#card-number-valid');
+        var cardNumberError = document.querySelector('#card-number-error');
+        cardNumber.addEventListener('change', async event => {
+            if (event.error && event.touched) {
+                cardNumberError.textContent = event.error;
+                cardNumberValid.checked = false;
+                tokenField.value = '';
+                return;
+            } else if (event.touched && !event.error) {
+                cardNumberError.textContent = '';
+                cardNumberValid.checked = true;
+                await tryGetToken();
+            } 
+        });
+
+        var cardHolderValid = document.querySelector('#card-holder-valid');
+        var cardHolderError = document.querySelector('#card-holder-error');
+        cardHolder.addEventListener('change', async event => {
+            if (event.error && event.touched) {
+                cardHolderError.textContent = event.error;
+                cardHolderValid.checked = false;
+                tokenField.value = '';
+                return;
+            } else if (event.touched && !event.error) {
+                cardHolderError.textContent = '';
+                cardHolderValid.checked = true;
+                await tryGetToken();
+            } 
+        });
+
+        var expiryDateValid = document.querySelector('#expiry-date-valid');
+        var expiryDateError = document.querySelector('#expiry-date-error');
+        expiryDate.addEventListener('change', async event => {
+            if (event.error && event.touched) {
+                expiryDateError.textContent = event.error;
+                expiryDateValid.checked = false;
+                tokenField.value = '';
+                return;
+            } else if (event.touched && !event.error) {
+                expiryDateError.textContent = '';
+                expiryDateValid.checked = true;
+                await tryGetToken();
+            } 
+        });
+
+        var verificationCodeValid = document.querySelector('#verification-code-valid');
+        var verificationCodeError = document.querySelector('#verification-code-error');
+        verificationCode.addEventListener('change', async event => {
+            if (event.error && event.touched) {
+                verificationCodeError.textContent = event.error;
+                verificationCodeValid.checked = false;
+                tokenField.value = '';
+                return;
+            } else if (event.touched && !event.error) {
+                verificationCodeError.textContent = '';
+                verificationCodeValid.checked = true;
+                await tryGetToken();
+            } 
+        });
+
+
+
+        //var form = document.querySelector('#jsCheckoutForm');
+        //form.addEventListener('submit', async e => {
+        //    e.preventDefault();
+
+        //    const { token, error } = await mollie.createToken();
+
+        //    if (token) {
+        //        alert(token);
+        //    }
+
+        //    if (error) {
+        //        // Something wrong happened while creating the token. Handle this situation gracefully.
+        //        return;
+        //    }
+
+        //    // Add token to the form
+        //    const tokenInput = document.createElement('input');
+        //    tokenInput.setAttribute('type', 'text');
+        //    tokenInput.setAttribute('name', 'cardToken');
+        //    tokenInput.setAttribute('value', token);
+
+        //    form.appendChild(tokenInput);
+
+        //    // Submit form to the server
+
+        //    if (form.valid()) {         //Todo: Fix!
+        //        from.submit();
+        //    }
+
+        //});
+    }
+
+    async function tryGetToken() {
+        var a = document.querySelector('#card-holder-valid');
+        var b = document.querySelector('#card-number-valid');
+        var c = document.querySelector('#expiry-date-valid');
+        var d = document.querySelector('#verification-code-valid');
+
+        if (a.checked === false || b.checked === false || c.checked === false || d.checked === false) {
+            return;
+        }
+
+        const { token, error } = await mollie.createToken();
+
+        if (error) {
+            alert(error.message);
+            // Something wrong happened while creating the token. Handle this situation gracefully.
+            return;
+        }
+
+        if (token) {
+            alert(token);
+
+            debugger;
+
+            var tokenField = document.querySelector('#CreditCardComponentToken');
+            tokenField.value = token;
+            
+        }
+
+
+        
+
+        
+    } 
+
+    
+
+    initCCComponent();
+
+</script>
