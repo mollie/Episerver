@@ -15,5 +15,7 @@
         public bool UseOrdersApi { get; set; }
 
         public bool UseCreditcardComponents { get; set; }
+
+        public int OrderExpiresInDays { get; set; }
     }
 }

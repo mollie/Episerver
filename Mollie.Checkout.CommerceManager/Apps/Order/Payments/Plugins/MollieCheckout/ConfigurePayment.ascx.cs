@@ -27,6 +27,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
                 useOrdersApiRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value ?? "False";
                 useCreditcardComponentsRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseCreditcardComponentsField)?.Value ?? "False";
+                orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "30";
 
                 versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
             }
@@ -53,6 +54,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                     SetParamValue(paymentMethodId, Constants.Fields.RedirectURLField, redirectURLTextBox.Text);
                     SetParamValue(paymentMethodId, Constants.Fields.UseOrdersApiField, useOrdersApiRadioButtonList.SelectedValue);
                     SetParamValue(paymentMethodId, Constants.Fields.UseCreditcardComponentsField, useCreditcardComponentsRadioButtonList.SelectedValue);
+                    SetParamValue(paymentMethodId, Constants.Fields.OrderExpiresInDaysField, orderExpiresInDaysTextBox.Text);
                 }
             }
         }

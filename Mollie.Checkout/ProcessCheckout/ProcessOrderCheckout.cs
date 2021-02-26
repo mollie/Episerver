@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using EPiServer.Commerce.Order;
 using Mollie.Checkout.ProcessCheckout.Interfaces;
@@ -21,6 +20,9 @@ using System.Net.Http;
 using Mollie.Api.Client;
 using Mollie.Api.Models;
 using Mollie.Checkout.Services.Interfaces;
+using Mollie.Api.Models.Payment;
+using Mollie.Api.Models.Order.Request.PaymentSpecificParameters;
+using System.Text;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -59,7 +61,8 @@ namespace Mollie.Checkout.ProcessCheckout
         {
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
 
-            string selectedMethod = null;
+            string selectedMethod = string.Empty;
+
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
             {
                 selectedMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
@@ -126,30 +129,79 @@ namespace Mollie.Checkout.ProcessCheckout
                 OrderNumber = orderNumber,
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={orderNumber}",
                 WebhookUrl = urlBuilder.ToString(),
-                Lines = GetOrderLines(cart)
+                Lines = GetOrderLines(cart),
+                ExpiresAt = DetermineExpiredAt(checkoutConfiguration)
             };
 
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
 
             orderRequest.SetMetadata(metaData);
 
-            var createOrderResponse = orderClient.CreateOrderAsync(orderRequest).GetAwaiter().GetResult();
+            if (!string.IsNullOrWhiteSpace(selectedMethod) && selectedMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieIssuer))
+                {
+                    var issuer = payment.Properties[Constants.OtherPaymentFields.MollieIssuer] as string;
 
-            var getOrderResponse = orderClient.GetOrderAsync(createOrderResponse.Id, true, false, false).GetAwaiter().GetResult();
+                    orderRequest.Payment = new IDealSpecificParameters
+                    {
+                        Issuer = issuer
+                    };
+                }
+            }
 
-            foreach (var molliePayment in getOrderResponse.Embedded?.Payments)
+            OrderResponse createOrderResponse;
+
+            try
+            {
+                createOrderResponse = orderClient.CreateOrderAsync(orderRequest).GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Creating Order in Mollie failed for Cart: {orderNumber}", e);
+
+                throw new Exception($"Creating Order in Mollie failed for Cart: {orderNumber}");
+            }
+
+            OrderResponse getOrderResponse;
+
+            try
+            {
+                getOrderResponse = orderClient.GetOrderAsync(createOrderResponse?.Id, true, false, false).GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Getting Order from Mollie failed for Cart: {orderNumber}", e);
+
+                throw new Exception($"Getting Order from Mollie failed for Cart: {orderNumber}");
+            }
+
+            var molliePaymentIdMessage = new StringBuilder();
+
+            foreach (var molliePayment in getOrderResponse?.Embedded?.Payments)
             {
                 if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
                 {
                     payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] = molliePayment.Id;
+
+                    molliePaymentIdMessage.AppendLine($"Mollie Payment ID updated: {molliePayment?.Id}");
                 }
                 else
                 {
                     payment.Properties.Add(Constants.OtherPaymentFields.MolliePaymentId, molliePayment.Id);
+
+                    molliePaymentIdMessage.AppendLine($"Mollie Payment ID created: {molliePayment?.Id}");
                 }
             }
 
-            var message = $"--Mollie Create Order is successful. Redirect end user to {getOrderResponse.Links.Checkout.Href}";
+            if (!string.IsNullOrWhiteSpace(molliePaymentIdMessage.ToString()))
+            {
+                _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment ID", molliePaymentIdMessage.ToString(), PrincipalInfo.CurrentPrincipal.GetContactId());
+            }
+
+            var message = $"Mollie Create Order is successful. Redirect end user to {getOrderResponse?.Links.Checkout.Href}";
+
+            cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout.Href;
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
@@ -157,7 +209,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse.Links.Checkout.Href);
+            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse?.Links.Checkout.Href);
         }
 
         private IEnumerable<OrderLineRequest> GetOrderLines(
@@ -246,6 +298,18 @@ namespace Mollie.Checkout.ProcessCheckout
             var tax = taxDto?.TaxValue?.FirstOrDefault();
 
             return tax?.Percentage ?? 0;
+        }
+
+        private static string DetermineExpiredAt(Models.CheckoutConfiguration checkoutConfiguration)
+        {
+            var cetZone = TimeZoneInfo.FindSystemTimeZoneById("W. Europe Standard Time");
+            var cetDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cetZone);
+
+            var expiresAt = cetDateTime.AddDays(checkoutConfiguration.OrderExpiresInDays <= 0 ? 
+                30 : 
+                checkoutConfiguration.OrderExpiresInDays);
+
+            return expiresAt.ToString("yyyy-MM-dd");
         }
     }
 }

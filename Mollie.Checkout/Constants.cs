@@ -1,8 +1,12 @@
-﻿namespace Mollie.Checkout
+﻿using Mollie.Api.Models.Payment;
+
+namespace Mollie.Checkout
 {
     public static class Constants
     {
         public const string MollieCheckoutSystemKeyword = "MollieCheckout";
+
+        public const string PaymentLinkMollie = "PaymentLinkMollie";
 
         public static class Fields
         {
@@ -17,6 +21,8 @@
             public const string UseOrdersApiField = "UseOrdersApi";
 
             public const string UseCreditcardComponentsField = "UseCreditcardComponents";
+
+            public const string OrderExpiresInDaysField = "OrderExpiresInDays";
         }
 
         public static class OtherPaymentFields
@@ -30,6 +36,8 @@
             public const string MolliePaymentMethod = "MolliePaymentMethodPayment";
 
             public const string MolliePaymentFullResult = "MolliePaymentFullResultPayment";
+
+            public const string MollieIssuer = "MollieIssuerPayment";
         }
 
         public static class Cart
@@ -42,6 +50,7 @@
         {
             public const string MollieOrderId = "MollieOrderIdOrder";
             public const string LanguageId = "LanguageIdOrder";
+            public const string PaymentMethodIdeal = PaymentMethod.Ideal;
         }
 
         public static class MolliePaymentStatus

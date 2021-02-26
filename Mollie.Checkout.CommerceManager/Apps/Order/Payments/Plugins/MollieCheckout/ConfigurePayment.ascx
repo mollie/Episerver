@@ -57,6 +57,18 @@
             <asp:RequiredFieldValidator ID="requiredRedirectURLValidator" runat="server" ControlToValidate="redirectURLTextBox" ErrorMessage="Redirect URL is required" />
         </td>
     </tr>
+
+    <tr>
+        <td class="FormLabelCell center">
+            <strong><asp:Literal ID="orderExpiresInDaysLabel" Text="Order Expires In Days" runat="server"></asp:Literal></strong>
+        </td>
+        <td class="FormFieldCell">
+            <asp:TextBox ID="orderExpiresInDaysTextBox" CssClass="text" Text="30" runat="server"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="orderExpiresInDaysRequiredValidator" runat="server" ControlToValidate="orderExpiresInDaysTextBox" ErrorMessage="Order Expires In Days is required" />
+            <asp:RangeValidator ID="orderExpiresInDaysRangeValidator" Type="Integer" MinimumValue="1" MaximumValue="100" runat="server" ControlToValidate="orderExpiresInDaysTextBox" ErrorMessage="Order Expires In Days must be between 1 and 100" />
+        </td>
+    </tr>
+
     <tr>
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
