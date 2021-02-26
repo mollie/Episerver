@@ -23,6 +23,7 @@ using Mollie.Checkout.Services.Interfaces;
 using Mollie.Api.Models.Payment;
 using Mollie.Api.Models.Order.Request.PaymentSpecificParameters;
 using System.Text;
+using Mollie.Checkout.Models;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -137,7 +138,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             orderRequest.SetMetadata(metaData);
 
-            if (!string.IsNullOrWhiteSpace(selectedMethod) && selectedMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(selectedMethod) && selectedMethod.Equals(Api.Models.Payment.PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieIssuer))
                 {
@@ -146,6 +147,18 @@ namespace Mollie.Checkout.ProcessCheckout
                     orderRequest.Payment = new IDealSpecificParameters
                     {
                         Issuer = issuer
+                    };
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(selectedMethod) && selectedMethod.Equals(Api.Models.Payment.PaymentMethod.CreditCard, StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieToken))
+                {
+                    var cc_token = payment.Properties[Constants.OtherPaymentFields.MollieToken] as string;
+
+                    orderRequest.Payment = new CreditCardSpecificParameters
+                    {
+                        CardToken = cc_token
                     };
                 }
             }

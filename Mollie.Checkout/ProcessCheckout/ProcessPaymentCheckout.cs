@@ -101,6 +101,9 @@ namespace Mollie.Checkout.ProcessCheckout
                 paymentMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
             }
 
+                
+
+
             var paymentRequest = new PaymentRequest
             {
                 Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
@@ -128,6 +131,23 @@ namespace Mollie.Checkout.ProcessCheckout
                         Issuer = issuer
                     };
                 }
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(paymentMethod)
+                && paymentMethod.Equals(PaymentMethod.CreditCard, StringComparison.InvariantCultureIgnoreCase)
+                && !string.IsNullOrWhiteSpace(payment.Properties[Constants.OtherPaymentFields.MollieToken] as string))
+            {
+                var token = payment.Properties[Constants.OtherPaymentFields.MollieToken] as string;
+                paymentRequest = new CreditCardPaymentRequest()
+                {
+                    Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
+                    Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
+                    RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
+                    WebhookUrl = urlBuilder.ToString(),
+                    Locale = LanguageUtils.GetLocale(languageId),
+                    CardToken = token
+                };
             }
 
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);

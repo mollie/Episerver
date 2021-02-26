@@ -231,6 +231,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Helpers\AsyncHelper.cs" />
     <Compile Include="IocConfigurableModule.cs" />
+    <Compile Include="Models\CreditCardSpecificParameters.cs" />
     <Compile Include="MollieClients\Interfaces\IMolliePaymentClient.cs" />
     <Compile Include="MollieClients\MolliePaymentClient.cs" />
     <Compile Include="Models\PaymentMethod.cs" />

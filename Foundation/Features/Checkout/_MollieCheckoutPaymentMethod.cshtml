@@ -82,10 +82,7 @@
 
 <div class="row">
     <div class="col-md-12 checkout-mollie">
-
-        <div class="molliePaymentMethods">
-
-            @{var selectThisOne = true;}
+        <div id="accordion" class="accordion molliePaymentMethods" style="padding: 20px;">
 
             @foreach (var method in Model.SubPaymentMethods)
             {
@@ -94,59 +91,74 @@
                     activeSubPaymentMethod = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
                 }
 
-                <div>
-                    <label class="checkbox">
-                        <input type="radio" name="subPaymentMethod" value="@method.Id" @(activeSubPaymentMethod ? "checked" : string.Empty) @(method.Issuers != null ? "data-toggle=collapse href=#issuersList role=button aria-expanded=false aria-controls=issuersList" : string.Empty) />
-                        <img src="@method.ImageSize1X" alt="@method.Description" />
-                        @method.Description
-                        <span class="checkmark"></span>
-                    </label>
+                <div class="card">
+                    <div class="card-header" id="head-@method.Id">
+                        <label class="checkbox">
+                            <input type="radio" name="subPaymentMethod" value="@method.Id" @(activeSubPaymentMethod ? "checked" : string.Empty)
+                                   data-toggle="collapse" data-target="#collapse-@method.Id" aria-expanded="true" aria-controls="collapse-@method.Id" />
+                            <img src="@method.ImageSize1X" alt="@method.Description" />
+                            @method.Description
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="collapse-@method.Id" class="collapse @(activeSubPaymentMethod ? "show" : string.Empty)" aria-labelledby="head-@method.Id" data-parent="#accordion">
+
                     @if (method.Issuers != null)
                     {
-                        var first = true;
-
-                        <ul id="issuersList" class="collapse" style="list-style: none;">
-                            @foreach (var issuer in method.Issuers)
-                            {
-                                <li>
-                                    <label class="checkbox">
-                                        @if (first)
-                                        {
-                                            @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id, new { id = issuer.Id, @checked = "checked" })
-                                        }
-                                        else
-                                        {
-                                            @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id, new { id = issuer.Id })
-                                        }
-                                        <img src="@issuer.Image.Size1x" alt="@issuer.Name" />
-                                        @issuer.Name
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </li>
-                                first = false;
-                            }
-                        </ul>
+                        <div class="card-body">
+                            @RenderIssuersList(method.Issuers)
+                        </div>
                     }
-                </div>
 
-                <div class="@method.Id-container">
                     @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        @RenderCreditCardComponents()
+                        <div class="card-body">
+                            @RenderCreditCardComponents()
+                        </div>
                     }
+
                 </div>
 
-                selectThisOne = false;
-            }
+                activeSubPaymentMethod = false;
+             }
         </div>
-
     </div>
 </div>
+
+
+@helper RenderIssuersList(IEnumerable<Mollie.Api.Models.Issuer.IssuerResponse> issuers)
+{
+    var first = true;
+    <ul id="issuersList" style="list-style: none;">
+        @foreach (var issuer in issuers)
+        {
+            <li>
+                <label class="checkbox">
+                    @if (first)
+                    {
+                        @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id, new { id = issuer.Id, @checked = "checked" })
+                    }
+                    else
+                    {
+                        @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id, new { id = issuer.Id })
+                    }
+                    <img src="@issuer.Image.Size1x" alt="@issuer.Name" />
+                    @issuer.Name
+                    <span class="checkmark"></span>
+                </label>
+            </li>
+            first = false;
+        }
+    </ul>
+}
+
 
 @helper RenderCreditCardComponents()
 {
     <hr />
-    @Html.TextBoxFor(model => model.CreditCardComponentToken )
+    @Html.TextBoxFor(model => model.CreditCardComponentToken)
     <hr />
 
     <div class="wrapper">
@@ -155,39 +167,33 @@
                 <label class="label" for="card-holder">Card holder</label>
                 <div id="card-holder"></div>
                 <div id="card-holder-error" class="field-error" role="alert"></div>
-                <input type="checkbox" id="card-holder-valid" />
+                <input type="checkbox" id="card-holder-valid" style="display: none;" />
             </div>
             <div class="form-group form-group--card-number">
                 <label class="label" for="card-number">Card number</label>
                 <div id="card-number"></div>
                 <div id="card-number-error" class="field-error" role="alert"></div>
-                <input type="checkbox" id="card-number-valid" />
+                <input type="checkbox" id="card-number-valid" style="display: none;"/>
             </div>
             <div class="form-group form-group--expiry-date">
                 <label class="label" for="expiry-date">Expiry date</label>
                 <div id="expiry-date"></div>
                 <div id="expiry-date-error" class="field-error" role="alert"></div>
-                <input type="checkbox" id="expiry-date-valid" />
+                <input type="checkbox" id="expiry-date-valid" style="display: none;"/>
             </div>
             <div class="form-group form-group--verification-code">
                 <label class="label" for="verification-code">Verification code</label>
                 <div id="verification-code"></div>
                 <div id="verification-code-error" class="field-error" role="alert"></div>
-                <input type="checkbox" id="verification-code-valid" />
+                <input type="checkbox" id="verification-code-valid" style="display: none;"/>
             </div>
         </div>
-
-        <button id="submit-button" class="submit-button" type="submit">
-            Pay
-        </button>
 
         <div id="form-error" class="form-error" role="alert"></div>
     </div>
 }
 
 <script src="https://js.mollie.com/v1/mollie.js"></script>
-
-
 <script language="javascript">
 
     var mollie = Mollie('@Model.Configuration.ProfileId', { locale: 'nl_NL', testmode: true });
@@ -206,7 +212,7 @@
         var verificationCode = mollie.createComponent('verificationCode');
         verificationCode.mount('#verification-code');
 
-        var tokenField = document.querySelector('#CreditCardComponentToken'); 
+        var tokenField = document.querySelector('#CreditCardComponentToken');
 
         var cardNumberValid = document.querySelector('#card-number-valid');
         var cardNumberError = document.querySelector('#card-number-error');
@@ -220,7 +226,7 @@
                 cardNumberError.textContent = '';
                 cardNumberValid.checked = true;
                 await tryGetToken();
-            } 
+            }
         });
 
         var cardHolderValid = document.querySelector('#card-holder-valid');
@@ -235,7 +241,7 @@
                 cardHolderError.textContent = '';
                 cardHolderValid.checked = true;
                 await tryGetToken();
-            } 
+            }
         });
 
         var expiryDateValid = document.querySelector('#expiry-date-valid');
@@ -250,7 +256,7 @@
                 expiryDateError.textContent = '';
                 expiryDateValid.checked = true;
                 await tryGetToken();
-            } 
+            }
         });
 
         var verificationCodeValid = document.querySelector('#verification-code-valid');
@@ -265,7 +271,7 @@
                 verificationCodeError.textContent = '';
                 verificationCodeValid.checked = true;
                 await tryGetToken();
-            } 
+            }
         });
 
 
@@ -327,16 +333,16 @@
 
             var tokenField = document.querySelector('#CreditCardComponentToken');
             tokenField.value = token;
-            
+
         }
 
 
-        
 
-        
-    } 
 
-    
+
+    }
+
+
 
     initCCComponent();
 

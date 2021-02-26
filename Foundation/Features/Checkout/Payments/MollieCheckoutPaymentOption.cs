@@ -107,6 +107,11 @@ namespace Foundation.Features.Checkout.Payments
                 {
                     payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MollieIssuer, ActiveIssuer);
                 }
+
+                if (SubPaymentMethod.Equals(Mollie.Checkout.Constants.MollieOrder.PaymentMethodCreditCard, StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrWhiteSpace(CreditCardComponentToken))
+                {
+                    payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MollieToken, CreditCardComponentToken);
+                }
             }
 
             return payment;
