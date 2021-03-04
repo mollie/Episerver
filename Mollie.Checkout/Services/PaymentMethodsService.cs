@@ -7,6 +7,7 @@ using Mediachase.Commerce;
 using Mollie.Api.Client;
 using Mollie.Api.Client.Abstract;
 using Mollie.Api.Models.PaymentMethod;
+using Mollie.Checkout.ProcessCheckout.Helpers;
 
 namespace Mollie.Checkout.Services
 {
@@ -43,7 +44,7 @@ namespace Mollie.Checkout.Services
             return result.Items.Select(MapToModel).ToList();
         }
 
-        public async Task<List<Models.PaymentMethod>> LoadMethods(string languageId, Money cartTotal)
+        public async Task<List<Models.PaymentMethod>> LoadMethods(string languageId, Money cartTotal, string countryCode)
         {
             // Load configuration
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
@@ -51,15 +52,16 @@ namespace Mollie.Checkout.Services
             // Get Payment Methods
             IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey, _httpClient);
 
-            string locale = LanguageUtils.GetLocale(languageId);
-            
             var resource = config.UseOrdersApi
                 ? Api.Models.Payment.Resource.Orders
                 : Api.Models.Payment.Resource.Payments;
 
             var amount = new Api.Models.Amount(cartTotal.Currency.CurrencyCode, cartTotal.Amount);
 
-            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount, includeIssuers: true);
+            var billingCountry = countryCode?.Length == 3 ? CountryCodeMapper.MapToTwoLetterIsoRegion(countryCode) : countryCode;
+            string locale = LanguageUtils.GetLocale(languageId, countryCode);
+
+            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount, includeIssuers: true, billingCountry: billingCountry);
 
             return result.Items.Select(MapToModel).ToList();
         }

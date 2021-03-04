@@ -1,5 +1,4 @@
-﻿using Mollie.Api.Client;
-using Mollie.Api.Models.Payment.Response;
+﻿
 using System;
 using System.Threading.Tasks;
 

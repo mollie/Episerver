@@ -23,6 +23,7 @@ namespace Foundation.Features.Checkout.Payments
         protected readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IPaymentMethodsService _paymentMethodsService;
         private readonly ICartService _cartService;
+        private readonly ICurrentMarket _currentMarket;
 
         private string _subPaymentMethodId;
         
@@ -52,6 +53,7 @@ namespace Foundation.Features.Checkout.Payments
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _paymentMethodsService = paymentMethodsService;
             _cartService = cartService;
+            _currentMarket = currentMarket;
 
             InitValues();
         }
@@ -67,17 +69,41 @@ namespace Foundation.Features.Checkout.Payments
             Configuration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             var cart = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart;
-
+            
             if (cart != null)
             {
+                var countryCode = GetCountryCode(cart);
+
                 SubPaymentMethods = AsyncHelper.RunSync(() =>
-                    _paymentMethodsService.LoadMethods(languageId, cart.GetTotal()));
+                    _paymentMethodsService.LoadMethods(languageId, cart.GetTotal(), countryCode));
             }
             else
             {
                 SubPaymentMethods = AsyncHelper.RunSync(() =>
                     _paymentMethodsService.LoadMethods(languageId));
             }
+        }
+
+
+        private string GetCountryCode(ICart cart)
+        {
+            if (cart.GetFirstForm().Payments.Any(p =>
+                p.BillingAddress != null && !string.IsNullOrWhiteSpace(p.BillingAddress.CountryCode)))
+            {
+                return cart.GetFirstForm().Payments
+                    .First(p => p.BillingAddress != null && !string.IsNullOrWhiteSpace(p.BillingAddress.CountryCode))
+                    .BillingAddress.CountryCode;
+            }
+
+            if (cart.GetFirstForm().Shipments.Any(s =>
+                s.ShippingAddress != null && !string.IsNullOrWhiteSpace(s.ShippingAddress.CountryCode)))
+            {
+                return cart.GetFirstForm().Shipments
+                    .First(s => s.ShippingAddress != null && !string.IsNullOrWhiteSpace(s.ShippingAddress.CountryCode))
+                    .ShippingAddress.CountryCode;
+            }
+
+            return _currentMarket.GetCurrentMarket().Countries.FirstOrDefault();
         }
 
         public override bool ValidateData() => true;
