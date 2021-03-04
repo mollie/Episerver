@@ -17,8 +17,6 @@ namespace Foundation.Features.Checkout.Payments
 {
     public class MollieCheckoutPaymentOption : PaymentOptionBase
     {
-        public string ActiveIssuer { get; set; }
-
         public override string SystemKeyword => "MollieCheckout";
 
         protected readonly LanguageService _languageService;
@@ -135,6 +133,8 @@ namespace Foundation.Features.Checkout.Payments
 
         public string CreditCardComponentToken { get; set; }
 
+        public string ActiveIssuer { get; set; }
+
         public string MollieDescription
         {
             get
@@ -148,5 +148,8 @@ namespace Foundation.Features.Checkout.Payments
                 return base.Description;
             }
         }
+
+
+        public string Locale => LanguageUtils.GetLocale(_languageService.GetCurrentLanguage().Name);
     }
 }

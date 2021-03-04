@@ -112,7 +112,7 @@
                         </div>
                     }
 
-                    @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase))
+                    @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase) && Model.Configuration.UseCreditcardComponents)
                     {
                         <div class="card-body">
                             @RenderCreditCardComponents()
@@ -194,7 +194,7 @@
 <script src="https://js.mollie.com/v1/mollie.js"></script>
 <script language="javascript">
 
-    var mollie = Mollie('@Model.Configuration.ProfileId', { locale: 'nl_NL', testmode: true });
+    var mollie = Mollie('@Model.Configuration.ProfileId', { locale: @Model.Locale, testmode: @Model.Configuration.Environment.Equals("test", StringComparison.InvariantCultureIgnoreCase) });
 
     function initCCComponent() {
 
@@ -214,63 +214,67 @@
 
         var cardNumberValid = document.querySelector('#card-number-valid');
         var cardNumberError = document.querySelector('#card-number-error');
-        cardNumber.addEventListener('change', async event => {
-            if (event.error && event.touched) {
-                cardNumberError.textContent = event.error;
-                cardNumberValid.checked = false;
-                tokenField.value = '';
-                return;
-            } else if (event.touched && !event.error) {
-                cardNumberError.textContent = '';
-                cardNumberValid.checked = true;
-                await tryGetToken();
-            }
-        });
+        cardNumber.addEventListener('change',
+            async event => {
+                if (event.error && event.touched) {
+                    cardNumberError.textContent = event.error;
+                    cardNumberValid.checked = false;
+                    tokenField.value = '';
+                    return;
+                } else if (event.touched && !event.error) {
+                    cardNumberError.textContent = '';
+                    cardNumberValid.checked = true;
+                    await tryGetToken();
+                }
+            });
 
         var cardHolderValid = document.querySelector('#card-holder-valid');
         var cardHolderError = document.querySelector('#card-holder-error');
-        cardHolder.addEventListener('change', async event => {
-            if (event.error && event.touched) {
-                cardHolderError.textContent = event.error;
-                cardHolderValid.checked = false;
-                tokenField.value = '';
-                return;
-            } else if (event.touched && !event.error) {
-                cardHolderError.textContent = '';
-                cardHolderValid.checked = true;
-                await tryGetToken();
-            }
-        });
+        cardHolder.addEventListener('change',
+            async event => {
+                if (event.error && event.touched) {
+                    cardHolderError.textContent = event.error;
+                    cardHolderValid.checked = false;
+                    tokenField.value = '';
+                    return;
+                } else if (event.touched && !event.error) {
+                    cardHolderError.textContent = '';
+                    cardHolderValid.checked = true;
+                    await tryGetToken();
+                }
+            });
 
         var expiryDateValid = document.querySelector('#expiry-date-valid');
         var expiryDateError = document.querySelector('#expiry-date-error');
-        expiryDate.addEventListener('change', async event => {
-            if (event.error && event.touched) {
-                expiryDateError.textContent = event.error;
-                expiryDateValid.checked = false;
-                tokenField.value = '';
-                return;
-            } else if (event.touched && !event.error) {
-                expiryDateError.textContent = '';
-                expiryDateValid.checked = true;
-                await tryGetToken();
-            }
-        });
+        expiryDate.addEventListener('change',
+            async event => {
+                if (event.error && event.touched) {
+                    expiryDateError.textContent = event.error;
+                    expiryDateValid.checked = false;
+                    tokenField.value = '';
+                    return;
+                } else if (event.touched && !event.error) {
+                    expiryDateError.textContent = '';
+                    expiryDateValid.checked = true;
+                    await tryGetToken();
+                }
+            });
 
         var verificationCodeValid = document.querySelector('#verification-code-valid');
         var verificationCodeError = document.querySelector('#verification-code-error');
-        verificationCode.addEventListener('change', async event => {
-            if (event.error && event.touched) {
-                verificationCodeError.textContent = event.error;
-                verificationCodeValid.checked = false;
-                tokenField.value = '';
-                return;
-            } else if (event.touched && !event.error) {
-                verificationCodeError.textContent = '';
-                verificationCodeValid.checked = true;
-                await tryGetToken();
-            }
-        });
+        verificationCode.addEventListener('change',
+            async event => {
+                if (event.error && event.touched) {
+                    verificationCodeError.textContent = event.error;
+                    verificationCodeValid.checked = false;
+                    tokenField.value = '';
+                    return;
+                } else if (event.touched && !event.error) {
+                    verificationCodeError.textContent = '';
+                    verificationCodeValid.checked = true;
+                    await tryGetToken();
+                }
+            });
     }
 
     async function tryGetToken() {
