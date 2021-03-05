@@ -7,20 +7,26 @@ using Mediachase.Commerce;
 using Mollie.Api.Client;
 using Mollie.Api.Client.Abstract;
 using Mollie.Api.Models.PaymentMethod;
-using Mollie.Checkout.ProcessCheckout.Helpers;
+using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.Services
 {
     [ServiceConfiguration(typeof(IPaymentMethodsService))]
     public class PaymentMethodService : IPaymentMethodsService
     {
+        private readonly IMolliePaymentMethodFilter _molliePaymentMethodFilter;
+        private readonly IMolliePaymentMethodSorter _molliePaymentMethodSorter;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly HttpClient _httpClient;
         
         public PaymentMethodService(
+            IMolliePaymentMethodFilter molliePaymentMethodFilter,
+            IMolliePaymentMethodSorter molliePaymentMethodSorter,
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
             HttpClient httpClient)
         {
+            _molliePaymentMethodFilter = molliePaymentMethodFilter;
+            _molliePaymentMethodSorter = molliePaymentMethodSorter;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _httpClient = httpClient;
         }
@@ -40,8 +46,11 @@ namespace Mollie.Checkout.Services
                 : Api.Models.Payment.Resource.Payments;
 
             var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, includeIssuers: true);
-            
-            return result.Items.Select(MapToModel).ToList();
+
+            var items = _molliePaymentMethodFilter.Filter(result.Items, languageId);
+            items = _molliePaymentMethodSorter.Sort(items, languageId);
+
+            return items.Select(MapToModel).ToList();
         }
 
         public async Task<List<Models.PaymentMethod>> LoadMethods(string languageId, Money cartTotal, string countryCode)
@@ -61,9 +70,12 @@ namespace Mollie.Checkout.Services
             var billingCountry = countryCode?.Length == 3 ? CountryCodeMapper.MapToTwoLetterIsoRegion(countryCode) : countryCode;
             string locale = LanguageUtils.GetLocale(languageId, countryCode);
 
-            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount, includeIssuers: true, billingCountry: billingCountry);
+            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount, includeIssuers: true/*, billingCountry: billingCountry*/);
 
-            return result.Items.Select(MapToModel).ToList();
+            var items = _molliePaymentMethodFilter.Filter(result.Items, languageId);
+            items = _molliePaymentMethodSorter.Sort(items, languageId);
+
+            return items.Select(MapToModel).ToList();
         }
 
         private Models.PaymentMethod MapToModel(PaymentMethodResponse response)

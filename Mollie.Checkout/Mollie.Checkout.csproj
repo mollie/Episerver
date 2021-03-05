@@ -148,6 +148,9 @@
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
+    <Reference Include="Mollie.Api, Version=2.1.0.3, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mollie.Api.2.1.0.3\lib\net45\Mollie.Api.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -226,7 +229,12 @@
   <ItemGroup>
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Dto\MolliePaymentMethod.cs" />
     <Compile Include="Helpers\AsyncHelper.cs" />
+    <Compile Include="Helpers\IMolliePaymentMethodSorter.cs" />
+    <Compile Include="Helpers\IMolliePaymentMethodFilter.cs" />
+    <Compile Include="Helpers\MolliePaymentMethodSorter.cs" />
+    <Compile Include="Helpers\MolliePaymentMethodFilter.cs" />
     <Compile Include="IocConfigurableModule.cs" />
     <Compile Include="MollieClients\Interfaces\IMolliePaymentClient.cs" />
     <Compile Include="MollieClients\MolliePaymentClient.cs" />
@@ -234,7 +242,7 @@
     <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />
     <Compile Include="ProcessRefund\ProcessPaymentRefund.cs" />
     <Compile Include="ProcessShipment\ShipmentProcessorInterceptor.cs" />
-    <Compile Include="ProcessCheckout\Helpers\CountryCodeMapper.cs" />
+    <Compile Include="Helpers\CountryCodeMapper.cs" />
     <Compile Include="ProcessCheckout\Helpers\Interfaces\IProcessCheckoutFactory.cs" />
     <Compile Include="ProcessCheckout\Interfaces\IProcessCheckout.cs" />
     <Compile Include="Models\CheckoutConfiguration.cs" />
@@ -276,11 +284,6 @@
     <None Include="Mollie.Checkout.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\MollieApi.git\Mollie.Api\Mollie.Api.csproj">
-      <Project>{bedb36dc-ee61-43a7-b59f-8b9038d7fdcf}</Project>
-      <Name>Mollie.Api</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
