@@ -74,8 +74,6 @@ namespace Mollie.Checkout.ProcessCheckout
             
             var baseUrl = $"{request.Url?.Scheme}://{request.Url.Authority}";
 
-            baseUrl = "http://84.107.134.180/";
-
             var urlBuilder = new UriBuilder(baseUrl)
             {
                 Path = $"{Constants.Webhooks.MollieOrdersWebhookUrl}/{languageId}"
