@@ -4,67 +4,129 @@ using Mediachase.Web.Console.BaseClasses;
 using Mediachase.Web.Console.Interfaces;
 using Mollie.Checkout.Services;
 using System;
-using System.Web.UI;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using System.Net.Http;
+using System.Web.UI.WebControls;
+using Castle.Components.DictionaryAdapter;
+using EPiServer.ServiceLocation;
+using Mediachase.Commerce;
+using Mediachase.Commerce.Markets;
+using Mollie.Api.Client;
+using Mollie.Api.Models.List;
+using Mollie.Api.Models.PaymentMethod;
+using Mollie.Checkout.Dto;
+using Mollie.Checkout.Helpers;
+using Newtonsoft.Json;
 
 namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieCheckout
 {
     public partial class ConfigurePayment : OrderBaseUserControl, IGatewayControl
     {
-        private PaymentMethodDto paymentMethodDto = null;
+        private PaymentMethodDto _paymentMethodDto;
 
         public string ValidationGroup { get; set; } = string.Empty;
 
         public void LoadObject(object dto)
         {
-            paymentMethodDto = dto as PaymentMethodDto;
+            _paymentMethodDto = dto as PaymentMethodDto;
 
-            if (!Page.IsPostBack)
+            if (Page.IsPostBack)
             {
-                environmentDropDownList.SelectedValue = GetParameterByName(Constants.Fields.EnvironmentField)?.Value ?? "test";
-                apiKeyTextbox.Text = GetParameterByName(Constants.Fields.ApiKeyField)?.Value ?? string.Empty;
-                profileIDTextBox.Text = GetParameterByName(Constants.Fields.ProfileIDField)?.Value ?? string.Empty;
-                redirectURLTextBox.Text = GetParameterByName(Constants.Fields.RedirectURLField)?.Value ?? string.Empty;
-
-                useOrdersApiRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value ?? "False";
-                useCreditcardComponentsRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseCreditcardComponentsField)?.Value ?? "False";
-                orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "30";
-
-                versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
+                return;
             }
+
+            var apiKey = GetParameterByName(Constants.Fields.ApiKeyField)?.Value ?? string.Empty;
+            var useOrdersApi = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value?.ToLower() == "true";
+
+            var locales = GetLocales().Distinct();
+
+            localeDropDownList.DataSource = locales;
+            localeDropDownList.DataBind();
+            BindMolliePaymentMethods(locales.FirstOrDefault(), apiKey, useOrdersApi);
+
+            apiKeyTextbox.Text = apiKey;
+            useOrdersApiRadioButtonList.SelectedValue = useOrdersApi ? "True" : "False";
+
+            environmentDropDownList.SelectedValue = GetParameterByName(Constants.Fields.EnvironmentField)?.Value ?? "test";
+
+            profileIDTextBox.Text = GetParameterByName(Constants.Fields.ProfileIDField)?.Value ?? string.Empty;
+            redirectURLTextBox.Text = GetParameterByName(Constants.Fields.RedirectURLField)?.Value ?? string.Empty;
+            useCreditcardComponentsRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseCreditcardComponentsField)?.Value ?? "False";
+            orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "30";
+            versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
         }
 
         public void SaveChanges(object dto)
         {
-            if (Visible)
+            if (!Visible)
             {
-                paymentMethodDto = dto as PaymentMethodDto;
-
-                if (paymentMethodDto != null && paymentMethodDto.PaymentMethodParameter != null)
-                {
-                    var paymentMethodId = Guid.Empty;
-
-                    if (paymentMethodDto.PaymentMethod.Count > 0)
-                    {
-                        paymentMethodId = paymentMethodDto.PaymentMethod[0].PaymentMethodId;
-                    }
-
-                    SetParamValue(paymentMethodId, Constants.Fields.EnvironmentField, environmentDropDownList.SelectedValue);
-                    SetParamValue(paymentMethodId, Constants.Fields.ApiKeyField, apiKeyTextbox.Text);
-                    SetParamValue(paymentMethodId, Constants.Fields.ProfileIDField, profileIDTextBox.Text);
-                    SetParamValue(paymentMethodId, Constants.Fields.RedirectURLField, redirectURLTextBox.Text);
-                    SetParamValue(paymentMethodId, Constants.Fields.UseOrdersApiField, useOrdersApiRadioButtonList.SelectedValue);
-                    SetParamValue(paymentMethodId, Constants.Fields.UseCreditcardComponentsField, useCreditcardComponentsRadioButtonList.SelectedValue);
-                    SetParamValue(paymentMethodId, Constants.Fields.OrderExpiresInDaysField, orderExpiresInDaysTextBox.Text);
-                }
+                return;
             }
+
+            _paymentMethodDto = dto as PaymentMethodDto;
+
+            if (_paymentMethodDto?.PaymentMethodParameter == null)
+            {
+                return;
+            }
+
+            var paymentMethodId = Guid.Empty;
+
+            if (_paymentMethodDto.PaymentMethod.Count > 0)
+            {
+                paymentMethodId = _paymentMethodDto.PaymentMethod[0].PaymentMethodId;
+            }
+
+            SetParamValue(paymentMethodId, Constants.Fields.EnvironmentField, environmentDropDownList.SelectedValue);
+            SetParamValue(paymentMethodId, Constants.Fields.ApiKeyField, apiKeyTextbox.Text);
+            SetParamValue(paymentMethodId, Constants.Fields.ProfileIDField, profileIDTextBox.Text);
+            SetParamValue(paymentMethodId, Constants.Fields.RedirectURLField, redirectURLTextBox.Text);
+            SetParamValue(paymentMethodId, Constants.Fields.UseOrdersApiField, useOrdersApiRadioButtonList.SelectedValue);
+            SetParamValue(paymentMethodId, Constants.Fields.UseCreditcardComponentsField, useCreditcardComponentsRadioButtonList.SelectedValue);
+            SetParamValue(paymentMethodId, Constants.Fields.OrderExpiresInDaysField, orderExpiresInDaysTextBox.Text);
+
+            UpdateMolliePaymentMethods(
+                paymentMethodId,
+                molliePaymentMethodList.LeftItems.Cast<ListItem>().ToList(),
+                Constants.Fields.DisabledMolliePaymentMethods);
+
+            UpdateMolliePaymentMethods(
+                paymentMethodId,
+                molliePaymentMethodList.RightItems.Cast<ListItem>().ToList(),
+                Constants.Fields.EnabledMolliePaymentMethods);
         }
 
-        protected void Page_Load(object sender, EventArgs e)
-        { }
+        private void UpdateMolliePaymentMethods(Guid paymentMethodId, IList<ListItem> items, string parameterString)
+        {
+            var molliePaymentMethodsForCurrentLocale = items
+                .Select(i => new MolliePaymentMethod
+                {
+                    Id = i.Value,
+                    Description = i.Text,
+                    Locale = localeDropDownList.SelectedValue,
+                    Rank = items.IndexOf(i)
+                }).ToList();
+
+            var molliePaymentMethodsString = GetParameterByName(parameterString)?.Value;
+            var molliePaymentMethods = string.IsNullOrWhiteSpace(molliePaymentMethodsString)
+                ? new EditableList<MolliePaymentMethod>()
+                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(molliePaymentMethodsString);
+
+            molliePaymentMethods = molliePaymentMethods
+                .Where(pm => pm.Locale != localeDropDownList.SelectedValue)
+                .ToList();
+
+            molliePaymentMethods.AddRange(molliePaymentMethodsForCurrentLocale);
+
+            SetParamValue(paymentMethodId, parameterString, JsonConvert.SerializeObject(molliePaymentMethods));
+        }
 
         private PaymentMethodDto.PaymentMethodParameterRow GetParameterByName(string name)
         {
-            var rows = paymentMethodDto.PaymentMethodParameter.Select($"Parameter='{name}'");
+            var rows = _paymentMethodDto.PaymentMethodParameter.Select($"Parameter='{name}'");
 
             if (rows != null && rows.Length > 0)
             {
@@ -81,17 +143,180 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             {
                 param.Value = value;
 
-                PaymentManager.SavePayment(paymentMethodDto);
+                PaymentManager.SavePayment(_paymentMethodDto);
             }
             else
             {
-                var newRow = paymentMethodDto.PaymentMethodParameter.NewPaymentMethodParameterRow();
+                var newRow = _paymentMethodDto.PaymentMethodParameter.NewPaymentMethodParameterRow();
 
                 newRow.PaymentMethodId = paymentMethodId;
                 newRow.Parameter = paramName;
                 newRow.Value = value;
-                paymentMethodDto.PaymentMethodParameter.Rows.Add(newRow);
+                _paymentMethodDto.PaymentMethodParameter.Rows.Add(newRow);
             }
+        }
+
+        private IEnumerable<string> GetLocales()
+        {
+            var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
+
+            foreach (DataRow row in _paymentMethodDto.MarketPaymentMethods.Rows)
+            {
+                var marketId = row["MarketId"] as string;
+                if (string.IsNullOrWhiteSpace(marketId))
+                {
+                    continue;
+                }
+
+                var market = marketService.GetMarket(new MarketId(marketId));
+                if (market == null)
+                {
+                    continue;
+                }
+
+                foreach (var country in market.Countries)
+                {
+                    if (string.IsNullOrWhiteSpace(country))
+                    {
+                        continue;
+                    }
+
+                    string twoLetterIsoRegionName;
+
+                    try
+                    {
+                        twoLetterIsoRegionName = CountryCodeMapper.MapToTwoLetterIsoRegion(country);
+                    }
+                    catch (CultureNotFoundException)
+                    {
+                        //Ignore this exception
+                        continue;
+                    }
+
+                    foreach (var language in market.Languages)
+                    {
+                        yield return LanguageUtils.GetLocale(language.TwoLetterISOLanguageName, twoLetterIsoRegionName);
+                    }
+                }
+            }
+        }
+
+        protected void LocaleDropDownListSelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!(sender is DropDownList dropDownList))
+            {
+                return;
+            }
+
+            var apiKey = apiKeyTextbox.Text;
+            if (!bool.TryParse(useOrdersApiRadioButtonList.SelectedValue, out var useOrdersApi))
+            {
+                useOrdersApi = false;
+            }
+
+            BindMolliePaymentMethods(dropDownList.SelectedValue, apiKey, useOrdersApi);
+        }
+
+        private void BindMolliePaymentMethods(string locale, string apiKey, bool useOrdersApi)
+        {
+            if (string.IsNullOrWhiteSpace(locale))
+            {
+                return;
+            }
+
+            var disabledMolliePaymentMethodsString = GetParameterByName(Constants.Fields.DisabledMolliePaymentMethods)?.Value;
+            var disabledMolliePaymentMethods = string.IsNullOrWhiteSpace(disabledMolliePaymentMethodsString)
+                ? new EditableList<MolliePaymentMethod>()
+                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(disabledMolliePaymentMethodsString);
+
+            var enabledMolliePaymentMethodsString = GetParameterByName(Constants.Fields.EnabledMolliePaymentMethods)?.Value;
+            var enabledMolliePaymentMethods = string.IsNullOrWhiteSpace(enabledMolliePaymentMethodsString)
+                ? new EditableList<MolliePaymentMethod>()
+                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(enabledMolliePaymentMethodsString);
+
+            var allMolliePayments = GetPaymentMethods(apiKey, locale, useOrdersApi)
+                .ToList();
+
+            var disabled = disabledMolliePaymentMethods
+                .Where(pm => pm.Locale == locale)
+                .OrderBy(pm => pm.Rank)
+                .ToList();
+
+            var disabledIds = disabled
+                .Select(pm => pm.Id)
+                .ToList();
+
+            var disabledAndSorted = disabled
+                .Where(pm => allMolliePayments.Any(x => x.Id == pm.Id))
+                .OrderBy(pm => disabledIds.IndexOf(pm.Id));
+
+            var enabled = enabledMolliePaymentMethods
+                .Where(pm => pm.Locale == locale)
+                .OrderBy(pm => pm.Rank)
+                .ToList();
+
+            var enabledIds = enabled
+                .Select(pm => pm.Id)
+                .ToList();
+
+            var enabledAndSorted =
+                allMolliePayments.Where(pm => disabled.All(x => x.Id != pm.Id))
+                .OrderBy(pm => enabledIds.IndexOf(pm.Id))
+                .ToList();
+
+            molliePaymentMethodList.LeftDataSource = disabledAndSorted;
+            molliePaymentMethodList.RightDataSource = enabledAndSorted;
+            molliePaymentMethodList.DataBind();
+        }
+
+        private static IEnumerable<MolliePaymentMethod> GetPaymentMethods(
+            string apiKey,
+            string locale,
+            bool useOrdersApi)
+        {
+            var httpClient = new HttpClient();
+            var versionString = AssemblyVersionUtils.CreateVersionString();
+            httpClient.DefaultRequestHeaders.Add("user-agent", versionString);
+
+            var paymentMethodClient = new PaymentMethodClient(apiKey, httpClient);
+
+            ListResponse<PaymentMethodResponse> paymentMethodResponses;
+
+            try
+            {
+                paymentMethodResponses = AsyncHelper.RunSync(() => paymentMethodClient.GetPaymentMethodListAsync(
+                    locale: locale,
+                    resource: useOrdersApi ? Api.Models.Payment.Resource.Orders : Api.Models.Payment.Resource.Payments,
+                    amount: null,
+                    includeIssuers: false));
+            }
+            catch (MollieApiException)
+            {
+                paymentMethodResponses = new ListResponse<PaymentMethodResponse>
+                {
+                    Items = new EditableList<PaymentMethodResponse>()
+                };
+            }
+
+            foreach (var paymentMethod in paymentMethodResponses.Items)
+            {
+                yield return new MolliePaymentMethod
+                {
+                    Id = paymentMethod.Id,
+                    Description = paymentMethod.Description
+                };
+            }
+        }
+
+        protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)
+        {
+            var apiKey = apiKeyTextbox.Text;
+            if (!bool.TryParse(useOrdersApiRadioButtonList.SelectedValue, out var useOrdersApi))
+            {
+                useOrdersApi = false;
+            }
+
+            BindMolliePaymentMethods(localeDropDownList.SelectedValue, apiKey, useOrdersApi);
         }
     }
 }

@@ -17,32 +17,31 @@ namespace Mollie.Checkout.Services
             var validValues = new[]
             {
                 "en-US", 
-                "nl-NL", 
+                "nl-NL",
                 "nl-BE",
-                "fr_FR",
-                "fr_BE",
-                "de_DE", 
-                "de_AT", 
-                "de_CH", 
-                "es_ES", 
-                "ca_ES", 
-                "pt_PT", 
-                "it_IT", 
-                "nb_NO", 
-                "sv_SE", 
-                "fi_FI", 
-                "da_DK", 
-                "is_IS", 
-                "hu_HU", 
-                "pl_PL", 
-                "lv_LV", 
-                "lt_LT"
+                "fr-FR",
+                "fr-BE",
+                "de-DE",
+                "de-AT",
+                "de-CH",
+                "es-ES",
+                "ca-ES",
+                "pt-PT",
+                "it-IT",
+                "nb-NO",
+                "sv-SE",
+                "fi-FI",
+                "da-DK",
+                "is-IS",
+                "hu-HU",
+                "pl-PL",
+                "lv-LV",
+                "lt-LT"
             };
 
-            if (validValues.Contains($"{languageId}-{iso2CountryCode.ToUpper()}"))
-                return $"{languageId}-{iso2CountryCode.ToUpper()}";
-
-            return GetLocale(languageId);
+            return validValues.Contains($"{languageId}-{iso2CountryCode.ToUpper()}") ? 
+                $"{languageId}-{iso2CountryCode.ToUpper()}" : 
+                GetLocale(languageId);
         }
     }
 }

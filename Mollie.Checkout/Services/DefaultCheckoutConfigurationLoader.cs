@@ -47,7 +47,9 @@ namespace Mollie.Checkout.Services
                 VersionStrings = AssemblyVersionUtils.CreateVersionString(),
                 UseOrdersApi = useOrdersApi,
                 UseCreditcardComponents = useCreditcardComponents,
-                OrderExpiresInDays = int.TryParse(paymentMethodDto.GetParameter(Constants.Fields.OrderExpiresInDaysField)?.Value, out var orderExpiresInDays) ? orderExpiresInDays : 30
+                OrderExpiresInDays = int.TryParse(paymentMethodDto.GetParameter(Constants.Fields.OrderExpiresInDaysField)?.Value, out var orderExpiresInDays) ? orderExpiresInDays : 30,
+                DisabledMolliePaymentMethods = paymentMethodDto.GetParameter(Constants.Fields.DisabledMolliePaymentMethods)?.Value ?? string.Empty,
+                EnabledMolliePaymentMethods = paymentMethodDto.GetParameter(Constants.Fields.EnabledMolliePaymentMethods)?.Value ?? string.Empty
             };
         }
     }

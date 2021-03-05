@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 
-namespace Mollie.Checkout.ProcessCheckout.Helpers
+namespace Mollie.Checkout.Helpers
 {
     public static class CountryCodeMapper
     {

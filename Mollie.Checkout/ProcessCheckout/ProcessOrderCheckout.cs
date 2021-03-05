@@ -13,7 +13,6 @@ using Mediachase.Commerce.Markets;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Commerce.Security;
 using Mollie.Api.Models.Order;
-using Mollie.Checkout.ProcessCheckout.Helpers;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -23,6 +22,7 @@ using Mollie.Checkout.Services.Interfaces;
 using Mollie.Api.Models.Payment;
 using Mollie.Api.Models.Order.Request.PaymentSpecificParameters;
 using System.Text;
+using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.ProcessCheckout
 {

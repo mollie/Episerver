@@ -17,5 +17,9 @@
         public bool UseCreditcardComponents { get; set; }
 
         public int OrderExpiresInDays { get; set; }
+
+        public string DisabledMolliePaymentMethods { get; set; }
+
+        public string EnabledMolliePaymentMethods { get; set; }
     }
 }

@@ -23,6 +23,10 @@ namespace Mollie.Checkout
             public const string UseCreditcardComponentsField = "UseCreditcardComponents";
 
             public const string OrderExpiresInDaysField = "OrderExpiresInDays";
+
+            public const string EnabledMolliePaymentMethods = "EnabledMolliePaymentMethods";
+
+            public const string DisabledMolliePaymentMethods = "DisabledMolliePaymentMethods";
         }
 
         public static class OtherPaymentFields
