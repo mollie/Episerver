@@ -1,4 +1,7 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="ConfigurePayment.ascx.cs" Inherits="Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieCheckout.ConfigurePayment" %>
+﻿<%@ Control Language="C#" EnableViewState="true" AutoEventWireup="true" CodeBehind="ConfigurePayment.ascx.cs" Inherits="Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieCheckout.ConfigurePayment" %>
+<%@ Register TagPrefix="mc" Namespace="Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieCheckout" Assembly="Mollie.Checkout.CommerceManager" %>
+<%@ Register TagPrefix="console" Namespace="Mediachase.Web.Console.Controls" Assembly="Mediachase.WebConsoleLib" %>
+
 
 <style>
     input.text {
@@ -77,7 +80,7 @@
             <strong><asp:Literal ID="useOrdersApiLabel" Text="Use Orders API" runat="server"></asp:Literal></strong>
         </td>
         <td class="FormFieldCell">
-            <asp:RadioButtonList ID="useOrdersApiRadioButtonList" runat="server" RepeatDirection="Horizontal" Width="120px">
+            <asp:RadioButtonList ID="useOrdersApiRadioButtonList" OnSelectedIndexChanged="OrdersApiRadioButtonListOnSelectedIndexChanged" AutoPostBack="True" runat="server" RepeatDirection="Horizontal" Width="120px">
                 <asp:ListItem Text="Yes" Value="True" />
                 <asp:ListItem Text="No" Value="False" Enabled="true" />
             </asp:RadioButtonList>
@@ -122,6 +125,54 @@
         </td>
         <td class="FormFieldCell">
             <asp:HyperLink ID="linkToSupportPageHyperLink" CssClass="epi-visibleLink" Text="help.mollie.com/hc/en-us" NavigateUrl="https://help.mollie.com/hc/en-us" Target="_blank" runat="server"></asp:HyperLink>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
+        <td class="FormSpacerCell" colspan="2">
+            <h1>Payment Methods (save payment methods per locale)</h1>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
+        <td class="FormLabelCell center">
+            <strong><asp:Literal ID="localeLabel" Text="Locale" runat="server"></asp:Literal></strong>
+        </td>
+        <td class="FormFieldCell">
+            <asp:DropDownList OnSelectedIndexChanged="LocaleDropDownListSelectedIndexChanged" AutoPostBack="True" ID="localeDropDownList" runat="server">
+            </asp:DropDownList>
+        </td>
+    </tr>    
+    <tr>
+        <td class="FormSectionCell" colspan="2">
+            <console:DualList
+                ID="molliePaymentMethodList"
+                runat="server"
+                ListRows="6"
+                EnableMoveAll="True"
+                CssClass="text"
+                LeftDataTextField="Description"
+                LeftDataValueField="Id"
+                RightDataTextField="Description"
+                RightDataValueField="Id"
+                ItemsName="Payment Methods">
+                <RightListStyle
+                    Font-Bold="True"
+                    Width="300px"
+                    Height="150px">
+                </RightListStyle>
+                <ButtonStyle
+                    Width="100px">
+                </ButtonStyle>
+                <LeftListStyle
+                    Width="300px"
+                    Height="150px">
+                </LeftListStyle>
+            </console:DualList>
         </td>
     </tr>
 </table>

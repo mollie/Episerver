@@ -230,7 +230,12 @@
     <Compile Include="MollieApi\MolliePaymentMethodClient.cs" />
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Dto\MolliePaymentMethod.cs" />
     <Compile Include="Helpers\AsyncHelper.cs" />
+    <Compile Include="Helpers\IMolliePaymentMethodSorter.cs" />
+    <Compile Include="Helpers\IMolliePaymentMethodFilter.cs" />
+    <Compile Include="Helpers\MolliePaymentMethodSorter.cs" />
+    <Compile Include="Helpers\MolliePaymentMethodFilter.cs" />
     <Compile Include="IocConfigurableModule.cs" />
     <Compile Include="MollieApi\CreditCardSpecificParameters.cs" />
     <Compile Include="MollieClients\Interfaces\IMolliePaymentClient.cs" />
@@ -239,7 +244,7 @@
     <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />
     <Compile Include="ProcessRefund\ProcessPaymentRefund.cs" />
     <Compile Include="ProcessShipment\ShipmentProcessorInterceptor.cs" />
-    <Compile Include="ProcessCheckout\Helpers\CountryCodeMapper.cs" />
+    <Compile Include="Helpers\CountryCodeMapper.cs" />
     <Compile Include="ProcessCheckout\Helpers\Interfaces\IProcessCheckoutFactory.cs" />
     <Compile Include="ProcessCheckout\Interfaces\IProcessCheckout.cs" />
     <Compile Include="Models\CheckoutConfiguration.cs" />
