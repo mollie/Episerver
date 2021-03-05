@@ -1,6 +1,6 @@
 ﻿using Mollie.Api.Models.Order.Request.PaymentSpecificParameters;
 
-namespace Mollie.Checkout.Models
+namespace Mollie.Checkout.MollieApi
 {
     public class CreditCardSpecificParameters : PaymentSpecificParameters
     {

@@ -34,10 +34,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{B3BDE845-D772-49A5-8926-2462B769F325}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mollie.Api", "..\MollieApi.git\Mollie.Api\Mollie.Api.csproj", "{BEDB36DC-EE61-43A7-B59F-8B9038D7FDCF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,10 +84,6 @@ Global
 		{F3110EF8-6F13-486D-9521-5EB2C20F8A61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3110EF8-6F13-486D-9521-5EB2C20F8A61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3110EF8-6F13-486D-9521-5EB2C20F8A61}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BEDB36DC-EE61-43A7-B59F-8B9038D7FDCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BEDB36DC-EE61-43A7-B59F-8B9038D7FDCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BEDB36DC-EE61-43A7-B59F-8B9038D7FDCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BEDB36DC-EE61-43A7-B59F-8B9038D7FDCF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,7 +100,6 @@ Global
 		{807526DF-9F68-4257-89FB-99E97916EA8C} = {206EC107-EC0C-4DAB-BC93-9ADAF3FB7E30}
 		{D8160394-7266-42A5-93FE-0884C8E9C72C} = {735DCB13-E8B7-4D65-8217-9644A41D8A5B}
 		{F3110EF8-6F13-486D-9521-5EB2C20F8A61} = {735DCB13-E8B7-4D65-8217-9644A41D8A5B}
-		{BEDB36DC-EE61-43A7-B59F-8B9038D7FDCF} = {B3BDE845-D772-49A5-8926-2462B769F325}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6B0CDC98-CEBA-487F-9F41-C7ADB1EB337F}

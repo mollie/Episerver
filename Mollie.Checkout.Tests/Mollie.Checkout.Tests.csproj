@@ -166,6 +166,9 @@
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
+    <Reference Include="Mollie.Api, Version=2.1.0.5, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mollie.Api.2.1.0.5\lib\net45\Mollie.Api.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -238,10 +241,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MollieApi.git\Mollie.Api\Mollie.Api.csproj">
-      <Project>{bedb36dc-ee61-43a7-b59f-8b9038d7fdcf}</Project>
-      <Name>Mollie.Api</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Mollie.Checkout\Mollie.Checkout.csproj">
       <Project>{7d2eed50-b8d0-45df-8be7-9a1e60c26b7b}</Project>
       <Name>Mollie.Checkout</Name>

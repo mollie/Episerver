@@ -24,6 +24,7 @@ using Mollie.Api.Models.Payment;
 using Mollie.Api.Models.Order.Request.PaymentSpecificParameters;
 using System.Text;
 using Mollie.Checkout.Models;
+using Mollie.Checkout.MollieApi;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
