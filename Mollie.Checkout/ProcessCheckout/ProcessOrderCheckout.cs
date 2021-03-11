@@ -22,6 +22,8 @@ using Mollie.Checkout.Services.Interfaces;
 using Mollie.Api.Models.Payment;
 using Mollie.Api.Models.Order.Request.PaymentSpecificParameters;
 using System.Text;
+using Mollie.Checkout.Models;
+using Mollie.Checkout.MollieApi;
 using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.ProcessCheckout
@@ -71,7 +73,7 @@ namespace Mollie.Checkout.ProcessCheckout
             var request = _httpContextAccessor().Request;
             
             var baseUrl = $"{request.Url?.Scheme}://{request.Url.Authority}";
-            
+
             var urlBuilder = new UriBuilder(baseUrl)
             {
                 Path = $"{Constants.Webhooks.MollieOrdersWebhookUrl}/{languageId}"
@@ -137,7 +139,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             orderRequest.SetMetadata(metaData);
 
-            if (!string.IsNullOrWhiteSpace(selectedMethod) && selectedMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(selectedMethod) && selectedMethod.Equals(Api.Models.Payment.PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieIssuer))
                 {
@@ -146,6 +148,18 @@ namespace Mollie.Checkout.ProcessCheckout
                     orderRequest.Payment = new IDealSpecificParameters
                     {
                         Issuer = issuer
+                    };
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(selectedMethod) && selectedMethod.Equals(Api.Models.Payment.PaymentMethod.CreditCard, StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieToken))
+                {
+                    var cc_token = payment.Properties[Constants.OtherPaymentFields.MollieToken] as string;
+
+                    orderRequest.Payment = new CreditCardSpecificParameters
+                    {
+                        CardToken = cc_token
                     };
                 }
             }
@@ -199,9 +213,12 @@ namespace Mollie.Checkout.ProcessCheckout
                 _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment ID", molliePaymentIdMessage.ToString(), PrincipalInfo.CurrentPrincipal.GetContactId());
             }
 
-            var message = $"Mollie Create Order is successful. Redirect end user to {getOrderResponse?.Links.Checkout.Href}";
+            var message = getOrderResponse?.Links.Checkout != null && !string.IsNullOrWhiteSpace(getOrderResponse?.Links.Checkout.Href)
+                ? $"Mollie Create Order is successful. Redirect end user to {getOrderResponse?.Links.Checkout.Href}"
+                : $"Mollie Create Order is successful. No redirect needed";
 
-            cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout.Href;
+            
+            cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout?.Href;
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
@@ -209,7 +226,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse?.Links.Checkout.Href);
+            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse?.Links.Checkout?.Href);
         }
 
         private IEnumerable<OrderLineRequest> GetOrderLines(

@@ -42,6 +42,8 @@ namespace Mollie.Checkout
             public const string MolliePaymentFullResult = "MolliePaymentFullResultPayment";
 
             public const string MollieIssuer = "MollieIssuerPayment";
+
+            public const string MollieToken = "MollieToken";
         }
 
         public static class Cart
@@ -55,6 +57,7 @@ namespace Mollie.Checkout
             public const string MollieOrderId = "MollieOrderIdOrder";
             public const string LanguageId = "LanguageIdOrder";
             public const string PaymentMethodIdeal = PaymentMethod.Ideal;
+            public const string PaymentMethodCreditCard = PaymentMethod.CreditCard;
         }
 
         public static class MolliePaymentStatus

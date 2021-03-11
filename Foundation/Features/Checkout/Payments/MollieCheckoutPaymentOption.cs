@@ -17,8 +17,6 @@ namespace Foundation.Features.Checkout.Payments
 {
     public class MollieCheckoutPaymentOption : PaymentOptionBase
     {
-        public string ActiveIssuer { get; set; }
-
         public override string SystemKeyword => "MollieCheckout";
 
         protected readonly LanguageService _languageService;
@@ -133,6 +131,11 @@ namespace Foundation.Features.Checkout.Payments
                 {
                     payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MollieIssuer, ActiveIssuer);
                 }
+
+                if (SubPaymentMethod.Equals(Mollie.Checkout.Constants.MollieOrder.PaymentMethodCreditCard, StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrWhiteSpace(CreditCardComponentToken))
+                {
+                    payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MollieToken, CreditCardComponentToken);
+                }
             }
 
             return payment;
@@ -154,6 +157,10 @@ namespace Foundation.Features.Checkout.Payments
             set => _subPaymentMethodId = value;
         }
 
+        public string CreditCardComponentToken { get; set; }
+
+        public string ActiveIssuer { get; set; }
+
         public string MollieDescription
         {
             get
@@ -167,5 +174,8 @@ namespace Foundation.Features.Checkout.Payments
                 return base.Description;
             }
         }
+
+
+        public string Locale => LanguageUtils.GetLocale(_languageService.GetCurrentLanguage().Name);
     }
 }

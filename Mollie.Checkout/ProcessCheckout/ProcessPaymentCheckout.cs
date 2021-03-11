@@ -130,6 +130,23 @@ namespace Mollie.Checkout.ProcessCheckout
                 }
             }
 
+
+            if (!string.IsNullOrWhiteSpace(paymentMethod)
+                && paymentMethod.Equals(PaymentMethod.CreditCard, StringComparison.InvariantCultureIgnoreCase)
+                && !string.IsNullOrWhiteSpace(payment.Properties[Constants.OtherPaymentFields.MollieToken] as string))
+            {
+                var token = payment.Properties[Constants.OtherPaymentFields.MollieToken] as string;
+                paymentRequest = new CreditCardPaymentRequest()
+                {
+                    Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
+                    Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
+                    RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
+                    WebhookUrl = urlBuilder.ToString(),
+                    Locale = LanguageUtils.GetLocale(languageId),
+                    CardToken = token
+                };
+            }
+
             var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
 
             paymentRequest.SetMetadata(metaData);
@@ -165,17 +182,20 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment ID", molliePaymentIdMessage, PrincipalInfo.CurrentPrincipal.GetContactId());
 
-            var message = $"Mollie Create Payment is successful. Redirect end user to {paymentResponse?.Links.Checkout.Href}";
+
+            var message = paymentResponse?.Links.Checkout != null && !string.IsNullOrWhiteSpace(paymentResponse?.Links.Checkout.Href)
+                ? $"Mollie Create Payment is successful. Redirect end user to {paymentResponse?.Links.Checkout.Href}"
+                : $"Mollie Create Payment is successful. No redirect needed";
 
             _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
-            cart.Properties[Constants.PaymentLinkMollie] = paymentResponse.Links.Checkout.Href;
+            cart.Properties[Constants.PaymentLinkMollie] = paymentResponse.Links.Checkout?.Href;
 
             _orderRepository.Save(cart);
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse?.Links.Checkout.Href);
+            return PaymentProcessingResult.CreateSuccessfulResult(message, paymentResponse?.Links.Checkout?.Href);
         }
     }
 }

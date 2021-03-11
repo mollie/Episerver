@@ -55,7 +55,6 @@ namespace Mollie.Checkout
             }
 
             var molliePaymentMethodField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentMethod);
-
             if (molliePaymentMethodField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentMethod,
@@ -64,11 +63,26 @@ namespace Mollie.Checkout
             }
 
             var molliePaymentResultField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MolliePaymentFullResult);
-
             if (molliePaymentResultField == null)
             {
                 var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MolliePaymentFullResult,
                     Constants.OtherPaymentFields.MolliePaymentFullResult, string.Empty, MetaDataType.LongString, int.MaxValue, true, false, false, false);
+                otherPaymentMetaClass.AddField(metaField);
+            }
+
+            var mollieIssuerPaymentField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MollieIssuer);
+            if (mollieIssuerPaymentField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MollieIssuer,
+                    Constants.OtherPaymentFields.MollieIssuer, string.Empty, MetaDataType.ShortString, 50, true, false, false, false);
+                otherPaymentMetaClass.AddField(metaField);
+            }
+
+            var mollieTokenField = MetaField.Load(metaDataContext, Constants.OtherPaymentFields.MollieToken);
+            if (mollieTokenField == null)
+            {
+                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.OtherPaymentFields.MollieToken,
+                   Constants.OtherPaymentFields.MollieToken, string.Empty, MetaDataType.ShortString, 50, true, false, false, false);
                 otherPaymentMetaClass.AddField(metaField);
             }
         }

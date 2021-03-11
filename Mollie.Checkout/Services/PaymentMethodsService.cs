@@ -7,6 +7,8 @@ using Mediachase.Commerce;
 using Mollie.Api.Client;
 using Mollie.Api.Client.Abstract;
 using Mollie.Api.Models.PaymentMethod;
+using Mollie.Checkout.MollieApi;
+using Mollie.Checkout.ProcessCheckout.Helpers;
 using Mollie.Checkout.Helpers;
 
 namespace Mollie.Checkout.Services
@@ -59,7 +61,7 @@ namespace Mollie.Checkout.Services
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             // Get Payment Methods
-            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey, _httpClient);
+            var client = new MolliePaymentMethodClient(config.ApiKey, _httpClient);
 
             var resource = config.UseOrdersApi
                 ? Api.Models.Payment.Resource.Orders
