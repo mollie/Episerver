@@ -48,9 +48,11 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "30";
             versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
 
-            var test = GetCurrencyValidationIssues(_paymentMethodDto.Locale.TextInfo.CultureName).ToList();
-        }
+            var currencyValidationIssues = GetCurrencyValidationIssues(_paymentMethodDto.Locale.TextInfo.CultureName).ToList();
 
+            currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
+            currencyValidationIssuesRepeater.DataBind();
+        }
 
         private IEnumerable<string> GetCurrencyValidationIssues(
             string locale)

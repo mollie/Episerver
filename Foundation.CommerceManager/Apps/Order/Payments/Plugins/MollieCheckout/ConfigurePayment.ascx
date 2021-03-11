@@ -159,3 +159,11 @@
         </td>
     </tr>
 </table>
+
+<ul>
+    <asp:Repeater ID="currencyValidationIssuesRepeater" runat="server">
+        <ItemTemplate>
+            <li><%# Container.DataItem?.ToString() ?? string.Empty%></li>
+        </ItemTemplate>
+    </asp:Repeater>
+</ul>
