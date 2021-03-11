@@ -103,7 +103,7 @@ namespace Mollie.Checkout.Services
                 {
                     var currencyPaymentMethods = GetPaymentMethods(
                         checkoutConfiguration.ApiKey,
-                        market.DefaultLanguage.TextInfo.CultureName,
+                        locale,
                         checkoutConfiguration.UseOrdersApi,
                         currency);
 

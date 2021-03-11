@@ -131,7 +131,7 @@
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
-        <td class="FormSectionCell" colspan="2">
+        <td colspan="2">
             <console:DualList
                 ID="molliePaymentMethodList"
                 runat="server"
@@ -158,12 +158,22 @@
             </console:DualList>
         </td>
     </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <asp:Repeater ID="currencyValidationIssuesRepeater" runat="server">  
+                <HeaderTemplate>
+                    <ul>
+                </HeaderTemplate>
+                <ItemTemplate>
+                    <li><%# Container.DataItem?.ToString() ?? string.Empty%></li>
+                </ItemTemplate>
+                <FooterTemplate>
+                    </ul>
+                </FooterTemplate>
+            </asp:Repeater>
+        </td>
+    </tr>
 </table>
-
-<ul>
-    <asp:Repeater ID="currencyValidationIssuesRepeater" runat="server">
-        <ItemTemplate>
-            <li><%# Container.DataItem?.ToString() ?? string.Empty%></li>
-        </ItemTemplate>
-    </asp:Repeater>
-</ul>
