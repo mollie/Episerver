@@ -13,7 +13,7 @@ namespace Mollie.Checkout.Services
 
         IEnumerable<KeyValuePair<string, string>> GetCurrencyValidationIssues(
             string locale,
-            IEnumerable<Currency> currencies);
+            IMarket market);
 
         IEnumerable<MolliePaymentMethod> GetPaymentMethods(
             string apiKey,

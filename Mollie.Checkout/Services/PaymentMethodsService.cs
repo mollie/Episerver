@@ -88,7 +88,7 @@ namespace Mollie.Checkout.Services
 
         public IEnumerable<KeyValuePair<string, string>> GetCurrencyValidationIssues(
             string locale, 
-            IEnumerable<Currency> currencies)
+            IMarket market)
         {
             var culture = new CultureInfo(locale);
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(culture.TwoLetterISOLanguageName);
@@ -97,13 +97,13 @@ namespace Mollie.Checkout.Services
                 ? new EditableList<MolliePaymentMethod>()
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(checkoutConfiguration.EnabledMolliePaymentMethods);
 
-            foreach (var currency in currencies)
+            foreach (var currency in market.Currencies)
             {
                 foreach (var enabledPaymentMethod in enabledPaymentMethods.Where(pm => pm.Locale == locale))
                 {
                     var currencyPaymentMethods = GetPaymentMethods(
                         checkoutConfiguration.ApiKey,
-                        locale,
+                        market.DefaultLanguage.TextInfo.CultureName,
                         checkoutConfiguration.UseOrdersApi,
                         currency);
 

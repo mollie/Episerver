@@ -81,7 +81,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
                 foreach (var validationIssue in paymentMethodsService.GetCurrencyValidationIssues(
                     locale,
-                    market.Currencies))
+                    market))
                 {
                     yield return $"{market.MarketName};{validationIssue.Key};{validationIssue.Value}";
                 }
