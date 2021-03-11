@@ -131,23 +131,6 @@
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
-        <td class="FormSpacerCell" colspan="2">
-            <h1>Payment Methods (save payment methods per locale)</h1>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2" class="FormSpacerCell"></td>
-    </tr>
-    <tr>
-        <td class="FormLabelCell center">
-            <strong><asp:Literal ID="localeLabel" Text="Locale" runat="server"></asp:Literal></strong>
-        </td>
-        <td class="FormFieldCell">
-            <asp:DropDownList OnSelectedIndexChanged="LocaleDropDownListSelectedIndexChanged" AutoPostBack="True" ID="localeDropDownList" runat="server">
-            </asp:DropDownList>
-        </td>
-    </tr>    
-    <tr>
         <td class="FormSectionCell" colspan="2">
             <console:DualList
                 ID="molliePaymentMethodList"

@@ -9,5 +9,9 @@ namespace Mollie.Checkout.Services
         Task<List<Models.PaymentMethod>> LoadMethods(string languageId);
 
         Task<List<Models.PaymentMethod>> LoadMethods(string languageId, Money cartTotal, string countryCode);
+
+        IEnumerable<KeyValuePair<string, string>> GetCurrencyValidationIssues(
+            string locale,
+            IEnumerable<Currency> currencies);
     }
 }

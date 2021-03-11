@@ -6,7 +6,6 @@ using Mollie.Checkout.Services;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Web.UI.WebControls;
@@ -41,11 +40,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             var apiKey = GetParameterByName(Constants.Fields.ApiKeyField)?.Value ?? string.Empty;
             var useOrdersApi = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value?.ToLower() == "true";
 
-            var locales = GetLocales().Distinct();
-
-            localeDropDownList.DataSource = locales;
-            localeDropDownList.DataBind();
-            BindMolliePaymentMethods(locales.FirstOrDefault(), apiKey, useOrdersApi);
+            BindMolliePaymentMethods(_paymentMethodDto.Locale.TextInfo.CultureName, apiKey, useOrdersApi);
 
             apiKeyTextbox.Text = apiKey;
             useOrdersApiRadioButtonList.SelectedValue = useOrdersApi ? "True" : "False";
@@ -57,6 +52,43 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             useCreditcardComponentsRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseCreditcardComponentsField)?.Value ?? "False";
             orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "30";
             versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
+
+            var test = GetCurrencyValidationIssues(_paymentMethodDto.Locale.TextInfo.CultureName).ToList();
+        }
+
+
+        private IEnumerable<string> GetCurrencyValidationIssues(
+            string locale)
+        {
+            if (string.IsNullOrWhiteSpace(locale))
+            {
+                yield break;
+            }
+
+            var paymentMethodsService = ServiceLocator.Current.GetInstance<IPaymentMethodsService>();
+            var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
+
+            foreach (DataRow row in _paymentMethodDto.MarketPaymentMethods.Rows)
+            {
+                var marketId = row["MarketId"] as string;
+                if (string.IsNullOrWhiteSpace(marketId))
+                {
+                    continue;
+                }
+
+                var market = marketService.GetMarket(new MarketId(marketId));
+                if (market == null)
+                {
+                    continue;
+                }
+
+                foreach (var validationIssue in paymentMethodsService.GetCurrencyValidationIssues(
+                    locale,
+                    market.Currencies))
+                {
+                    yield return $"{market.MarketName};{validationIssue.Key};{validationIssue.Value}";
+                }
+            }
         }
 
         public void SaveChanges(object dto)
@@ -89,24 +121,30 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             SetParamValue(paymentMethodId, Constants.Fields.OrderExpiresInDaysField, orderExpiresInDaysTextBox.Text);
 
             UpdateMolliePaymentMethods(
+                _paymentMethodDto.Locale.TextInfo.CultureName,
                 paymentMethodId,
                 molliePaymentMethodList.LeftItems.Cast<ListItem>().ToList(),
                 Constants.Fields.DisabledMolliePaymentMethods);
 
             UpdateMolliePaymentMethods(
+                _paymentMethodDto.Locale.TextInfo.CultureName,
                 paymentMethodId,
                 molliePaymentMethodList.RightItems.Cast<ListItem>().ToList(),
                 Constants.Fields.EnabledMolliePaymentMethods);
         }
 
-        private void UpdateMolliePaymentMethods(Guid paymentMethodId, IList<ListItem> items, string parameterString)
+        private void UpdateMolliePaymentMethods(
+            string locale, 
+            Guid paymentMethodId, 
+            IList<ListItem> items, 
+            string parameterString)
         {
             var molliePaymentMethodsForCurrentLocale = items
                 .Select(i => new MolliePaymentMethod
                 {
                     Id = i.Value,
                     Description = i.Text,
-                    Locale = localeDropDownList.SelectedValue,
+                    Locale = locale,
                     Rank = items.IndexOf(i)
                 }).ToList();
 
@@ -116,7 +154,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(molliePaymentMethodsString);
 
             molliePaymentMethods = molliePaymentMethods
-                .Where(pm => pm.Locale != localeDropDownList.SelectedValue)
+                .Where(pm => pm.Locale != locale)
                 .ToList();
 
             molliePaymentMethods.AddRange(molliePaymentMethodsForCurrentLocale);
@@ -154,67 +192,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 newRow.Value = value;
                 _paymentMethodDto.PaymentMethodParameter.Rows.Add(newRow);
             }
-        }
-
-        private IEnumerable<string> GetLocales()
-        {
-            var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
-
-            foreach (DataRow row in _paymentMethodDto.MarketPaymentMethods.Rows)
-            {
-                var marketId = row["MarketId"] as string;
-                if (string.IsNullOrWhiteSpace(marketId))
-                {
-                    continue;
-                }
-
-                var market = marketService.GetMarket(new MarketId(marketId));
-                if (market == null)
-                {
-                    continue;
-                }
-
-                foreach (var country in market.Countries)
-                {
-                    if (string.IsNullOrWhiteSpace(country))
-                    {
-                        continue;
-                    }
-
-                    string twoLetterIsoRegionName;
-
-                    try
-                    {
-                        twoLetterIsoRegionName = CountryCodeMapper.MapToTwoLetterIsoRegion(country);
-                    }
-                    catch (CultureNotFoundException)
-                    {
-                        //Ignore this exception
-                        continue;
-                    }
-
-                    foreach (var language in market.Languages)
-                    {
-                        yield return LanguageUtils.GetLocale(language.TwoLetterISOLanguageName, twoLetterIsoRegionName);
-                    }
-                }
-            }
-        }
-
-        protected void LocaleDropDownListSelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (!(sender is DropDownList dropDownList))
-            {
-                return;
-            }
-
-            var apiKey = apiKeyTextbox.Text;
-            if (!bool.TryParse(useOrdersApiRadioButtonList.SelectedValue, out var useOrdersApi))
-            {
-                useOrdersApi = false;
-            }
-
-            BindMolliePaymentMethods(dropDownList.SelectedValue, apiKey, useOrdersApi);
         }
 
         private void BindMolliePaymentMethods(string locale, string apiKey, bool useOrdersApi)
@@ -316,7 +293,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 useOrdersApi = false;
             }
 
-            BindMolliePaymentMethods(localeDropDownList.SelectedValue, apiKey, useOrdersApi);
+            BindMolliePaymentMethods(_paymentMethodDto.Locale.TextInfo.CultureName, apiKey, useOrdersApi);
         }
     }
 }

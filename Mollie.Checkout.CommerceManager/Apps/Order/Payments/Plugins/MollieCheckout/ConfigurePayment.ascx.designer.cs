@@ -240,24 +240,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         protected global::System.Web.UI.WebControls.HyperLink linkToSupportPageHyperLink;
 
         /// <summary>
-        /// localeLabel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal localeLabel;
-
-        /// <summary>
-        /// localeDropDownList control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList localeDropDownList;
-
-        /// <summary>
         /// molliePaymentMethodList control.
         /// </summary>
         /// <remarks>
