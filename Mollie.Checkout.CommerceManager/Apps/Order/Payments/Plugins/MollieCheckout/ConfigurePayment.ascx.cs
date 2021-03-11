@@ -7,17 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Net.Http;
 using System.Web.UI.WebControls;
 using Castle.Components.DictionaryAdapter;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mediachase.Commerce.Markets;
-using Mollie.Api.Client;
-using Mollie.Api.Models.List;
-using Mollie.Api.Models.PaymentMethod;
 using Mollie.Checkout.Dto;
-using Mollie.Checkout.Helpers;
 using Newtonsoft.Json;
 
 namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieCheckout
@@ -201,6 +196,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 return;
             }
 
+            var paymentMethodsService = ServiceLocator.Current.GetInstance<IPaymentMethodsService>();
+
             var disabledMolliePaymentMethodsString = GetParameterByName(Constants.Fields.DisabledMolliePaymentMethods)?.Value;
             var disabledMolliePaymentMethods = string.IsNullOrWhiteSpace(disabledMolliePaymentMethodsString)
                 ? new EditableList<MolliePaymentMethod>()
@@ -211,7 +208,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 ? new EditableList<MolliePaymentMethod>()
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(enabledMolliePaymentMethodsString);
 
-            var allMolliePayments = GetPaymentMethods(apiKey, locale, useOrdersApi)
+            var allMolliePayments = paymentMethodsService.GetPaymentMethods(apiKey, locale, useOrdersApi, Currency.Empty)
                 .ToList();
 
             var disabled = disabledMolliePaymentMethods
@@ -244,45 +241,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             molliePaymentMethodList.LeftDataSource = disabledAndSorted;
             molliePaymentMethodList.RightDataSource = enabledAndSorted;
             molliePaymentMethodList.DataBind();
-        }
-
-        private static IEnumerable<MolliePaymentMethod> GetPaymentMethods(
-            string apiKey,
-            string locale,
-            bool useOrdersApi)
-        {
-            var httpClient = new HttpClient();
-            var versionString = AssemblyVersionUtils.CreateVersionString();
-            httpClient.DefaultRequestHeaders.Add("user-agent", versionString);
-
-            var paymentMethodClient = new PaymentMethodClient(apiKey, httpClient);
-
-            ListResponse<PaymentMethodResponse> paymentMethodResponses;
-
-            try
-            {
-                paymentMethodResponses = AsyncHelper.RunSync(() => paymentMethodClient.GetPaymentMethodListAsync(
-                    locale: locale,
-                    resource: useOrdersApi ? Api.Models.Payment.Resource.Orders : Api.Models.Payment.Resource.Payments,
-                    amount: null,
-                    includeIssuers: false));
-            }
-            catch (MollieApiException)
-            {
-                paymentMethodResponses = new ListResponse<PaymentMethodResponse>
-                {
-                    Items = new EditableList<PaymentMethodResponse>()
-                };
-            }
-
-            foreach (var paymentMethod in paymentMethodResponses.Items)
-            {
-                yield return new MolliePaymentMethod
-                {
-                    Id = paymentMethod.Id,
-                    Description = paymentMethod.Description
-                };
-            }
         }
 
         protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)

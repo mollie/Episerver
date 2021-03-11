@@ -115,7 +115,7 @@ namespace Mollie.Checkout.Services
             }
         }
 
-        private static IEnumerable<MolliePaymentMethod> GetPaymentMethods(
+        public IEnumerable<MolliePaymentMethod> GetPaymentMethods(
             string apiKey,
             string locale,
             bool useOrdersApi,
@@ -134,7 +134,7 @@ namespace Mollie.Checkout.Services
                 paymentMethodResponses = AsyncHelper.RunSync(() => paymentMethodClient.GetPaymentMethodListAsync(
                     locale: locale,
                     resource: useOrdersApi ? Api.Models.Payment.Resource.Orders : Api.Models.Payment.Resource.Payments,
-                    amount: new Amount(currency.CurrencyCode, 1000),
+                    amount: currency == Currency.Empty ? null : new Amount(currency.CurrencyCode, 1000),
                     includeIssuers: false));
             }
             catch (MollieApiException)

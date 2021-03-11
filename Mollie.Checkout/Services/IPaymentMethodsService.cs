@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mediachase.Commerce;
+using Mollie.Checkout.Dto;
 
 namespace Mollie.Checkout.Services
 {
@@ -13,5 +14,11 @@ namespace Mollie.Checkout.Services
         IEnumerable<KeyValuePair<string, string>> GetCurrencyValidationIssues(
             string locale,
             IEnumerable<Currency> currencies);
+
+        IEnumerable<MolliePaymentMethod> GetPaymentMethods(
+            string apiKey,
+            string locale,
+            bool useOrdersApi,
+            Currency currency);
     }
 }
