@@ -1,24 +1,40 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mediachase.Commerce;
-using Mollie.Checkout.Dto;
+using Mollie.Api.Models.PaymentMethod;
 
 namespace Mollie.Checkout.Services
 {
     public interface IPaymentMethodsService
     {
-        Task<List<Models.PaymentMethod>> LoadMethods(string languageId);
+        Task<List<Models.PaymentMethod>> LoadMethods(
+            string languageId);
 
-        Task<List<Models.PaymentMethod>> LoadMethods(string languageId, Money cartTotal, string countryCode);
+        Task<List<Models.PaymentMethod>> LoadMethods(
+            string marketId,
+            string languageId,
+            string countryCode);
+
+        Task<List<Models.PaymentMethod>> LoadMethods(
+            string marketId,
+            string languageId, 
+            Money cartTotal, 
+            string countryCode);
+
+        Task<List<PaymentMethodResponse>> LoadMethods(
+            string languageId,
+            Currency currency,
+            decimal amount,
+            string countryCode,
+            string apiKey,
+            bool useOrderApi,
+            bool includeIssuers);
 
         IEnumerable<KeyValuePair<string, string>> GetCurrencyValidationIssues(
-            string locale,
-            IMarket market);
-
-        IEnumerable<MolliePaymentMethod> GetPaymentMethods(
+            string languageId,
+            string countryCode,
             string apiKey,
-            string locale,
             bool useOrdersApi,
-            Currency currency);
+            IMarket market);
     }
 }

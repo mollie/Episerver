@@ -5,14 +5,15 @@ using Mediachase.Web.Console.Interfaces;
 using Mollie.Checkout.Services;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Castle.Components.DictionaryAdapter;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mediachase.Commerce.Markets;
+using Mollie.Api.Models.PaymentMethod;
 using Mollie.Checkout.Dto;
+using Mollie.Checkout.Helpers;
 using Newtonsoft.Json;
 using static Mediachase.Commerce.Orders.Dto.PaymentMethodDto;
 using Mollie.Checkout.Models;
@@ -22,8 +23,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
     public partial class ConfigurePayment : OrderBaseUserControl, IGatewayControl
     {
         private PaymentMethodDto _paymentMethodDto;
-
-        private string _paymentMethodLocale;
+        private string _languageId;
 
         public string ValidationGroup { get; set; } = string.Empty;
 
@@ -31,14 +31,9 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         {
             _paymentMethodDto = dto as PaymentMethodDto;
 
-            if (_paymentMethodDto.PaymentMethod.Rows.Count > 0)
-            {
-                _paymentMethodLocale = LanguageUtils.GetLocale(_paymentMethodDto.PaymentMethod.Rows[0]["LanguageId"] as string);
-            }
-            else
-            {
-                _paymentMethodLocale = string.Empty;
-            }
+            _languageId = _paymentMethodDto?.PaymentMethod.Rows.Count > 0 ? 
+                _paymentMethodDto.PaymentMethod.Rows[0]["LanguageId"] as string : 
+                string.Empty;
 
             if (Page.IsPostBack)
             {
@@ -59,17 +54,28 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "30";
             versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
 
-            if(!string.IsNullOrWhiteSpace(apiKey))
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
-                BindMolliePaymentMethods(_paymentMethodLocale, apiKey, useOrdersApi);
-
-                BindMarketCountryDropDownList(_paymentMethodDto);
-
-                var currencyValidationIssues = GetCurrencyValidationIssues(_paymentMethodLocale).ToList();
-
-                currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
-                currencyValidationIssuesRepeater.DataBind();
+                return;
             }
+
+            BindMarketCountryDropDownList();
+
+            var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
+            var country = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
+
+            BindMolliePaymentMethods(
+                marketId,
+                country,
+                useOrdersApi,
+                apiKey);
+
+            var currencyValidationIssues = GetCurrencyValidationIssues(
+                apiKey,
+                useOrdersApi).ToList();
+
+            currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
+            currencyValidationIssuesRepeater.DataBind();
         }
 
         public void SaveChanges(object dto)
@@ -101,31 +107,49 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             SetParamValue(paymentMethodId, Constants.Fields.UseCreditcardComponentsField, useCreditcardComponentsRadioButtonList.SelectedValue);
             SetParamValue(paymentMethodId, Constants.Fields.OrderExpiresInDaysField, orderExpiresInDaysTextBox.Text);
 
+            var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
+            var country = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
+
+            if (!bool.TryParse(useOrdersApiRadioButtonList.SelectedValue, out var useOrdersApi) ||
+                string.IsNullOrWhiteSpace(marketId) 
+                || string.IsNullOrWhiteSpace(country))
+            {
+                return;
+            }
+
             UpdateMolliePaymentMethods(
-                _paymentMethodLocale,
+                marketId,
+                country,
+                useOrdersApi,
                 paymentMethodId,
                 molliePaymentMethodList.LeftItems.Cast<ListItem>().ToList(),
                 Constants.Fields.DisabledMolliePaymentMethods);
 
             UpdateMolliePaymentMethods(
-                _paymentMethodLocale,
+                marketId,
+                country,
+                useOrdersApi,
                 paymentMethodId,
                 molliePaymentMethodList.RightItems.Cast<ListItem>().ToList(),
                 Constants.Fields.EnabledMolliePaymentMethods);
         }
 
         private void UpdateMolliePaymentMethods(
-            string locale, 
+            string marketId,
+            string country,
+            bool useOrdersApi,
             Guid paymentMethodId, 
             IList<ListItem> items, 
             string parameterString)
         {
-            var molliePaymentMethodsForCurrentLocale = items
+            var molliePaymentMethodsForCurrentMarketAndCountry = items
                 .Select(i => new MolliePaymentMethod
                 {
                     Id = i.Value,
                     Description = i.Text,
-                    Locale = locale,
+                    MarketId = marketId,
+                    Country = country,
+                    OrderApi = useOrdersApi,
                     Rank = items.IndexOf(i)
                 }).ToList();
 
@@ -134,11 +158,10 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 ? new EditableList<MolliePaymentMethod>()
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(molliePaymentMethodsString);
 
-            molliePaymentMethods = molliePaymentMethods
-                .Where(pm => pm.Locale != locale)
-                .ToList();
+            molliePaymentMethods.RemoveAll(pm =>
+                pm.MarketId == marketId && pm.Country == country && pm.OrderApi == useOrdersApi);
 
-            molliePaymentMethods.AddRange(molliePaymentMethodsForCurrentLocale);
+            molliePaymentMethods.AddRange(molliePaymentMethodsForCurrentMarketAndCountry);
 
             SetParamValue(paymentMethodId, parameterString, JsonConvert.SerializeObject(molliePaymentMethods));
         }
@@ -175,12 +198,10 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             }
         }
 
-        private void BindMarketCountryDropDownList(PaymentMethodDto paymentMethod)
+        private List<ListItem> CreateMarketCountryList()
         {
-            var marketRows = paymentMethod.MarketPaymentMethods.Rows;
-
+            var marketRows = _paymentMethodDto.MarketPaymentMethods.Rows;
             var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
-
             var marketCountryList = new List<ListItem>();
 
             foreach (MarketPaymentMethodsRow marketRow in marketRows)
@@ -192,20 +213,35 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                     marketCountryList.Add(new ListItem
                     {
                         Text = $"{market.MarketName} - {country}",
-                        Value = country
+                        Value = $"{market.MarketId}|{country}"
                     });
                 }
             }
 
+            return marketCountryList;
+        }
+
+        private void BindMarketCountryDropDownList()
+        {
+            var marketCountryList = CreateMarketCountryList();
+
             marketCountryDropDownList.DataSource = marketCountryList;
             marketCountryDropDownList.DataTextField = "Text";
             marketCountryDropDownList.DataValueField = "Value";
+            marketCountryDropDownList.SelectedValue = marketCountryList.FirstOrDefault()?.Value;
             marketCountryDropDownList.DataBind();
         }
 
-        private void BindMolliePaymentMethods(string locale, string apiKey, bool useOrdersApi)
+        private void BindMolliePaymentMethods(
+            string marketId, 
+            string countryCode,
+            bool useOrdersApi,
+            string apiKey)
         {
-            if (string.IsNullOrWhiteSpace(locale))
+
+            if (string.IsNullOrWhiteSpace(marketId) 
+                || string.IsNullOrWhiteSpace(countryCode)
+                || string.IsNullOrWhiteSpace(apiKey))
             {
                 return;
             }
@@ -222,11 +258,26 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 ? new EditableList<MolliePaymentMethod>()
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(enabledMolliePaymentMethodsString);
 
-            var allMolliePayments = paymentMethodsService.GetPaymentMethods(apiKey, locale, useOrdersApi, Currency.Empty)
-                .ToList();
+            List<PaymentMethodResponse> allMolliePayments;
+
+            try
+            {
+                allMolliePayments = AsyncHelper.RunSync(() => paymentMethodsService.LoadMethods(
+                    _languageId,
+                    Currency.Empty,
+                    1000,
+                    countryCode,
+                    apiKey,
+                    useOrdersApi,
+                    false));
+            }
+            catch
+            {
+                allMolliePayments = new EditableList<PaymentMethodResponse>();
+            }
 
             var disabled = disabledMolliePaymentMethods
-                .Where(pm => pm.Locale == locale)
+                .Where(pm => pm.MarketId == marketId && pm.Country == countryCode && pm.OrderApi == useOrdersApi)
                 .OrderBy(pm => pm.Rank)
                 .ToList();
 
@@ -239,7 +290,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 .OrderBy(pm => disabledIds.IndexOf(pm.Id));
 
             var enabled = enabledMolliePaymentMethods
-                .Where(pm => pm.Locale == locale)
+                .Where(pm => pm.MarketId == marketId && pm.Country == countryCode && pm.OrderApi == useOrdersApi)
                 .OrderBy(pm => pm.Rank)
                 .ToList();
 
@@ -258,47 +309,53 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         }
 
         private IEnumerable<NotSupportedCurrenciesViewModel> GetCurrencyValidationIssues(
-            string locale)
+            string apiKey,
+            bool useOrdersApi)
         {
-            if (string.IsNullOrWhiteSpace(locale))
-            {
-                yield break;
-            }
+            var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
+            var countryCode = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
 
             var paymentMethodsService = ServiceLocator.Current.GetInstance<IPaymentMethodsService>();
             var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
 
-            foreach (MarketPaymentMethodsRow row in _paymentMethodDto.MarketPaymentMethods.Rows)
+            if (string.IsNullOrWhiteSpace(marketId))
             {
-                var marketId = row.MarketId;
+                yield break;
+            }
 
-                if (string.IsNullOrWhiteSpace(marketId))
+            var market = marketService.GetMarket(new MarketId(marketId));
+            if (market == null)
+            {
+                yield break;
+            }
+
+            foreach (var validationIssue in paymentMethodsService.GetCurrencyValidationIssues(
+                _languageId,
+                countryCode,
+                apiKey,
+                useOrdersApi,
+                market))
+            {
+                yield return new NotSupportedCurrenciesViewModel
                 {
-                    continue;
-                }
-
-                var market = marketService.GetMarket(new MarketId(marketId));
-
-                if (market == null)
-                {
-                    continue;
-                }
-
-                foreach (var validationIssue in paymentMethodsService.GetCurrencyValidationIssues(
-                    locale,
-                    market))
-                {
-                    yield return new NotSupportedCurrenciesViewModel
-                    {
-                        Market = market.MarketName,
-                        Currency = validationIssue.Key,
-                        PaymentMethod = validationIssue.Value
-                    };
-                }
+                    Market = market.MarketName,
+                    Currency = validationIssue.Key,
+                    PaymentMethod = validationIssue.Value
+                };
             }
         }
 
         protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReloadPaymentMethods();
+        }
+
+        protected void MarketCountryDropDownListSelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReloadPaymentMethods();
+        }
+
+        private void ReloadPaymentMethods()
         {
             var apiKey = apiKeyTextbox.Text;
 
@@ -307,7 +364,22 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 useOrdersApi = false;
             }
 
-            BindMolliePaymentMethods(_paymentMethodLocale, apiKey, useOrdersApi);
+            var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
+            var country = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
+
+            BindMolliePaymentMethods(
+                marketId,
+                country,
+                useOrdersApi,
+                apiKey);
+
+            var currencyValidationIssues = GetCurrencyValidationIssues(
+                apiKey,
+                useOrdersApi).ToList();
+
+            currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
+            currencyValidationIssuesRepeater.DataBind();
+
         }
     }
 }
