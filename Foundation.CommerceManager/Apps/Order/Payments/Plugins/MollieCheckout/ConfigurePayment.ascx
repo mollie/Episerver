@@ -167,8 +167,16 @@
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
+        <td colspan="2">
+            <p><b><i>Changes are visible after Settings have been saved!</i></b></p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
         <td class="FormLabelCell center">
-            <strong><asp:Literal ID="marketCountryLabel" Text="Market / Country" runat="server"></asp:Literal></strong>
+            <strong><asp:Literal ID="marketCountryLabel" Text="Market - Country" runat="server"></asp:Literal></strong>
         </td>
         <td class="FormFieldCell">
             <asp:DropDownList AutoPostBack="True" ID="marketCountryDropDownList" OnSelectedIndexChanged="MarketCountryDropDownListSelectedIndexChanged" runat="server">
