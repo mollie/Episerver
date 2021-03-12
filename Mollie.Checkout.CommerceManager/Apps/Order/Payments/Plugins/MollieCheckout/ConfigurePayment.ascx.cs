@@ -15,6 +15,7 @@ using Mediachase.Commerce.Markets;
 using Mollie.Checkout.Dto;
 using Newtonsoft.Json;
 using static Mediachase.Commerce.Orders.Dto.PaymentMethodDto;
+using Mollie.Checkout.Models;
 
 namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieCheckout
 {
@@ -66,42 +67,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
                 currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
                 currencyValidationIssuesRepeater.DataBind();
-            }
-        }
-
-        private IEnumerable<string> GetCurrencyValidationIssues(
-            string locale)
-        {
-            if (string.IsNullOrWhiteSpace(locale))
-            {
-                yield break;
-            }
-
-            var paymentMethodsService = ServiceLocator.Current.GetInstance<IPaymentMethodsService>();
-            var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
-            
-            foreach (MarketPaymentMethodsRow row in _paymentMethodDto.MarketPaymentMethods.Rows)
-            {
-                var marketId = row.MarketId;
-
-                if (string.IsNullOrWhiteSpace(marketId))
-                {
-                    continue;
-                }
-
-                var market = marketService.GetMarket(new MarketId(marketId));
-
-                if (market == null)
-                {
-                    continue;
-                }
-
-                foreach (var validationIssue in paymentMethodsService.GetCurrencyValidationIssues(
-                    locale,
-                    market))
-                {
-                    yield return $"Market <strong>{market.MarketName}</strong> with Currency <strong>{validationIssue.Key}</strong> is not supported by <strong>{validationIssue.Value}</strong>.";
-                }
             }
         }
 
@@ -176,13 +141,13 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             SetParamValue(paymentMethodId, parameterString, JsonConvert.SerializeObject(molliePaymentMethods));
         }
 
-        private PaymentMethodDto.PaymentMethodParameterRow GetParameterByName(string name)
+        private PaymentMethodParameterRow GetParameterByName(string name)
         {
             var rows = _paymentMethodDto.PaymentMethodParameter.Select($"Parameter='{name}'");
 
             if (rows != null && rows.Length > 0)
             {
-                return rows[0] as PaymentMethodDto.PaymentMethodParameterRow;
+                return rows[0] as PaymentMethodParameterRow;
             }
             return null;
         }
@@ -260,6 +225,47 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             molliePaymentMethodList.LeftDataSource = disabledAndSorted;
             molliePaymentMethodList.RightDataSource = enabledAndSorted;
             molliePaymentMethodList.DataBind();
+        }
+
+        private IEnumerable<NotSupportedCurrenciesViewModel> GetCurrencyValidationIssues(
+            string locale)
+        {
+            if (string.IsNullOrWhiteSpace(locale))
+            {
+                yield break;
+            }
+
+            var paymentMethodsService = ServiceLocator.Current.GetInstance<IPaymentMethodsService>();
+            var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
+
+            foreach (MarketPaymentMethodsRow row in _paymentMethodDto.MarketPaymentMethods.Rows)
+            {
+                var marketId = row.MarketId;
+
+                if (string.IsNullOrWhiteSpace(marketId))
+                {
+                    continue;
+                }
+
+                var market = marketService.GetMarket(new MarketId(marketId));
+
+                if (market == null)
+                {
+                    continue;
+                }
+
+                foreach (var validationIssue in paymentMethodsService.GetCurrencyValidationIssues(
+                    locale,
+                    market))
+                {
+                    yield return new NotSupportedCurrenciesViewModel
+                    {
+                        Market = market.MarketName,
+                        Currency = validationIssue.Key,
+                        PaymentMethod = validationIssue.Value
+                    };
+                }
+            }
         }
 
         protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)

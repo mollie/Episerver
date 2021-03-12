@@ -73,7 +73,7 @@ namespace Mollie.Checkout.Services
                 ? Api.Models.Payment.Resource.Orders
                 : Api.Models.Payment.Resource.Payments;
 
-            var amount = new Api.Models.Amount(cartTotal.Currency.CurrencyCode, cartTotal.Amount);
+            var amount = new Amount(cartTotal.Currency.CurrencyCode, cartTotal.Amount);
 
             var billingCountry = countryCode?.Length == 3 ? CountryCodeMapper.MapToTwoLetterIsoRegion(countryCode) : countryCode;
             string locale = LanguageUtils.GetLocale(languageId, countryCode);

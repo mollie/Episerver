@@ -12,11 +12,21 @@
         vertical-align: middle;
         width: 120px;
     }
+
+    .FormFieldCell.top {
+        vertical-align: top;
+    }
 </style>
 
-<h1>Mollie Episerver Settings</h1>
-
 <table id="GenericTable" runat="server" class="mollie-payment-table">
+    <tr>
+        <td class="FormSectionCell" colspan="2">
+            <h1>Mollie Episerver Settings</h1>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
     <tr>
         <td class="FormLabelCell center">
             <strong><asp:Literal ID="environmentLabel" Text="Environment" runat="server"></asp:Literal></strong>
@@ -52,6 +62,9 @@
         </td>
     </tr>
     <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
         <td class="FormLabelCell center">
             <strong><asp:Literal ID="redirectURLLabel" Text="Redirect URL" runat="server"></asp:Literal></strong>
         </td>
@@ -60,7 +73,9 @@
             <asp:RequiredFieldValidator ID="requiredRedirectURLValidator" runat="server" ControlToValidate="redirectURLTextBox" ErrorMessage="Redirect URL is required" />
         </td>
     </tr>
-
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
     <tr>
         <td class="FormLabelCell center">
             <strong><asp:Literal ID="orderExpiresInDaysLabel" Text="Order Expires In Days" runat="server"></asp:Literal></strong>
@@ -71,7 +86,6 @@
             <asp:RangeValidator ID="orderExpiresInDaysRangeValidator" Type="Integer" MinimumValue="1" MaximumValue="100" runat="server" ControlToValidate="orderExpiresInDaysTextBox" ErrorMessage="Order Expires In Days must be between 1 and 100" />
         </td>
     </tr>
-
     <tr>
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
@@ -93,11 +107,19 @@
         <td class="FormLabelCell center">
             <strong><asp:Literal ID="useCreditcardComponentsLabel" Text="Use Creditcard Components" runat="server"></asp:Literal></strong>
         </td>
-        <td class="FormFieldCell">
+        <td class="FormFieldCell top">
             <asp:RadioButtonList ID="useCreditcardComponentsRadioButtonList" runat="server" RepeatDirection="Horizontal" Width="120px">
                 <asp:ListItem Text="Yes" Value="True" />
                 <asp:ListItem Text="No" Value="False" Enabled="true" />
             </asp:RadioButtonList>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
+        <td class="FormSectionCell" colspan="2">
+            <h1>Mollie Info</h1>
         </td>
     </tr>
     <tr>
@@ -112,18 +134,24 @@
         </td>
     </tr>
     <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
         <td class="FormLabelCell center">
             <strong><asp:Literal ID="linkToProfileLabel" Text="Link to Mollie Profile (to find the API keys)" runat="server"></asp:Literal></strong>
         </td>
-        <td class="FormFieldCell">
+        <td class="FormFieldCell top">
             <asp:HyperLink ID="linkToProfileHyperLink" CssClass="epi-visibleLink" Text="www.mollie.com/dashboard" NavigateUrl="https://www.mollie.com/dashboard/" Target="_blank" runat="server"></asp:HyperLink>
         </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
         <td class="FormLabelCell center">
             <strong><asp:Literal ID="linkToSupportPageLabel" Text="Link to our support page to find more info about Mollie" runat="server"></asp:Literal></strong>
         </td>
-        <td class="FormFieldCell">
+        <td class="FormFieldCell top">
             <asp:HyperLink ID="linkToSupportPageHyperLink" CssClass="epi-visibleLink" Text="help.mollie.com/hc/en-us" NavigateUrl="https://help.mollie.com/hc/en-us" Target="_blank" runat="server"></asp:HyperLink>
         </td>
     </tr>
@@ -131,7 +159,15 @@
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
-        <td colspan="2">
+        <td class="FormSectionCell" colspan="2">
+            <h2>Payment Methods listed on Website</h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
+        <td class="FormFieldCell" colspan="2">
             <console:DualList
                 ID="molliePaymentMethodList"
                 runat="server"
@@ -162,18 +198,40 @@
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
-        <td colspan="2">
+        <td class="FormSectionCell" colspan="2">
+            <h2>Not supported Currencies for Payment Methods by Market</h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
+        <td class="FormFieldCell" colspan="2">
             <asp:Repeater ID="currencyValidationIssuesRepeater" runat="server">  
                 <HeaderTemplate>
-                    <ul>
+                    <table cellspacing="0" cellpadding="4" style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th class="ibn-vh2" scope="col">Market</th>
+                                <th class="ibn-vh2" scope="col">Currency</th>
+                                <th class="ibn-vh2" scope="col">Payment Method</th>
+                            </tr>
+                        </thead>
                 </HeaderTemplate>
                 <ItemTemplate>
-                    <li><%# Container.DataItem?.ToString() ?? string.Empty%></li>
+                    <tr>
+                        <td class="ibn-vb2"><%#Eval("Market") %></td>
+                        <td class="ibn-vb2"><%#Eval("Currency") %></td>
+                        <td class="ibn-vb2"><%#Eval("PaymentMethod") %></td>
+                    </tr>
                 </ItemTemplate>
                 <FooterTemplate>
-                    </ul>
+                    </table>
                 </FooterTemplate>
             </asp:Repeater>
         </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
     </tr>
 </table>
