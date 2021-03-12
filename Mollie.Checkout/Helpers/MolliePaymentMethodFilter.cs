@@ -22,16 +22,17 @@ namespace Mollie.Checkout.Helpers
 
         public IEnumerable<PaymentMethodResponse> Filter(
             IEnumerable<PaymentMethodResponse> input,
-            string languageId)
+            string languageId,
+            string countryCode,
+            string marketId)
         {
-            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
+            var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            var disabled = string.IsNullOrWhiteSpace(checkoutConfiguration.DisabledMolliePaymentMethods)
+            var disabled = string.IsNullOrWhiteSpace(config.DisabledMolliePaymentMethods)
                 ? new EditableList<MolliePaymentMethod>()
-                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(checkoutConfiguration.DisabledMolliePaymentMethods);
+                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(config.DisabledMolliePaymentMethods);
 
-            var locale = LanguageUtils.GetLocale(languageId);
-            disabled = disabled.Where(pm => pm.Locale == locale).ToList();
+            disabled = disabled.Where(pm => pm.CountryCode == countryCode && pm.MarketId == marketId && pm.OrderApi == config.UseOrdersApi).ToList();
 
             return input.Where(pm => disabled.All(x => pm.Id != x.Id));
         }

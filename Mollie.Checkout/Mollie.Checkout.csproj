@@ -227,6 +227,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\NotSupportedCurrenciesViewModel.cs" />
     <Compile Include="MollieApi\MolliePaymentMethodClient.cs" />
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />

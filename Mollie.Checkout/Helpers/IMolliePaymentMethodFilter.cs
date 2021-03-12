@@ -5,6 +5,10 @@ namespace Mollie.Checkout.Helpers
 {
     public interface IMolliePaymentMethodFilter
     {
-        IEnumerable<PaymentMethodResponse> Filter(IEnumerable<PaymentMethodResponse> input, string languageId);
+        IEnumerable<PaymentMethodResponse> Filter(
+            IEnumerable<PaymentMethodResponse> input,
+            string languageId,
+            string countryCode,
+            string marketId);
     }
 }

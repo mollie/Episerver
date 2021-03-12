@@ -2,14 +2,18 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Castle.Components.DictionaryAdapter;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mollie.Api.Client;
 using Mollie.Api.Client.Abstract;
+using Mollie.Api.Models;
 using Mollie.Api.Models.PaymentMethod;
+using Mollie.Checkout.Dto;
 using Mollie.Checkout.MollieApi;
-using Mollie.Checkout.ProcessCheckout.Helpers;
 using Mollie.Checkout.Helpers;
+using Newtonsoft.Json;
+using Currency = Mediachase.Commerce.Currency;
 
 namespace Mollie.Checkout.Services
 {
@@ -33,7 +37,30 @@ namespace Mollie.Checkout.Services
             _httpClient = httpClient;
         }
 
-        public async Task<List<Models.PaymentMethod>> LoadMethods(string languageId)
+        public async Task<List<Models.PaymentMethod>> LoadMethods(
+            string languageId)
+        {
+            // Load configuration
+            var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
+
+            string locale = LanguageUtils.GetLocale(languageId);
+
+            // Get Payment Methods
+            IPaymentMethodClient client = new PaymentMethodClient(config.ApiKey, _httpClient);
+
+            var resource = config.UseOrdersApi
+                ? Api.Models.Payment.Resource.Orders
+                : Api.Models.Payment.Resource.Payments;
+
+            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, includeIssuers: true);
+
+            return result.Items.Select(MapToModel).ToList();
+        }
+
+        public async Task<List<Models.PaymentMethod>> LoadMethods(
+            string marketId,
+            string languageId,
+            string countryCode)
         { 
             // Load configuration
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
@@ -49,35 +76,124 @@ namespace Mollie.Checkout.Services
 
             var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, includeIssuers: true);
 
-            var items = _molliePaymentMethodFilter.Filter(result.Items, languageId);
-            items = _molliePaymentMethodSorter.Sort(items, languageId);
+            var items = _molliePaymentMethodFilter.Filter(
+                result.Items, 
+                languageId,
+                countryCode,
+                marketId);
+
+            items = _molliePaymentMethodSorter.Sort(
+                items, 
+                languageId,
+                countryCode,
+                marketId);
 
             return items.Select(MapToModel).ToList();
         }
 
-        public async Task<List<Models.PaymentMethod>> LoadMethods(string languageId, Money cartTotal, string countryCode)
+        public async Task<List<Models.PaymentMethod>> LoadMethods(
+            string marketId,
+            string languageId, 
+            Money cartTotal, 
+            string countryCode)
         {
             // Load configuration
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            // Get Payment Methods
-            var client = new MolliePaymentMethodClient(config.ApiKey, _httpClient);
+            var paymentMethods = await LoadMethods(
+                languageId,
+                cartTotal.Currency,
+                cartTotal.Amount,
+                countryCode,
+                config.ApiKey,
+                config.UseOrdersApi,
+                true);
 
-            var resource = config.UseOrdersApi
+            var items = _molliePaymentMethodFilter.Filter(
+                paymentMethods, 
+                languageId,
+                countryCode,
+                marketId);
+
+            items = _molliePaymentMethodSorter.Sort(
+                items, 
+                languageId,
+                countryCode,
+                marketId);
+
+            return items.Select(MapToModel).ToList();
+        }
+
+        public async Task<List<PaymentMethodResponse>> LoadMethods(
+            string languageId,
+            Currency currency,
+            decimal amount,
+            string countryCode,
+            string apiKey, 
+            bool useOrderApi,
+            bool includeIssuers)
+        {
+            // Get Payment Methods
+            var client = new MolliePaymentMethodClient(apiKey, _httpClient);
+
+            var resource = useOrderApi
                 ? Api.Models.Payment.Resource.Orders
                 : Api.Models.Payment.Resource.Payments;
 
-            var amount = new Api.Models.Amount(cartTotal.Currency.CurrencyCode, cartTotal.Amount);
-
             var billingCountry = countryCode?.Length == 3 ? CountryCodeMapper.MapToTwoLetterIsoRegion(countryCode) : countryCode;
-            string locale = LanguageUtils.GetLocale(languageId, countryCode);
+            var locale = LanguageUtils.GetLocale(languageId, countryCode);
 
-            var result = await client.GetPaymentMethodListAsync(locale: locale, resource: resource, amount: amount, includeIssuers: true/*, billingCountry: billingCountry*/);
+            var result = await client.GetPaymentMethodListAsync(
+                locale: locale, 
+                resource: resource, 
+                amount: currency == Currency.Empty ? null : new Amount(currency.CurrencyCode, amount), 
+                includeIssuers: includeIssuers, 
+                billingCountry: billingCountry);
 
-            var items = _molliePaymentMethodFilter.Filter(result.Items, languageId);
-            items = _molliePaymentMethodSorter.Sort(items, languageId);
+            return result.Items;
+        }
 
-            return items.Select(MapToModel).ToList();
+        public IEnumerable<KeyValuePair<string, string>> GetCurrencyValidationIssues(
+            string languageId,
+            string countryCode,
+            string apiKey,
+            bool useOrdersApi,
+            IMarket market)
+        {
+            var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
+
+            var enabledPaymentMethods = string.IsNullOrWhiteSpace(config.EnabledMolliePaymentMethods)
+                ? new EditableList<MolliePaymentMethod>()
+                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(config.EnabledMolliePaymentMethods);
+
+            foreach (var currency in market.Currencies)
+            {
+                foreach (var enabledPaymentMethod in enabledPaymentMethods.Where(pm => pm.CountryCode == countryCode && pm.MarketId == market.MarketId && pm.OrderApi == useOrdersApi))
+                {
+                    List<PaymentMethodResponse> currencyPaymentMethods;
+
+                    try
+                    {
+                        currencyPaymentMethods = AsyncHelper.RunSync(() => LoadMethods(
+                            languageId,
+                            currency,
+                            1000,
+                            countryCode,
+                            apiKey,
+                            useOrdersApi,
+                            false));
+                    }
+                    catch
+                    {
+                        currencyPaymentMethods = new EditableList<PaymentMethodResponse>();
+                    }
+
+                    if (currencyPaymentMethods.All(cpm => cpm.Id != enabledPaymentMethod.Id))
+                    {
+                        yield return new KeyValuePair<string, string>(currency, enabledPaymentMethod.Description);
+                    }
+                }
+            }
         }
 
         private Models.PaymentMethod MapToModel(PaymentMethodResponse response)

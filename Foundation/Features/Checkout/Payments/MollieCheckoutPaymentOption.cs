@@ -69,18 +69,23 @@ namespace Foundation.Features.Checkout.Payments
             Configuration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             var cart = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart;
-            
+
             if (cart != null)
             {
                 var countryCode = GetCountryCode(cart);
 
                 SubPaymentMethods = AsyncHelper.RunSync(() =>
-                    _paymentMethodsService.LoadMethods(languageId, cart.GetTotal(), countryCode));
+                    _paymentMethodsService.LoadMethods(
+                        cart.MarketId.Value,
+                        languageId, 
+                        cart.GetTotal(), 
+                        countryCode));
             }
             else
             {
                 SubPaymentMethods = AsyncHelper.RunSync(() =>
-                    _paymentMethodsService.LoadMethods(languageId));
+                    _paymentMethodsService.LoadMethods(
+                        languageId));
             }
         }
 
