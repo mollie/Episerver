@@ -33,7 +33,7 @@ namespace Mollie.Checkout.Helpers
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(config.EnabledMolliePaymentMethods);
 
             var enabledIds = enabled
-                .Where(pm => pm.Country == countryCode && pm.MarketId == marketId && pm.OrderApi == config.UseOrdersApi)
+                .Where(pm => pm.CountryCode == countryCode && pm.MarketId == marketId && pm.OrderApi == config.UseOrdersApi)
                 .Select(pm => pm.Id)
                 .ToList();
 

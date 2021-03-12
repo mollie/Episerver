@@ -62,11 +62,11 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             BindMarketCountryDropDownList();
 
             var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
-            var country = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
+            var countryCode = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
 
             BindMolliePaymentMethods(
                 marketId,
-                country,
+                countryCode,
                 useOrdersApi,
                 apiKey);
 
@@ -108,18 +108,18 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             SetParamValue(paymentMethodId, Constants.Fields.OrderExpiresInDaysField, orderExpiresInDaysTextBox.Text);
 
             var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
-            var country = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
+            var countryCode = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
 
             if (!bool.TryParse(useOrdersApiRadioButtonList.SelectedValue, out var useOrdersApi) ||
                 string.IsNullOrWhiteSpace(marketId) 
-                || string.IsNullOrWhiteSpace(country))
+                || string.IsNullOrWhiteSpace(countryCode))
             {
                 return;
             }
 
             UpdateMolliePaymentMethods(
                 marketId,
-                country,
+                countryCode,
                 useOrdersApi,
                 paymentMethodId,
                 molliePaymentMethodList.LeftItems.Cast<ListItem>().ToList(),
@@ -127,7 +127,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
             UpdateMolliePaymentMethods(
                 marketId,
-                country,
+                countryCode,
                 useOrdersApi,
                 paymentMethodId,
                 molliePaymentMethodList.RightItems.Cast<ListItem>().ToList(),
@@ -136,7 +136,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
         private void UpdateMolliePaymentMethods(
             string marketId,
-            string country,
+            string countryCode,
             bool useOrdersApi,
             Guid paymentMethodId, 
             IList<ListItem> items, 
@@ -148,7 +148,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                     Id = i.Value,
                     Description = i.Text,
                     MarketId = marketId,
-                    Country = country,
+                    CountryCode = countryCode,
                     OrderApi = useOrdersApi,
                     Rank = items.IndexOf(i)
                 }).ToList();
@@ -159,7 +159,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(molliePaymentMethodsString);
 
             molliePaymentMethods.RemoveAll(pm =>
-                pm.MarketId == marketId && pm.Country == country && pm.OrderApi == useOrdersApi);
+                pm.MarketId == marketId && pm.CountryCode == countryCode && pm.OrderApi == useOrdersApi);
 
             molliePaymentMethods.AddRange(molliePaymentMethodsForCurrentMarketAndCountry);
 
@@ -208,12 +208,12 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             {
                 var market = marketService.GetMarket(new MarketId(marketRow.MarketId));
 
-                foreach (var country in market.Countries)
+                foreach (var countryCode in market.Countries)
                 {
                     marketCountryList.Add(new ListItem
                     {
-                        Text = $"{market.MarketName} - {country}",
-                        Value = $"{market.MarketId}|{country}"
+                        Text = $"{market.MarketName} - {countryCode}",
+                        Value = $"{market.MarketId}|{countryCode}"
                     });
                 }
             }
@@ -277,7 +277,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             }
 
             var disabled = disabledMolliePaymentMethods
-                .Where(pm => pm.MarketId == marketId && pm.Country == countryCode && pm.OrderApi == useOrdersApi)
+                .Where(pm => pm.MarketId == marketId && pm.CountryCode == countryCode && pm.OrderApi == useOrdersApi)
                 .OrderBy(pm => pm.Rank)
                 .ToList();
 
@@ -290,7 +290,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 .OrderBy(pm => disabledIds.IndexOf(pm.Id));
 
             var enabled = enabledMolliePaymentMethods
-                .Where(pm => pm.MarketId == marketId && pm.Country == countryCode && pm.OrderApi == useOrdersApi)
+                .Where(pm => pm.MarketId == marketId && pm.CountryCode == countryCode && pm.OrderApi == useOrdersApi)
                 .OrderBy(pm => pm.Rank)
                 .ToList();
 

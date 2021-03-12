@@ -32,7 +32,7 @@ namespace Mollie.Checkout.Helpers
                 ? new EditableList<MolliePaymentMethod>()
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(config.DisabledMolliePaymentMethods);
 
-            disabled = disabled.Where(pm => pm.Country == countryCode && pm.MarketId == marketId && pm.OrderApi == config.UseOrdersApi).ToList();
+            disabled = disabled.Where(pm => pm.CountryCode == countryCode && pm.MarketId == marketId && pm.OrderApi == config.UseOrdersApi).ToList();
 
             return input.Where(pm => disabled.All(x => pm.Id != x.Id));
         }

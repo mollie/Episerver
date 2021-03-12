@@ -168,7 +168,7 @@ namespace Mollie.Checkout.Services
 
             foreach (var currency in market.Currencies)
             {
-                foreach (var enabledPaymentMethod in enabledPaymentMethods.Where(pm => pm.Country == countryCode && pm.MarketId == market.MarketId && pm.OrderApi == useOrdersApi))
+                foreach (var enabledPaymentMethod in enabledPaymentMethods.Where(pm => pm.CountryCode == countryCode && pm.MarketId == market.MarketId && pm.OrderApi == useOrdersApi))
                 {
                     List<PaymentMethodResponse> currencyPaymentMethods;
 
