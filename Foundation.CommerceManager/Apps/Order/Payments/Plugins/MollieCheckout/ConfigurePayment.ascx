@@ -167,6 +167,18 @@
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
+        <td class="FormLabelCell center">
+            <strong><asp:Literal ID="marketCountryLabel" Text="Market / Country" runat="server"></asp:Literal></strong>
+        </td>
+        <td class="FormFieldCell">
+            <asp:DropDownList AutoPostBack="True" ID="marketCountryDropDownList" runat="server">
+            </asp:DropDownList>
+        </td>
+    </tr>   
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
+    </tr>
+    <tr>
         <td class="FormFieldCell" colspan="2">
             <console:DualList
                 ID="molliePaymentMethodList"

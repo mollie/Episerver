@@ -63,6 +63,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             {
                 BindMolliePaymentMethods(_paymentMethodLocale, apiKey, useOrdersApi);
 
+                BindMarketCountryDropDownList(_paymentMethodDto);
+
                 var currencyValidationIssues = GetCurrencyValidationIssues(_paymentMethodLocale).ToList();
 
                 currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
@@ -171,6 +173,32 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 newRow.Value = value;
                 _paymentMethodDto.PaymentMethodParameter.Rows.Add(newRow);
             }
+        }
+
+        private void BindMarketCountryDropDownList(PaymentMethodDto paymentMethod)
+        {
+            var marketRows = paymentMethod.MarketPaymentMethods.Rows;
+
+            var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
+
+            var marketCountryList = new List<ListItem>();
+
+            foreach (MarketPaymentMethodsRow marketRow in marketRows)
+            {
+                var market = marketService.GetMarket(new MarketId(marketRow.MarketId));
+
+                foreach (var country in market.Countries)
+                {
+                    marketCountryList.Add(new ListItem 
+                    {
+                        Text = $"{market.MarketName} - {country}",
+                        Value = country
+                    });
+                }
+            }
+
+            marketCountryDropDownList.DataSource = marketCountryList;
+            marketCountryDropDownList.DataBind();
         }
 
         private void BindMolliePaymentMethods(string locale, string apiKey, bool useOrdersApi)
