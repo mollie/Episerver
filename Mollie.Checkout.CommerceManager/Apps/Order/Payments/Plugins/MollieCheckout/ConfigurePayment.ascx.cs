@@ -189,7 +189,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
                 foreach (var country in market.Countries)
                 {
-                    marketCountryList.Add(new ListItem 
+                    marketCountryList.Add(new ListItem
                     {
                         Text = $"{market.MarketName} - {country}",
                         Value = country
@@ -198,6 +198,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             }
 
             marketCountryDropDownList.DataSource = marketCountryList;
+            marketCountryDropDownList.DataTextField = "Text";
+            marketCountryDropDownList.DataValueField = "Value";
             marketCountryDropDownList.DataBind();
         }
 
