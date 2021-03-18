@@ -682,7 +682,7 @@ See a sample implementation here:
 
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
-                    purchaseOrder.Properties[MollieOrder.MollieOrderId] = cart.Properties[MollieOrder.MollieOrderId];
+                    purchaseOrder.Properties[MollieOrder.OrderIdMollie] = cart.Properties[MollieOrder.OrderIdMollie];
                     purchaseOrder.Properties[MollieOrder.LanguageId] = payment.Properties[OtherPaymentFields.LanguageId];
 
                     _orderRepository.Save(purchaseOrder);
@@ -736,7 +736,7 @@ See a sample implementation here:
             }
 
             cart.Properties[Constants.Cart.MollieOrderStatusField] = mollieStatus;
-            cart.Properties[MollieOrder.MollieOrderId] = mollieOrderId;
+            cart.Properties[MollieOrder.OrderIdMollie] = mollieOrderId;
 
             _orderRepository.Save(cart);
         }
