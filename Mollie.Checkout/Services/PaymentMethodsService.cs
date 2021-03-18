@@ -164,17 +164,14 @@ namespace Mollie.Checkout.Services
             bool useOrdersApi,
             IMarket market)
         {
-            var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
-            var settings = _paymentMethodsSettingsService.GetSettings(config.PaymentMethodId);
-
-
-            var enabledPaymentMethods = string.IsNullOrWhiteSpace(settings.EnabledPaymentMethods)
-                ? new EditableList<MolliePaymentMethod>()
-                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(settings.EnabledPaymentMethods);
+            var enabledPaymentMethods = AsyncHelper.RunSync(() => LoadMethods(
+                market.MarketId.Value,
+                languageId,
+                countryCode));
 
             foreach (var currency in market.Currencies)
             {
-                foreach (var enabledPaymentMethod in enabledPaymentMethods.Where(pm => pm.CountryCode == countryCode && pm.MarketId == market.MarketId && pm.OrderApi == useOrdersApi))
+                foreach (var enabledPaymentMethod in enabledPaymentMethods)
                 {
                     List<PaymentMethodResponse> currencyPaymentMethods;
 
