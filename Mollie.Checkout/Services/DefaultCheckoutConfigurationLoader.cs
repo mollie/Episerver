@@ -38,8 +38,15 @@ namespace Mollie.Checkout.Services
                 useCreditcardComponents = useCreditcardComponentsResult;
             }
 
+            var paymentMethodId = Guid.Empty;
+            if (paymentMethodDto.PaymentMethod.Count > 0)
+            {
+                paymentMethodId = paymentMethodDto.PaymentMethod[0].PaymentMethodId;
+            }
+
             return new CheckoutConfiguration
             {
+                PaymentMethodId = paymentMethodId,
                 Environment = paymentMethodDto.GetParameter(Constants.Fields.EnvironmentField)?.Value ?? "test",
                 ApiKey = paymentMethodDto.GetParameter(Constants.Fields.ApiKeyField)?.Value ?? string.Empty,
                 ProfileId = paymentMethodDto.GetParameter(Constants.Fields.ProfileIDField)?.Value ?? string.Empty,
@@ -47,9 +54,7 @@ namespace Mollie.Checkout.Services
                 VersionStrings = AssemblyVersionUtils.CreateVersionString(),
                 UseOrdersApi = useOrdersApi,
                 UseCreditcardComponents = useCreditcardComponents,
-                OrderExpiresInDays = int.TryParse(paymentMethodDto.GetParameter(Constants.Fields.OrderExpiresInDaysField)?.Value, out var orderExpiresInDays) ? orderExpiresInDays : 30,
-                DisabledMolliePaymentMethods = paymentMethodDto.GetParameter(Constants.Fields.DisabledMolliePaymentMethods)?.Value ?? string.Empty,
-                EnabledMolliePaymentMethods = paymentMethodDto.GetParameter(Constants.Fields.EnabledMolliePaymentMethods)?.Value ?? string.Empty
+                OrderExpiresInDays = int.TryParse(paymentMethodDto.GetParameter(Constants.Fields.OrderExpiresInDaysField)?.Value, out var orderExpiresInDays) ? orderExpiresInDays : 30
             };
         }
     }

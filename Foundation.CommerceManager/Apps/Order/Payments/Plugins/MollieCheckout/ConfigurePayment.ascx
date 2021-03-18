@@ -18,6 +18,8 @@
     }
 </style>
 
+<asp:HiddenField ID="PaymentMethodIdHiddenField" runat="server"/>
+
 <table id="GenericTable" runat="server" class="mollie-payment-table">
     <tr>
         <td class="FormSectionCell" colspan="2">

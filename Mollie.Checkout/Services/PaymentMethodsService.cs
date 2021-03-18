@@ -12,6 +12,7 @@ using Mollie.Api.Models.PaymentMethod;
 using Mollie.Checkout.Dto;
 using Mollie.Checkout.MollieApi;
 using Mollie.Checkout.Helpers;
+using Mollie.Checkout.Storage;
 using Newtonsoft.Json;
 using Currency = Mediachase.Commerce.Currency;
 
@@ -20,17 +21,20 @@ namespace Mollie.Checkout.Services
     [ServiceConfiguration(typeof(IPaymentMethodsService))]
     public class PaymentMethodService : IPaymentMethodsService
     {
+        private readonly IPaymentMethodsSettingsService _paymentMethodsSettingsService;
         private readonly IMolliePaymentMethodFilter _molliePaymentMethodFilter;
         private readonly IMolliePaymentMethodSorter _molliePaymentMethodSorter;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly HttpClient _httpClient;
         
         public PaymentMethodService(
+            IPaymentMethodsSettingsService paymentMethodsSettingsService,
             IMolliePaymentMethodFilter molliePaymentMethodFilter,
             IMolliePaymentMethodSorter molliePaymentMethodSorter,
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
             HttpClient httpClient)
         {
+            _paymentMethodsSettingsService = paymentMethodsSettingsService;
             _molliePaymentMethodFilter = molliePaymentMethodFilter;
             _molliePaymentMethodSorter = molliePaymentMethodSorter;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
@@ -161,10 +165,12 @@ namespace Mollie.Checkout.Services
             IMarket market)
         {
             var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
+            var settings = _paymentMethodsSettingsService.GetSettings(config.PaymentMethodId);
 
-            var enabledPaymentMethods = string.IsNullOrWhiteSpace(config.EnabledMolliePaymentMethods)
+
+            var enabledPaymentMethods = string.IsNullOrWhiteSpace(settings.EnabledPaymentMethods)
                 ? new EditableList<MolliePaymentMethod>()
-                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(config.EnabledMolliePaymentMethods);
+                : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(settings.EnabledPaymentMethods);
 
             foreach (var currency in market.Currencies)
             {
@@ -196,7 +202,7 @@ namespace Mollie.Checkout.Services
             }
         }
 
-        private Models.PaymentMethod MapToModel(PaymentMethodResponse response)
+        private static Models.PaymentMethod MapToModel(PaymentMethodResponse response)
         {
             var methodModel = new Models.PaymentMethod
             {
