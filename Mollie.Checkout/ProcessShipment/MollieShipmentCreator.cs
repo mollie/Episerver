@@ -32,7 +32,7 @@ namespace Mollie.Checkout.ProcessShipment
             IPurchaseOrder purchaseOrder,
             List<IShipment> shipments)
         {
-            var mollieOrderId = purchaseOrder.Properties[Constants.MollieOrder.MollieOrderId] as string;
+            var mollieOrderId = purchaseOrder.Properties[Constants.MollieOrder.OrderIdMollie] as string;
             if (string.IsNullOrWhiteSpace(mollieOrderId))
             {
                 return;

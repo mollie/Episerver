@@ -53,13 +53,12 @@ namespace Mollie.Checkout
 
         public static class Cart
         {
-            public const string MollieOrderId = "MollieOrderIdCart";
             public const string MollieOrderStatusField = "MollieOrderStatus";
         }
 
         public static class MollieOrder
         {
-            public const string MollieOrderId = "MollieOrderIdOrder";
+            public const string OrderIdMollie = "OrderIdMollie";
             public const string LanguageId = "LanguageIdOrder";
             public const string PaymentMethodIdeal = PaymentMethod.Ideal;
             public const string PaymentMethodCreditCard = PaymentMethod.CreditCard;

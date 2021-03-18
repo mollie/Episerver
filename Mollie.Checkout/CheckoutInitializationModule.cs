@@ -122,14 +122,21 @@ namespace Mollie.Checkout
             var shoppingCartMetaClass = OrderContext.Current.ShoppingCartMetaClass;
             var metaDataContext = OrderContext.MetaDataContext;
 
-            var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.Cart.MollieOrderId);
-            if (mollieOrderIdField == null)
-            {
-                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.Cart.MollieOrderId,
-                    Constants.Cart.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
 
-                shoppingCartMetaClass.AddField(metaField);
+            var orderIdMollieField = MetaField.Load(metaDataContext, Constants.MollieOrder.OrderIdMollie);
+            if (orderIdMollieField == null)
+            {
+                // Create
+                orderIdMollieField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.OrderIdMollie,
+                    Constants.MollieOrder.OrderIdMollie, string.Empty, MetaDataType.ShortString, 50, true, false, false, false);
             }
+
+            if (!shoppingCartMetaClass.MetaFields.Any(field => field.Name == Constants.MollieOrder.OrderIdMollie))
+            {
+                // Add
+                shoppingCartMetaClass.AddField(orderIdMollieField);
+            }
+
 
             var mollieOrderStatusField = MetaField.Load(metaDataContext, Constants.Cart.MollieOrderStatusField);
             if (mollieOrderStatusField == null)
@@ -146,13 +153,19 @@ namespace Mollie.Checkout
             var purchaseOrderMetaClass = OrderContext.Current.PurchaseOrderMetaClass;
             var metaDataContext = OrderContext.MetaDataContext;
 
-            var mollieOrderIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.MollieOrderId);
-            if (mollieOrderIdField == null)
-            {
-                var metaField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.MollieOrderId,
-                    Constants.MollieOrder.MollieOrderId, string.Empty, MetaDataType.ShortString, 25, true, false, false, false);
 
-                purchaseOrderMetaClass.AddField(metaField);
+            var orderIdMollieField = MetaField.Load(metaDataContext, Constants.MollieOrder.OrderIdMollie);
+            if (orderIdMollieField == null)
+            {
+                // Create
+                orderIdMollieField = MetaField.Create(metaDataContext, string.Empty, Constants.MollieOrder.OrderIdMollie,
+                    Constants.MollieOrder.OrderIdMollie, string.Empty, MetaDataType.ShortString, 50, true, false, false, false);
+            }
+
+            if (!purchaseOrderMetaClass.MetaFields.Any(field => field.Name == Constants.MollieOrder.OrderIdMollie))
+            {
+                // Add
+                purchaseOrderMetaClass.AddField(orderIdMollieField);
             }
 
             var languageIdField = MetaField.Load(metaDataContext, Constants.MollieOrder.LanguageId);

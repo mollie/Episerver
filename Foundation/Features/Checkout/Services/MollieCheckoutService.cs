@@ -41,7 +41,7 @@ namespace Mollie.Checkout.Services
 
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
-                    purchaseOrder.Properties[MollieOrder.MollieOrderId] = cart.Properties[MollieOrder.MollieOrderId];
+                    purchaseOrder.Properties[MollieOrder.OrderIdMollie] = cart.Properties[MollieOrder.OrderIdMollie];
                     purchaseOrder.Properties[PaymentLinkMollie] = cart.Properties[PaymentLinkMollie];
                     purchaseOrder.Properties[MollieOrder.LanguageId] = payment.Properties[OtherPaymentFields.LanguageId];
 
@@ -96,7 +96,7 @@ namespace Mollie.Checkout.Services
             }
 
             cart.Properties[Constants.Cart.MollieOrderStatusField] = mollieStatus;
-            cart.Properties[MollieOrder.MollieOrderId] = mollieOrderId;
+            cart.Properties[MollieOrder.OrderIdMollie] = mollieOrderId;
 
             _orderRepository.Save(cart);
         }
