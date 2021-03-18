@@ -1,11 +1,9 @@
-# Episerver Mollie Checkout integration
+# Episerver Mollie integration
 <hr/>
 
 ## Intro
 
-The Mollie.Checkout package helps with the implementation of [Mollie Checkout](https://docs.mollie.com/guides/checkout) 
-(Mollie hosted payment pages) as payment method in episerver commerce. 
-
+The Mollie.Checkout package helps with the implementation of [Mollie](https://www.mollie.com/) for accepting online payments in a episerver commerce website. 
 
 ## Packages
 
@@ -17,16 +15,19 @@ The Mollie.Checkout package helps with the implementation of [Mollie Checkout](h
 
 - Customer adds a product to the shoppingcart and navigates to the checkout page.
 - On the checkout page the payment option 'Mollie Checkout' is available, and the customer selects this.
+    - The customer selects the preferred payment method (optional)
+    - The customer enters creditcard information (optional - if using creditcard components)
 - The customer clicks on 'PLACE ORDER'
-    - A payment is created using the Mollie Payments API (whitch returns a URL to redirect the customer to)
-    - The customer is redirected to the Mollie Checkout page
-- The customer completes the payment on Millie Checkout
-- (Background) Updates on the payment are sent to a webhook by mollie
-    - When the payment is successful an order is created for the cart.
+    - Depending on the selected option in settings a payment or order is created using Mollie APIs.
+        (an url is returned to redirect the customer to if needed)
+    - The customer is redirected to a Mollie page to complete the payment. (if needed)
+- The customer completes the payment (if needed)
+- (Background) Updates on the payment or order are sent to a webhook by mollie
+    - When the payment is successful an order is created for the cart in episerver.
 - The customer is redirected to the 'Redirect page' specified in the mollie configuration.
     - This could be the order confirmation page
     - This also could be a page that waits for the payment to be processed, and redirects the user if a payment is received.
-    
+
 
 ## Integration in Foundation 
 
@@ -42,10 +43,11 @@ Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceMa
 <details><summary>2. Configure Payment in CommerceManager</summary>
 <p>
 
-In Episerver CommerceManager go to Administration >> Order System >> Payments >> _language_  
-Click __New__ to add a new payment 
+When starting the website for the first time after installing the package the Mollie Checkout payment method should be added to the system for all markets and languages. To complete the configuration of the payment method in Episerver CommerceManager go to Administration >> Order System >> Payments >> _language_  
 
-Fill (at least) the following fields:
+Select the Payment method named 'Mollie Checkout'
+
+Verify/Fill the following fields:
 #### On the Overview tab:_
 - Name 
 - System Keyword: Type __MollieCheckout__ 
@@ -55,18 +57,103 @@ Fill (at least) the following fields:
 - IsActive: Select __Yes__
 #### On the Markets tab:
 - Select markets to enable this paymentmethod for.
-
-Click OK to Save, then open the payment again and navigate to the Parameters tab, and enter:
-
-- Api Key: 
-- Redirect URL: 
+#### On the Parameters tab: 
+- Api Key
+- Profile ID (Required when using Creditcard components)
+- Redirect URL 
 
 </p>
 </details>
 
-
-<details><summary>3. Create MollieCheckout Payment method</summary>
+<details><summary>3a. Create MollieCheckout Payment method (Minimal version example)</summary>
 <p>
+
+In this 'Minimal version' __Mollie Checkout__ is selectable as payment option the checkout page. When this option is selected, the customer is redirected to a series of Mollie hosted pages to select the payment method (ideal, creditcard, etc) and complete the payment on placing the order.
+
+
+In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckoutPaymentOption.cs__
+
+```csharp
+    public class MollieCheckoutPaymentOption : PaymentOptionBase
+    {
+        public override string SystemKeyword => "MollieCheckout";
+
+        protected readonly LanguageService _languageService;
+
+        public MollieCheckoutPaymentOption()
+            : this(LocalizationService.Current, 
+                ServiceLocator.Current.GetInstance<IOrderGroupFactory>(), 
+                ServiceLocator.Current.GetInstance<ICurrentMarket>(), 
+                ServiceLocator.Current.GetInstance<LanguageService>(), 
+                ServiceLocator.Current.GetInstance<IPaymentService>())
+        { }
+
+        public MollieCheckoutPaymentOption(
+            LocalizationService localizationService,
+            IOrderGroupFactory orderGroupFactory,
+            ICurrentMarket currentMarket,
+            LanguageService languageService,
+            IPaymentService paymentService)
+        : base(localizationService, orderGroupFactory, currentMarket, languageService, paymentService)
+        {
+            _languageService = languageService;
+        }
+
+        public override bool ValidateData() => true;
+
+        public override IPayment CreatePayment(decimal amount, IOrderGroup orderGroup)
+        {
+            var languageId = _languageService.GetCurrentLanguage().Name;
+
+            var payment = orderGroup.CreatePayment(OrderGroupFactory);
+
+            payment.PaymentType = PaymentType.Other;
+            payment.PaymentMethodId = PaymentMethodId;
+            payment.PaymentMethodName = SystemKeyword;
+            payment.Amount = amount;
+            payment.Status = PaymentStatus.Pending.ToString();
+            payment.TransactionType = TransactionType.Sale.ToString();
+
+            payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.LanguageId, languageId);
+
+            return payment;
+        }
+    }
+``` 
+
+In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMethod.cshtml__
+
+```html
+
+@model  Foundation.Features.Checkout.Payments.MollieCheckoutPaymentOption
+
+@Html.HiddenFor(model => model.PaymentMethodId)
+
+<br />
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info square-box">
+            Mollie Payment method
+        </div>
+    </div>
+</div>
+
+```
+
+In __Foundation\\Infrastructure\\InitializeSite.cs__ add
+
+```csharp
+   _services.AddTransient<IPaymentMethod, MollieCheckoutPaymentOption>();
+```
+
+</p>
+</details>
+
+<details><summary>3b. Create MollieCheckout Payment method (Complete version example)</summary>
+<p>
+
+In this 'Complete version' __Mollie Checkout__ is selectable as payment option the checkout page. When this option is selected, the customer can see the available Mollie Payment methods and select one on the checkout page. If creditcard components is used, also creditcard information can be entered before completing the order.
+
 
 In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckoutPaymentOption.cs__
 
@@ -79,6 +166,7 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
         protected readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IPaymentMethodsService _paymentMethodsService;
         private readonly ICartService _cartService;
+        private readonly ICurrentMarket _currentMarket;
 
         private string _subPaymentMethodId;
         
@@ -108,6 +196,7 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _paymentMethodsService = paymentMethodsService;
             _cartService = cartService;
+            _currentMarket = currentMarket;
 
             InitValues();
         }
@@ -123,16 +212,46 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
             Configuration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             var cart = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart;
+
             if (cart != null)
             {
+                var countryCode = GetCountryCode(cart);
+
                 SubPaymentMethods = AsyncHelper.RunSync(() =>
-                    _paymentMethodsService.LoadMethods(languageId, cart.GetTotal()));
+                    _paymentMethodsService.LoadMethods(
+                        cart.MarketId.Value,
+                        languageId, 
+                        cart.GetTotal(), 
+                        countryCode));
             }
             else
             {
                 SubPaymentMethods = AsyncHelper.RunSync(() =>
-                    _paymentMethodsService.LoadMethods(languageId));
+                    _paymentMethodsService.LoadMethods(
+                        languageId));
             }
+        }
+
+
+        private string GetCountryCode(ICart cart)
+        {
+            if (cart.GetFirstForm().Payments.Any(p =>
+                p.BillingAddress != null && !string.IsNullOrWhiteSpace(p.BillingAddress.CountryCode)))
+            {
+                return cart.GetFirstForm().Payments
+                    .First(p => p.BillingAddress != null && !string.IsNullOrWhiteSpace(p.BillingAddress.CountryCode))
+                    .BillingAddress.CountryCode;
+            }
+
+            if (cart.GetFirstForm().Shipments.Any(s =>
+                s.ShippingAddress != null && !string.IsNullOrWhiteSpace(s.ShippingAddress.CountryCode)))
+            {
+                return cart.GetFirstForm().Shipments
+                    .First(s => s.ShippingAddress != null && !string.IsNullOrWhiteSpace(s.ShippingAddress.CountryCode))
+                    .ShippingAddress.CountryCode;
+            }
+
+            return _currentMarket.GetCurrentMarket().Countries.FirstOrDefault();
         }
 
         public override bool ValidateData() => true;
@@ -155,6 +274,16 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
             if (!string.IsNullOrWhiteSpace(SubPaymentMethod))
             {
                 payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod, SubPaymentMethod);
+
+                if (SubPaymentMethod.Equals(Mollie.Checkout.Constants.MollieOrder.PaymentMethodIdeal,   StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrWhiteSpace(ActiveIssuer))
+                {
+                    payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MollieIssuer, ActiveIssuer);
+                }
+
+                if (SubPaymentMethod.Equals(Mollie.Checkout.Constants.MollieOrder.PaymentMethodCreditCard, StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrWhiteSpace(CreditCardComponentToken))
+                {
+                    payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MollieToken, CreditCardComponentToken);
+                }
             }
 
             return payment;
@@ -167,13 +296,18 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
                 if (string.IsNullOrWhiteSpace(_subPaymentMethodId))
                 {
                     var cartPayment = _cartService.LoadCart(_cartService.DefaultCartName, false)?.Cart?.GetFirstForm()?.Payments
-                        .FirstOrDefault(p => p.PaymentMethodId == this.PaymentMethodId);
+                        .FirstOrDefault(p => p.PaymentMethodId == PaymentMethodId);
+
                     _subPaymentMethodId = cartPayment?.Properties[Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod] as string;
                 }
                 return _subPaymentMethodId;
             }
             set => _subPaymentMethodId = value;
         }
+
+        public string CreditCardComponentToken { get; set; }
+
+        public string ActiveIssuer { get; set; }
 
         public string MollieDescription
         {
@@ -188,6 +322,9 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
                 return base.Description;
             }
         }
+
+
+        public string Locale => LanguageUtils.GetLocale(_languageService.GetCurrentLanguage().Name);
     }
 ``` 
 
@@ -199,39 +336,255 @@ In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMet
 
 @model MollieCheckoutPaymentOption
 
-@Html.HiddenFor(model => model.PaymentMethodId)
+<link href="~/Assets/css/mollie.checkout.css" rel="stylesheet" type="text/css" />
 
 <div class="row">
     <div class="col-md-12 checkout-mollie">
-        
-        <div class="molliePaymentMethods" style="padding: 20px;">
+        <div id="accordion" class="accordion molliePaymentMethods" style="padding: 20px;">
 
-            @{var selectThisOne = true;}
-            
+            @Html.HiddenFor(model => model.PaymentMethodId)
+
+            @{
+                var activeSubPaymentMethod = true;
+            }
+
             @foreach (var method in Model.SubPaymentMethods)
             {
                 if (!string.IsNullOrWhiteSpace(Model.SubPaymentMethod))
                 {
-                    selectThisOne = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
+                    activeSubPaymentMethod = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
                 }
 
-                <div>
-                    <label class="checkbox">
-                        <input type="radio" name="subPaymentMethod" value="@method.Id" @(selectThisOne ? "checked" : string.Empty) />
-                        <img src="@method.ImageSize1X" alt="@method.Description" />
-                        @method.Description
-                        <span class="checkmark"></span>
-                    </label>
+                <div class="card">
+                    <div class="card-header" id="head-@method.Id">
+                        <label class="checkbox">
+                            <input type="radio" name="subPaymentMethod" value="@method.Id" @(activeSubPaymentMethod ? "checked" : string.Empty)
+                                   data-toggle="collapse" data-target="#collapse-@method.Id" aria-expanded="true" aria-controls="collapse-@method.Id" />
+                            <img src="@method.ImageSize1X" alt="@method.Description" />
+                            @method.Description
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
                 </div>
 
-                selectThisOne = false;
+                <div id="collapse-@method.Id" class="collapse @(activeSubPaymentMethod ? "show" : string.Empty)" aria-labelledby="head-@method.Id" data-parent="#accordion">
+
+                    @if (method.Issuers != null)
+                    {
+                        <div class="card-body">
+                            @RenderIssuersList(method.Issuers)
+                        </div>
+                    }
+
+                    @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase) && Model.Configuration.UseCreditcardComponents)
+                    {
+                        <div class="card-body">
+                            @RenderCreditCardComponents()
+                        </div>
+                    }
+
+                </div>
+
+                activeSubPaymentMethod = false;
             }
         </div>
-
     </div>
 </div>
 
+
+@helper RenderIssuersList(IEnumerable<Mollie.Api.Models.Issuer.IssuerResponse> issuers)
+{
+    var first = true;
+    <ul id="issuersList" style="list-style: none;">
+        @foreach (var issuer in issuers)
+        {
+            <li>
+                <label class="checkbox">
+                    @if (first)
+                    {
+                        @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id, new { id = issuer.Id, @checked = "checked" })
+                    }
+                    else
+                    {
+                        @Html.RadioButtonFor(m => m.ActiveIssuer, issuer.Id, new { id = issuer.Id })
+                    }
+                    <img src="@issuer.Image.Size1x" alt="@issuer.Name" />
+                    @issuer.Name
+                    <span class="checkmark"></span>
+                </label>
+            </li>
+            first = false;
+        }
+    </ul>
+}
+
+
+@helper RenderCreditCardComponents()
+{
+    @Html.HiddenFor(model => model.CreditCardComponentToken)
+
+    <div class="wrapper">
+        <div class="form-fields">
+            <div class="form-group form-group--card-holder">
+                <label class="label" for="card-holder">Card holder</label>
+                <div id="card-holder"></div>
+                <div id="card-holder-error" class="field-error" role="alert"></div>
+                <input type="checkbox" id="card-holder-valid" style="display: none;" />
+            </div>
+            <div class="form-group form-group--card-number">
+                <label class="label" for="card-number">Card number</label>
+                <div id="card-number"></div>
+                <div id="card-number-error" class="field-error" role="alert"></div>
+                <input type="checkbox" id="card-number-valid" style="display: none;" />
+            </div>
+            <div class="form-group form-group--expiry-date">
+                <label class="label" for="expiry-date">Expiry date</label>
+                <div id="expiry-date"></div>
+                <div id="expiry-date-error" class="field-error" role="alert"></div>
+                <input type="checkbox" id="expiry-date-valid" style="display: none;" />
+            </div>
+            <div class="form-group form-group--verification-code">
+                <label class="label" for="verification-code">Verification code</label>
+                <div id="verification-code"></div>
+                <div id="verification-code-error" class="field-error" role="alert"></div>
+                <input type="checkbox" id="verification-code-valid" style="display: none;" />
+            </div>
+        </div>
+
+        <div id="form-error" class="form-error" role="alert"></div>
+    </div>
+}
+
+@if (Model.Configuration.UseCreditcardComponents)
+{
+    <script type="text/javascript">
+        var mollieData = mollieData || {};
+
+        mollieData.ProfileId = '@Model.Configuration.ProfileId';
+        mollieData.Locale = '@Model.Locale';
+        mollieData.Test = Boolean('@Model.Configuration.Environment.Equals("test", StringComparison.InvariantCultureIgnoreCase)');
+
+    </script>
+
+}
+
+
+
 ```
+
+In __Foundation\\Assets\\js__ Add a new File __mollie.checkout.js__
+
+```javascript
+
+function MollieCheckout(profileId, locale, testmode) {
+
+    this.mollie = Mollie(profileId, { locale: locale, testmode: testmode });
+
+    this.initComponents = function () {
+        var cardNumber = this.mollie.createComponent('cardNumber');
+        cardNumber.mount('#card-number');
+
+        var cardHolder = this.mollie.createComponent('cardHolder');
+        cardHolder.mount('#card-holder');
+
+        var expiryDate = this.mollie.createComponent('expiryDate');
+        expiryDate.mount('#expiry-date');
+
+        var verificationCode = this.mollie.createComponent('verificationCode');
+        verificationCode.mount('#verification-code');
+
+        var tokenField = document.querySelector('#CreditCardComponentToken');
+
+        var cardNumberValid = document.querySelector('#card-number-valid');
+        var cardNumberError = document.querySelector('#card-number-error');
+        cardNumber.addEventListener('change', async event => {
+            if (event.error && event.touched) {
+                cardNumberError.textContent = event.error;
+                cardNumberValid.checked = false;
+                tokenField.value = '';
+                return;
+            } else if (event.touched && !event.error) {
+                cardNumberError.textContent = '';
+                cardNumberValid.checked = true;
+                await this.tryGetToken();
+            }
+        });
+
+
+        var cardHolderValid = document.querySelector('#card-holder-valid');
+        var cardHolderError = document.querySelector('#card-holder-error');
+        cardHolder.addEventListener('change', async event => {
+            if (event.error && event.touched) {
+                cardHolderError.textContent = event.error;
+                cardHolderValid.checked = false;
+                tokenField.value = '';
+                return;
+            } else if (event.touched && !event.error) {
+                cardHolderError.textContent = '';
+                cardHolderValid.checked = true;
+                await this.tryGetToken();
+            }
+        });
+
+        var expiryDateValid = document.querySelector('#expiry-date-valid');
+        var expiryDateError = document.querySelector('#expiry-date-error');
+        expiryDate.addEventListener('change', async event => {
+            if (event.error && event.touched) {
+                expiryDateError.textContent = event.error;
+                expiryDateValid.checked = false;
+                tokenField.value = '';
+                return;
+            } else if (event.touched && !event.error) {
+                expiryDateError.textContent = '';
+                expiryDateValid.checked = true;
+                await this.tryGetToken();
+            }
+        });
+
+        var verificationCodeValid = document.querySelector('#verification-code-valid');
+        var verificationCodeError = document.querySelector('#verification-code-error');
+        verificationCode.addEventListener('change', async event => {
+            if (event.error && event.touched) {
+                verificationCodeError.textContent = event.error;
+                verificationCodeValid.checked = false;
+                tokenField.value = '';
+                return;
+            } else if (event.touched && !event.error) {
+                verificationCodeError.textContent = '';
+                verificationCodeValid.checked = true;
+                await this.tryGetToken();
+            }
+        });
+    }
+
+
+    this.tryGetToken = async function () {
+        var a = document.querySelector('#card-holder-valid');
+        var b = document.querySelector('#card-number-valid');
+        var c = document.querySelector('#expiry-date-valid');
+        var d = document.querySelector('#verification-code-valid');
+
+        if (a.checked === false || b.checked === false || c.checked === false || d.checked === false) {
+            return;
+        }
+
+        const { token, error } = await this.mollie.createToken();
+
+        if (error) {
+            alert(error.message);
+            // Something wrong happened while creating the token. Handle this situation gracefully.
+            return;
+        }
+
+        if (token) {
+            var tokenField = document.querySelector('#CreditCardComponentToken');
+            tokenField.value = token;
+        }
+    }
+}
+
+```
+
 
 In __Foundation\\Infrastructure\\InitializeSite.cs__ add
 
@@ -239,6 +592,23 @@ In __Foundation\\Infrastructure\\InitializeSite.cs__ add
    _services.AddTransient<IPaymentMethod, MollieCheckoutPaymentOption>();
 ```
 
+In __Foundation\\Features\\Shared\\Views\\_Layout.cshtml__ add (directly below main.min.js file ref)
+
+```html
+<script src="~/Assets/js/main.min.js"></script>
+
+<script src="https://js.mollie.com/v1/mollie.js"></script>
+<script src="~/Assets/js/mollie.checkout.js"></script>
+<script type="text/javascript">
+
+    if (mollieData !== undefined && mollieData !== null) {
+        var mc = new MollieCheckout(mollieData.ProfileId, mollieData.Locale, mollieData.Test);
+        mc.initComponents();
+    }
+
+</script>
+
+```
 
 </p>
 </details>
@@ -459,7 +829,6 @@ See a sample of the changed OrderConfirmationController here:
 On the Foundation order-confirmation page a view is shown with some information about the payments for order.
 
 Add a new view ___MollieCheckoutConfirmation.cshtml__ to __Foundation\\Features\\MyAccount\\OrderConfirmation__
-
 ```html
 
 @model EPiServer.Commerce.Order.IPayment 
