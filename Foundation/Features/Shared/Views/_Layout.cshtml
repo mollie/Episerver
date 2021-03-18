@@ -36,9 +36,18 @@ else
     @Html.Partial("_Footer", Html.GetLayoutSettings())
 }
 
-@Html.Partial("_QuickViewModal")
-
+<script src="https://js.mollie.com/v1/mollie.js"></script>
 <script src="~/Assets/js/main.min.js"></script>
+<script src="~/Assets/js/mollie.checkout.js"></script>
+
+<script type="text/javascript">
+
+    if (mollieData !== undefined && mollieData !== null) {
+        var mc = new MollieCheckout(mollieData.ProfileId, mollieData.Locale, mollieData.Test);
+        mc.initComponents();
+    }
+
+</script>
 
 
 @RenderSection("AdditionalScripts", required: false)

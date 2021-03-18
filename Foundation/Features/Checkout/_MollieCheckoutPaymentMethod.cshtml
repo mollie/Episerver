@@ -123,11 +123,14 @@
 
 @if (Model.Configuration.UseCreditcardComponents)
 {
-    <script src="https://js.mollie.com/v1/mollie.js"></script>
-    <script src="~/Assets/js/mollie.checkout.js"></script>
-    <script language="javascript">
-        var mc = new MollieCheckout('@Model.Configuration.ProfileId', '@Model.Locale', Boolean('@Model.Configuration.Environment.Equals("test", StringComparison.InvariantCultureIgnoreCase)'));
-        mc.initComponents();
+    <script type="text/javascript">
+        var mollieData = mollieData || {};
+
+        mollieData.ProfileId = '@Model.Configuration.ProfileId';
+        mollieData.Locale = '@Model.Locale';
+        mollieData.Test = Boolean('@Model.Configuration.Environment.Equals("test", StringComparison.InvariantCultureIgnoreCase)');
+
     </script>
+
 }
 
