@@ -8,6 +8,11 @@ namespace Mollie.Checkout
 
         public const string PaymentLinkMollie = "PaymentLinkMollie";
 
+        public const string MollieCheckoutMethodName = "Mollie Chechout";
+
+        
+
+
         public static class Fields
         {
             public const string EnvironmentField = "Environment";

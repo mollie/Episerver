@@ -1,7 +1,12 @@
 ﻿using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
+using EPiServer.ServiceLocation;
+using Mediachase.Commerce.Markets;
 using Mediachase.Commerce.Orders;
+using Mediachase.Commerce.Orders.Managers;
 using Mediachase.MetaDataPlus.Configurator;
+using System;
+using System.Linq;
 
 namespace Mollie.Checkout
 {
@@ -9,17 +14,42 @@ namespace Mollie.Checkout
     [ModuleDependency(typeof(EPiServer.Commerce.Initialization.InitializationModule))]
     public class CheckoutInitializationModule : IInitializableModule
     {
+        private readonly Injected<IMarketService> _marketService;
+
         public void Initialize(InitializationEngine context)
-        {
+        { 
             InitializeOtherPaymentMetaClass();
             InitializeCartMetaClass();
             InitializePurchaseOrderMetaClass();
             InitializePaymentLinkMollie();
+
+            AddMollieCheckoutPaymentMethod();
         }
 
         public void Uninitialize(InitializationEngine context)
         {
             // Do nothing
+        }
+
+        private void AddMollieCheckoutPaymentMethod()
+        {
+            var allMarkets = _marketService.Service.GetAllMarkets().Where(x => x.IsEnabled).ToList();
+            foreach (var language in allMarkets.SelectMany(x => x.Languages).Distinct())
+            {
+                var paymentMethodDto = PaymentManager.GetPaymentMethods(language.TwoLetterISOLanguageName);
+                
+                if (!paymentMethodDto.PaymentMethod.Any(pm => pm.SystemKeyword.Equals(Constants.MollieCheckoutSystemKeyword)))
+                {
+                    var row = paymentMethodDto.PaymentMethod.AddPaymentMethodRow(Guid.NewGuid(), Constants.MollieCheckoutMethodName, 
+                        Constants.MollieCheckoutMethodName, language.TwoLetterISOLanguageName, Constants.MollieCheckoutSystemKeyword, 
+                        true, true, $"{typeof(MollieCheckoutGateway)}, {typeof(MollieCheckoutGateway).Assembly.GetName().Name}",
+                        $"{typeof(OtherPayment)}, {typeof(OtherPayment).Assembly.GetName().Name}", false, 0, DateTime.Now, DateTime.Now);
+
+                    var paymentMethod = new PaymentMethod(row);
+                    paymentMethod.MarketId.AddRange(allMarkets.Where(x => x.IsEnabled && x.Languages.Contains(language)).Select(x => x.MarketId));
+                    paymentMethod.SaveChanges();
+                }
+            }
         }
 
         private void InitializeOtherPaymentMetaClass()
