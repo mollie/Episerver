@@ -279,6 +279,9 @@
     <Compile Include="Helpers\OrderNoteHelper.cs" />
     <Compile Include="MollieShipmentProcessor.cs" />
     <Compile Include="Services\PaymentMethodsService.cs" />
+    <Compile Include="Storage\Models\PaymentMethodsSettings.cs" />
+    <Compile Include="Storage\IPaymentMethodsSettingsService.cs" />
+    <Compile Include="Storage\PaymentMethodsSettingsService.cs" />
     <Compile Include="Webhooks\MollieOrdersWebhookApiController.cs" />
     <Compile Include="Webhooks\MolliePaymentsWebhookApiController.cs" />
   </ItemGroup>

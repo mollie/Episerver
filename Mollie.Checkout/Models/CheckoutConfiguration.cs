@@ -1,7 +1,11 @@
-﻿namespace Mollie.Checkout.Models
+﻿using System;
+
+namespace Mollie.Checkout.Models
 {
     public class CheckoutConfiguration
     {
+        public Guid PaymentMethodId { get; set; }
+
         public string Environment { get; set; }
 
         public string ApiKey { get; set; }
@@ -17,9 +21,5 @@
         public bool UseCreditcardComponents { get; set; }
 
         public int OrderExpiresInDays { get; set; }
-
-        public string DisabledMolliePaymentMethods { get; set; }
-
-        public string EnabledMolliePaymentMethods { get; set; }
     }
 }

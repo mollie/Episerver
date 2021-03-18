@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Castle.Components.DictionaryAdapter;
+using EPiServer.Data;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mediachase.Commerce.Markets;
@@ -17,6 +18,7 @@ using Mollie.Checkout.Helpers;
 using Newtonsoft.Json;
 using static Mediachase.Commerce.Orders.Dto.PaymentMethodDto;
 using Mollie.Checkout.Models;
+using Mollie.Checkout.Storage;
 
 namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieCheckout
 {
@@ -64,7 +66,16 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
             var countryCode = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
 
+            var paymentMethodId = Guid.Empty;
+            if (_paymentMethodDto.PaymentMethod.Count > 0)
+            {
+                paymentMethodId = _paymentMethodDto.PaymentMethod[0].PaymentMethodId;
+            }
+
+            PaymentMethodIdHiddenField.Value = paymentMethodId.ToString();
+
             BindMolliePaymentMethods(
+                paymentMethodId,
                 marketId,
                 countryCode,
                 useOrdersApi,
@@ -117,30 +128,37 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 return;
             }
 
-            UpdateMolliePaymentMethods(
-                marketId,
-                countryCode,
-                useOrdersApi,
-                paymentMethodId,
-                molliePaymentMethodList.LeftItems.Cast<ListItem>().ToList(),
-                Constants.Fields.DisabledMolliePaymentMethods);
+            var paymentMethodsSettingsService = ServiceLocator.Current.GetInstance<IPaymentMethodsSettingsService>();
 
-            UpdateMolliePaymentMethods(
+            var settings = paymentMethodsSettingsService.GetSettings(paymentMethodId);
+            if (settings.Id == null)
+            {
+                settings.Id = Identity.NewIdentity(paymentMethodId);
+            }
+
+            settings.DisabledPaymentMethods = UpdateMolliePaymentMethods(
                 marketId,
                 countryCode,
                 useOrdersApi,
-                paymentMethodId,
+                molliePaymentMethodList.LeftItems.Cast<ListItem>().ToList(),
+                settings.DisabledPaymentMethods);
+
+            settings.EnabledPaymentMethods = UpdateMolliePaymentMethods(
+                marketId,
+                countryCode,
+                useOrdersApi,
                 molliePaymentMethodList.RightItems.Cast<ListItem>().ToList(),
-                Constants.Fields.EnabledMolliePaymentMethods);
+                settings.EnabledPaymentMethods);
+
+            paymentMethodsSettingsService.SaveSettings(settings);
         }
 
-        private void UpdateMolliePaymentMethods(
+        private static string UpdateMolliePaymentMethods(
             string marketId,
             string countryCode,
             bool useOrdersApi,
-            Guid paymentMethodId, 
-            IList<ListItem> items, 
-            string parameterString)
+            IList<ListItem> items,
+            string molliePaymentMethodsString)
         {
             var molliePaymentMethodsForCurrentMarketAndCountry = items
                 .Select(i => new MolliePaymentMethod
@@ -153,7 +171,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                     Rank = items.IndexOf(i)
                 }).ToList();
 
-            var molliePaymentMethodsString = GetParameterByName(parameterString)?.Value;
             var molliePaymentMethods = string.IsNullOrWhiteSpace(molliePaymentMethodsString)
                 ? new EditableList<MolliePaymentMethod>()
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(molliePaymentMethodsString);
@@ -163,7 +180,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
             molliePaymentMethods.AddRange(molliePaymentMethodsForCurrentMarketAndCountry);
 
-            SetParamValue(paymentMethodId, parameterString, JsonConvert.SerializeObject(molliePaymentMethods));
+            return JsonConvert.SerializeObject(molliePaymentMethods);
         }
 
         private PaymentMethodParameterRow GetParameterByName(string name)
@@ -233,6 +250,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         }
 
         private void BindMolliePaymentMethods(
+            Guid paymentMethodId,
             string marketId, 
             string countryCode,
             bool useOrdersApi,
@@ -247,13 +265,16 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             }
 
             var paymentMethodsService = ServiceLocator.Current.GetInstance<IPaymentMethodsService>();
+            var paymentMethodsSettingsService = ServiceLocator.Current.GetInstance<IPaymentMethodsSettingsService>();
 
-            var disabledMolliePaymentMethodsString = GetParameterByName(Constants.Fields.DisabledMolliePaymentMethods)?.Value;
+            var settings = paymentMethodsSettingsService.GetSettings(paymentMethodId);
+
+            var disabledMolliePaymentMethodsString = settings.DisabledPaymentMethods;
             var disabledMolliePaymentMethods = string.IsNullOrWhiteSpace(disabledMolliePaymentMethodsString)
                 ? new EditableList<MolliePaymentMethod>()
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(disabledMolliePaymentMethodsString);
 
-            var enabledMolliePaymentMethodsString = GetParameterByName(Constants.Fields.EnabledMolliePaymentMethods)?.Value;
+            var enabledMolliePaymentMethodsString = settings.DisabledPaymentMethods;
             var enabledMolliePaymentMethods = string.IsNullOrWhiteSpace(enabledMolliePaymentMethodsString)
                 ? new EditableList<MolliePaymentMethod>()
                 : JsonConvert.DeserializeObject<List<MolliePaymentMethod>>(enabledMolliePaymentMethodsString);
@@ -367,7 +388,13 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
             var country = marketCountryDropDownList.SelectedValue?.Split('|').Skip(1).FirstOrDefault();
 
+            if (!Guid.TryParse(PaymentMethodIdHiddenField.Value, out var paymentMethodId))
+            {
+                return;
+            }
+
             BindMolliePaymentMethods(
+                paymentMethodId,
                 marketId,
                 country,
                 useOrdersApi,
@@ -379,7 +406,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
             currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
             currencyValidationIssuesRepeater.DataBind();
-
         }
     }
 }
