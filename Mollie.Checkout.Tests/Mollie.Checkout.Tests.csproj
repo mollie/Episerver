@@ -233,6 +233,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProcessCheckout\ProcessOrderCheckoutTests.cs" />
     <Compile Include="ProcessCheckout\ProcessPaymentCheckoutTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -227,6 +227,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\CurrentCustomerContactGetter.cs" />
+    <Compile Include="Helpers\ICurrentCustomerContactGetter.cs" />
     <Compile Include="Models\NotSupportedCurrenciesViewModel.cs" />
     <Compile Include="MollieApi\MolliePaymentMethodClient.cs" />
     <Compile Include="CheckoutInitializationModule.cs" />
@@ -239,7 +241,9 @@
     <Compile Include="Helpers\MolliePaymentMethodFilter.cs" />
     <Compile Include="IocConfigurableModule.cs" />
     <Compile Include="MollieApi\CreditCardSpecificParameters.cs" />
+    <Compile Include="MollieClients\Interfaces\IMollieOrderClient.cs" />
     <Compile Include="MollieClients\Interfaces\IMolliePaymentClient.cs" />
+    <Compile Include="MollieClients\MollieOrderClient.cs" />
     <Compile Include="MollieClients\MolliePaymentClient.cs" />
     <Compile Include="Models\PaymentMethod.cs" />
     <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />

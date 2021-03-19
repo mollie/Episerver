@@ -43,7 +43,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
         private const string CurrencyCode = "EUR";
         private const string PaymentDescription = "Payment Description";
         private const string RedirectUrl = "https://www.mollie.com/";
-        private const string WebshopUrl = "https://www.webshop.com";
+        private const string WebShopUrl = "https://www.webshop.com";
         private const string OrderNumber = "PO0001";
         private const string Language = "en";
         private const string PaymentResponseId = nameof(PaymentResponseId);
@@ -147,7 +147,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
                         A<HttpClient>._))
                 .MustHaveHappened();
 
-            var urlBuilder = new UriBuilder(WebshopUrl)
+            var urlBuilder = new UriBuilder(WebShopUrl)
             {
                 Path = $"{Constants.Webhooks.MolliePaymentsWebhookUrl}/{Language}"
             };
@@ -217,7 +217,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             _molliePaymentClient = A.Fake<IMolliePaymentClient>();
             _orderNoteHelper = A.Fake<IOrderNoteHelper>();
 
-            var httpContext = new HttpContext(new HttpRequest(null, WebshopUrl, null), new HttpResponse(null));
+            var httpContext = new HttpContext(new HttpRequest(null, WebShopUrl, null), new HttpResponse(null));
             A.CallTo(() => _httpContextAccessor.Invoke()).Returns(new HttpContextWrapper(httpContext));
 
             A.CallTo(() => _paymentDescriptionGenerator.GetDescription(A<IOrderGroup>._, A<IPayment>._))

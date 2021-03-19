@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using EPiServer.Commerce.Order;
 using Mollie.Checkout.ProcessCheckout.Interfaces;
@@ -8,7 +9,6 @@ using EPiServer.ServiceLocation;
 using Mollie.Checkout.Services;
 using System.Web;
 using EPiServer.Security;
-using Mediachase.Commerce.Customers;
 using Mediachase.Commerce.Markets;
 using Mediachase.Commerce.Orders.Managers;
 using Mediachase.Commerce.Security;
@@ -16,36 +16,36 @@ using Mollie.Api.Models.Order;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Newtonsoft.Json;
 using System.Net.Http;
-using Mollie.Api.Client;
 using Mollie.Api.Models;
 using Mollie.Checkout.Services.Interfaces;
-using Mollie.Api.Models.Payment;
 using Mollie.Api.Models.Order.Request.PaymentSpecificParameters;
 using System.Text;
-using Mollie.Checkout.Models;
+using Mollie.Api.Models.Payment.Response;
 using Mollie.Checkout.MollieApi;
 using Mollie.Checkout.Helpers;
+using Mollie.Checkout.MollieClients.Interfaces;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
     public class ProcessOrderCheckout : IProcessCheckout
     {
-        private readonly ILogger _logger = LogManager.GetLogger(typeof(ProcessOrderCheckout));
+        private readonly ILogger _logger;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IPaymentDescriptionGenerator _paymentDescriptionGenerator;
         private readonly ICheckoutMetaDataFactory _checkoutMetaDataFactory;
         private readonly IOrderRepository _orderRepository;
         private readonly IMarketService _marketService;
         private readonly ServiceAccessor<HttpContextBase> _httpContextAccessor;
-        private readonly CustomerContext _customerContext;
         private readonly IProductImageUrlFinder _productImageUrlFinder;
         private readonly IProductUrlGetter _productUrlGetter;
         private readonly HttpClient _httpClient;
         private readonly IOrderNoteHelper _orderNoteHelper;
-
+        private readonly IMollieOrderClient _mollieOrderClient;
+        private readonly ICurrentCustomerContactGetter _currentCustomerContactGetter;
 
         public ProcessOrderCheckout()
         {
+            _logger = LogManager.GetLogger(typeof(ProcessOrderCheckout));
             _checkoutConfigurationLoader = ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>();
             _paymentDescriptionGenerator = ServiceLocator.Current.GetInstance<IPaymentDescriptionGenerator>();
             _checkoutMetaDataFactory = ServiceLocator.Current.GetInstance<ICheckoutMetaDataFactory>();
@@ -54,16 +54,52 @@ namespace Mollie.Checkout.ProcessCheckout
             _productImageUrlFinder = ServiceLocator.Current.GetInstance<IProductImageUrlFinder>();
             _productUrlGetter = ServiceLocator.Current.GetInstance<IProductUrlGetter>();
             _httpContextAccessor = ServiceLocator.Current.GetInstance<ServiceAccessor<HttpContextBase>>();
-            _customerContext = CustomerContext.Current;
             _httpClient = ServiceLocator.Current.GetInstance<HttpClient>();
             _orderNoteHelper = ServiceLocator.Current.GetInstance<IOrderNoteHelper>();
+            _mollieOrderClient = ServiceLocator.Current.GetInstance<IMollieOrderClient>();
+            _currentCustomerContactGetter = ServiceLocator.Current.GetInstance<ICurrentCustomerContactGetter>();
+        }
+
+        public ProcessOrderCheckout(
+            ILogger logger,
+            ICheckoutConfigurationLoader checkoutConfigurationLoader,
+            IPaymentDescriptionGenerator paymentDescriptionGenerator,
+            ICheckoutMetaDataFactory checkoutMetaDataFactory,
+            IOrderRepository orderRepository,
+            IMarketService marketService,
+            ServiceAccessor<HttpContextBase> httpContextAccessor,
+            IProductImageUrlFinder productImageUrlFinder,
+            IProductUrlGetter productUrlGetter,
+            HttpClient httpClient,
+            IOrderNoteHelper orderNoteHelper,
+            IMollieOrderClient mollieOrderClient,
+            ICurrentCustomerContactGetter currentCustomerContactGetter)
+        {
+            _logger = logger;
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _paymentDescriptionGenerator = paymentDescriptionGenerator;
+            _checkoutMetaDataFactory = checkoutMetaDataFactory;
+            _orderRepository = orderRepository;
+            _marketService = marketService;
+            _httpContextAccessor = httpContextAccessor;
+            _productImageUrlFinder = productImageUrlFinder;
+            _productUrlGetter = productUrlGetter;
+            _httpClient = httpClient;
+            _orderNoteHelper = orderNoteHelper;
+            _mollieOrderClient = mollieOrderClient;
+            _currentCustomerContactGetter = currentCustomerContactGetter;
         }
 
         public PaymentProcessingResult Process(ICart cart, IPayment payment)
         {
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
 
-            string selectedMethod = string.Empty;
+            if (string.IsNullOrWhiteSpace(languageId))
+            {
+                throw new CultureNotFoundException("Unable to get payment language.");
+            }
+
+            var selectedMethod = string.Empty;
 
             if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
             {
@@ -72,7 +108,7 @@ namespace Mollie.Checkout.ProcessCheckout
             
             var request = _httpContextAccessor().Request;
             
-            var baseUrl = $"{request.Url?.Scheme}://{request.Url.Authority}";
+            var baseUrl = $"{request.Url?.Scheme}://{request.Url?.Authority}";
 
             var urlBuilder = new UriBuilder(baseUrl)
             {
@@ -80,14 +116,23 @@ namespace Mollie.Checkout.ProcessCheckout
             };
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
-            var orderClient = new OrderClient(checkoutConfiguration.ApiKey, _httpClient);
+
+            if (string.IsNullOrWhiteSpace(checkoutConfiguration?.RedirectUrl))
+            {
+                throw new ApplicationException("Redirect url configuration not set.");
+            }
+
+            if (string.IsNullOrWhiteSpace(checkoutConfiguration.ApiKey))
+            {
+                throw new ApplicationException("Api key configuration not set.");
+            }
 
             var shipment = cart.GetFirstShipment();
             var billingAddress = payment.BillingAddress;
             var shippingAddress = shipment.ShippingAddress;
             var orderNumber = cart.OrderNumber();
             var description = _paymentDescriptionGenerator.GetDescription(cart, payment);
-            var currentContact = _customerContext.CurrentContact;
+            var currentContact = _currentCustomerContactGetter.Get();
 
             var metadata = new
             {
@@ -97,7 +142,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var orderRequest = new OrderRequest
             {
-                Amount = new Amount(cart.Currency.CurrencyCode, cart.GetTotal().Amount),
+                Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
                 Method = selectedMethod,
                 BillingAddress = new OrderAddressDetails
                 {
@@ -155,11 +200,11 @@ namespace Mollie.Checkout.ProcessCheckout
             {
                 if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MollieToken))
                 {
-                    var cc_token = payment.Properties[Constants.OtherPaymentFields.MollieToken] as string;
+                    var ccToken = payment.Properties[Constants.OtherPaymentFields.MollieToken] as string;
 
                     orderRequest.Payment = new CreditCardSpecificParameters
                     {
-                        CardToken = cc_token
+                        CardToken = ccToken
                     };
                 }
             }
@@ -168,7 +213,8 @@ namespace Mollie.Checkout.ProcessCheckout
 
             try
             {
-                createOrderResponse = orderClient.CreateOrderAsync(orderRequest).GetAwaiter().GetResult();
+                createOrderResponse = _mollieOrderClient.CreateOrderAsync(orderRequest, checkoutConfiguration.ApiKey, _httpClient)
+                    .GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
@@ -181,7 +227,8 @@ namespace Mollie.Checkout.ProcessCheckout
 
             try
             {
-                getOrderResponse = orderClient.GetOrderAsync(createOrderResponse?.Id, true, false, false).GetAwaiter().GetResult();
+                getOrderResponse = _mollieOrderClient.GetOrderAsync(createOrderResponse?.Id, checkoutConfiguration.ApiKey, _httpClient)
+                    .GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
@@ -192,7 +239,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var molliePaymentIdMessage = new StringBuilder();
 
-            foreach (var molliePayment in getOrderResponse?.Embedded?.Payments)
+            foreach (var molliePayment in getOrderResponse?.Embedded?.Payments ?? new List<PaymentResponse>())
             {
                 if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentId))
                 {
@@ -215,8 +262,7 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var message = getOrderResponse?.Links.Checkout != null && !string.IsNullOrWhiteSpace(getOrderResponse?.Links.Checkout.Href)
                 ? $"Mollie Create Order is successful. Redirect end user to {getOrderResponse?.Links.Checkout.Href}"
-                : $"Mollie Create Order is successful. No redirect needed";
-
+                : "Mollie Create Order is successful. No redirect needed";
             
             cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout?.Href;
 
