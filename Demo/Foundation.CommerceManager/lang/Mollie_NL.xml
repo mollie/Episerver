@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--Please copy this lang file into /wwwroot/lang folder-->
+<languages>
+  <language name="Nederlands" id="nl">
+    <episerver>
+      <mollie>
+        <settings>
+            <apikey>Api key (nl)</apikey>
+        </settings>
+      </mollie>
+    </episerver>
+  </language>
+</languages>
