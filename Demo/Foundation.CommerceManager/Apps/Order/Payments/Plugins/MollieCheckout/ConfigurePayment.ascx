@@ -121,7 +121,7 @@
     </tr>
     <tr>
         <td class="FormSectionCell" colspan="2">
-            <h1>Mollie Info</h1>
+            <h1><asp:Literal ID="mollieInfoHeader" runat="server" Text="Mollie Info" /></h1>
         </td>
     </tr>
     <tr>
@@ -162,7 +162,7 @@
     </tr>
     <tr>
         <td class="FormSectionCell" colspan="2">
-            <h2>Payment Methods listed on Website</h2>
+            <h2><asp:Literal ID="listedOnWebsiteHeader" runat="server" Text="Payment Methods listed on Website" /></h2>
         </td>
     </tr>
     <tr>
@@ -170,7 +170,7 @@
     </tr>
     <tr>
         <td colspan="2">
-            <p><b><i>Changes are visible after Settings have been saved!</i></b></p>
+            <p><b><i><asp:Literal ID="listedOnWebsiteDescription" runat="server" Text="Changes are visible after Settings have been saved!" /></i></b></p>
         </td>
     </tr>
     <tr>
@@ -221,7 +221,7 @@
     </tr>
     <tr>
         <td class="FormSectionCell" colspan="2">
-            <h2>Not supported Currencies for Payment Methods by Market</h2>
+            <h2><asp:Literal ID="notSupportedDescription" runat="server" Text="Not supported Currencies for Payment Methods by Market" /></h2>
         </td>
     </tr>
     <tr>
@@ -229,14 +229,14 @@
     </tr>
     <tr>
         <td class="FormFieldCell" colspan="2">
-            <asp:Repeater ID="currencyValidationIssuesRepeater" runat="server">  
+            <asp:Repeater ID="currencyValidationIssuesRepeater" runat="server" OnItemDataBound="currencyValidationIssuesRepeater_ItemDataBound">  
                 <HeaderTemplate>
                     <table cellspacing="0" cellpadding="4" style="width:100%;border-collapse:collapse;">
                         <thead>
                             <tr>
-                                <th class="ibn-vh2" scope="col">Market</th>
-                                <th class="ibn-vh2" scope="col">Currency</th>
-                                <th class="ibn-vh2" scope="col">Payment Method</th>
+                                <th class="ibn-vh2" scope="col"><asp:Literal ID="marketTableHeader" runat="server" Text="Market" /></th>
+                                <th class="ibn-vh2" scope="col"><asp:Literal ID="currencyTableHeader" runat="server" Text="Currency" /></th>
+                                <th class="ibn-vh2" scope="col"><asp:Literal ID="paymentMethodTableHeader" runat="server" Text="Payment Method" /></th>
                             </tr>
                         </thead>
                 </HeaderTemplate>

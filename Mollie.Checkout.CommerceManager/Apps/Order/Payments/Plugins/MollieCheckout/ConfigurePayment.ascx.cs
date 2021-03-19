@@ -42,6 +42,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 return;
             }
 
+            SetMultiligualSettingsLabels();
+
             var apiKey = GetParameterByName(Constants.Fields.ApiKeyField)?.Value ?? string.Empty;
             var useOrdersApi = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value?.ToLower() == "true";
 
@@ -366,16 +368,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             }
         }
 
-        protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)
-        {
-            ReloadPaymentMethods();
-        }
-
-        protected void MarketCountryDropDownListSelectedIndexChanged(object sender, EventArgs e)
-        {
-            ReloadPaymentMethods();
-        }
-
         private void ReloadPaymentMethods()
         {
             var apiKey = apiKeyTextbox.Text;
@@ -406,6 +398,43 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
             currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
             currencyValidationIssuesRepeater.DataBind();
+        }
+
+        private void SetMultiligualSettingsLabels()
+        {
+            environmentLabel.Text = "Environment";
+            apiKeyLabel.Text = "Api Key";
+            profileIDLabel.Text = "Profile ID";
+            redirectURLLabel.Text = "Redirect URL";
+            orderExpiresInDaysLabel.Text = "Order Expires In Days";
+            useOrdersApiLabel.Text = "Use Orders API";
+            useCreditcardComponentsLabel.Text = "Use Creditcard Components";
+            mollieInfoHeader.Text = "Mollie Info";
+            versionLabel.Text = "Version";
+            linkToProfileLabel.Text = "Link to Mollie Profile (to find the API keys)";
+            linkToSupportPageLabel.Text = "Link to our support page to find more info about Mollie";
+            listedOnWebsiteHeader.Text = "Payment Methods listed on Website";
+            listedOnWebsiteDescription.Text = "Changes are visible after Settings have been saved!";
+            marketCountryLabel.Text = "Market - Country";
+            notSupportedDescription.Text = "Not supported Currencies for Payment Methods by Market";
+        }
+
+        protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReloadPaymentMethods();
+        }
+
+        protected void MarketCountryDropDownListSelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReloadPaymentMethods();
+        }
+
+        protected void currencyValidationIssuesRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e == null || e.Item == null)
+            {
+
+            }
         }
     }
 }

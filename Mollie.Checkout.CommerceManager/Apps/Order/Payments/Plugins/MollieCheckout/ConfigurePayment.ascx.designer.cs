@@ -195,6 +195,15 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         protected global::System.Web.UI.WebControls.RadioButtonList useCreditcardComponentsRadioButtonList;
 
         /// <summary>
+        /// mollieInfoHeader control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal mollieInfoHeader;
+
+        /// <summary>
         /// versionLabel control.
         /// </summary>
         /// <remarks>
@@ -249,6 +258,24 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         protected global::System.Web.UI.WebControls.HyperLink linkToSupportPageHyperLink;
 
         /// <summary>
+        /// listedOnWebsiteHeader control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal listedOnWebsiteHeader;
+
+        /// <summary>
+        /// listedOnWebsiteDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal listedOnWebsiteDescription;
+
+        /// <summary>
         /// marketCountryLabel control.
         /// </summary>
         /// <remarks>
@@ -274,6 +301,15 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::Mediachase.Web.Console.Controls.DualList molliePaymentMethodList;
+
+        /// <summary>
+        /// notSupportedDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal notSupportedDescription;
 
         /// <summary>
         /// currencyValidationIssuesRepeater control.
