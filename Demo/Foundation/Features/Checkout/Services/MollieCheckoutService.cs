@@ -56,13 +56,13 @@ namespace Mollie.Checkout.Services
         }
 
         public void HandleOrderStatusUpdate(
-            ICart cart, 
+            IOrderGroup orderGroup, 
             string mollieStatus, 
             string mollieOrderId)
         {
-            if(cart == null)
+            if(orderGroup == null)
             {
-                throw new ArgumentNullException(nameof(cart));
+                throw new ArgumentNullException(nameof(orderGroup));
             }
 
             if(string.IsNullOrEmpty(mollieStatus))
@@ -82,23 +82,23 @@ namespace Mollie.Checkout.Services
                 case MollieOrderStatus.Authorized:
                 case MollieOrderStatus.Paid:
                 case MollieOrderStatus.Shipping:
-                    cart.OrderStatus = OrderStatus.InProgress;
+                    orderGroup.OrderStatus = OrderStatus.InProgress;
                     break;
                 case MollieOrderStatus.Completed:
-                    cart.OrderStatus = OrderStatus.Completed;
+                    orderGroup.OrderStatus = OrderStatus.Completed;
                     break;
                 case MollieOrderStatus.Canceled:
                 case MollieOrderStatus.Expired:
-                    cart.OrderStatus = OrderStatus.Cancelled;
+                    orderGroup.OrderStatus = OrderStatus.Cancelled;
                     break;
                 default:
                     break;
             }
 
-            cart.Properties[Constants.Cart.MollieOrderStatusField] = mollieStatus;
-            cart.Properties[MollieOrder.OrderIdMollie] = mollieOrderId;
+            orderGroup.Properties[Constants.Cart.MollieOrderStatusField] = mollieStatus;
+            orderGroup.Properties[MollieOrder.OrderIdMollie] = mollieOrderId;
 
-            _orderRepository.Save(cart);
+            _orderRepository.Save(orderGroup);
         }
 
         public void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment)

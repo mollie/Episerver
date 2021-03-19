@@ -20,6 +20,7 @@ namespace Mollie.Checkout.Webhooks
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderGroupPaymentService _orderGroupPaymentService;
         private readonly IMollieCheckoutService _mollieCheckoutService;
+        private readonly IPurchaseOrderRepository _purchaseOrderRepository;
         private readonly HttpClient _httpClient;
 
         public MollieOrdersWebhookApiController(
@@ -27,12 +28,14 @@ namespace Mollie.Checkout.Webhooks
             IOrderRepository orderRepository,
             IOrderGroupPaymentService orderGroupPaymentService,
             IMollieCheckoutService mollieCheckoutService,
+            IPurchaseOrderRepository purchaseOrderRepository,
             HttpClient httpClient)
         {
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _orderRepository = orderRepository;
             _orderGroupPaymentService = orderGroupPaymentService;
             _mollieCheckoutService = mollieCheckoutService;
+            _purchaseOrderRepository = purchaseOrderRepository;
             _httpClient = httpClient;
         }
 
@@ -91,20 +94,27 @@ namespace Mollie.Checkout.Webhooks
             }
 
             // Get Cart with ID
-            var cart = _orderRepository.Load<ICart>(metaDataResponse.CartId);
+            var orderGroup = _orderRepository.Load<IOrderGroup>(metaDataResponse.CartId);
 
-            if (cart == null)
+            if (orderGroup == null)
             {
-                _log.Error($"Cart with ID {metaDataResponse.CartId} does not exist.");
+                _log.Warning($"Cart with ID {metaDataResponse.CartId} does not exist.");
 
-                return Ok();
+                orderGroup = _purchaseOrderRepository.Load(metaDataResponse.OrderNumber);
+
+                if (orderGroup == null)
+                {
+                    _log.Error($"Order with ID {metaDataResponse.OrderNumber} does not exist.");
+
+                    return Ok();
+                }
             }
 
             // Update Cart            
-            _mollieCheckoutService.HandleOrderStatusUpdate(cart, orderResult.Status, orderResult.Id);
+            _mollieCheckoutService.HandleOrderStatusUpdate(orderGroup, orderResult.Status, orderResult.Id);
 
             // Update Payments
-            var orderGroupPayments = cart.GetFirstForm().Payments;
+            var orderGroupPayments = orderGroup.GetFirstForm().Payments;
 
             var mollieOrderPayments = orderResult.Embedded?.Payments;
 
@@ -112,7 +122,7 @@ namespace Mollie.Checkout.Webhooks
             {
                 foreach (var orderGroupPayment in orderGroupPayments)
                 {
-                    await HandlePaymentUpdateAsync(_orderGroupPaymentService, cart, orderGroupPayment, molliePayment);
+                    await HandlePaymentUpdateAsync(_orderGroupPaymentService, orderGroup, orderGroupPayment, molliePayment);
                 }
             }
 
