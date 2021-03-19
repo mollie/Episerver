@@ -4,7 +4,7 @@
 		<TargetFramework>net472</TargetFramework>
 		<LangVersion>7.1</LangVersion>
     <AssemblyVersion>2020.07.1.0</AssemblyVersion>
-		<CodeAnalysisRuleSet>..\default.ruleset</CodeAnalysisRuleSet>
+		<CodeAnalysisRuleSet>..\..\default.ruleset</CodeAnalysisRuleSet>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
