@@ -9,6 +9,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using Castle.Components.DictionaryAdapter;
 using EPiServer.Data;
+using EPiServer.Framework.Localization;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mediachase.Commerce.Markets;
@@ -42,7 +43,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
                 return;
             }
 
-            SetMultiligualSettingsLabels();
+            SetMultilingualSettingsLabels();
 
             var apiKey = GetParameterByName(Constants.Fields.ApiKeyField)?.Value ?? string.Empty;
             var useOrdersApi = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value?.ToLower() == "true";
@@ -400,23 +401,23 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             currencyValidationIssuesRepeater.DataBind();
         }
 
-        private void SetMultiligualSettingsLabels()
+        private void SetMultilingualSettingsLabels()
         {
-            environmentLabel.Text = "Environment";
-            apiKeyLabel.Text = "Api Key";
-            profileIDLabel.Text = "Profile ID";
-            redirectURLLabel.Text = "Redirect URL";
-            orderExpiresInDaysLabel.Text = "Order Expires In Days";
-            useOrdersApiLabel.Text = "Use Orders API";
-            useCreditcardComponentsLabel.Text = "Use Creditcard Components";
-            mollieInfoHeader.Text = "Mollie Info";
-            versionLabel.Text = "Version";
-            linkToProfileLabel.Text = "Link to Mollie Profile (to find the API keys)";
-            linkToSupportPageLabel.Text = "Link to our support page to find more info about Mollie";
-            listedOnWebsiteHeader.Text = "Payment Methods listed on Website";
-            listedOnWebsiteDescription.Text = "Changes are visible after Settings have been saved!";
-            marketCountryLabel.Text = "Market - Country";
-            notSupportedDescription.Text = "Not supported Currencies for Payment Methods by Market";
+            environmentLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/environment");
+            apiKeyLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/apikey");
+            profileIDLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/profileid");
+            redirectURLLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/redirecturl");
+            orderExpiresInDaysLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/orderexpiresindays");
+            useOrdersApiLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/useordersapi");
+            useCreditcardComponentsLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/usecreditcardcomponents");
+            mollieInfoHeader.Text = LocalizationService.Current.GetString("/mollie/payment/settings/mollieinfoheader");
+            versionLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/version");
+            linkToProfileLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/linktoprofile");
+            linkToSupportPageLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/linktosupportpage");
+            listedOnWebsiteHeader.Text = LocalizationService.Current.GetString("/mollie/payment/settings/listedonwebsiteheader");
+            listedOnWebsiteDescription.Text = LocalizationService.Current.GetString("/mollie/payment/settings/listedonwebsite");
+            marketCountryLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/marketcountry");
+            notSupportedDescription.Text = LocalizationService.Current.GetString("/mollie/payment/settings/notsupported");
         }
 
         protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)
