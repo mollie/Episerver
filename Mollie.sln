@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mollie.Checkout.CommerceMan
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddOn", "AddOn", "{735DCB13-E8B7-4D65-8217-9644A41D8A5B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Foundation", "Foundation", "{206EC107-EC0C-4DAB-BC93-9ADAF3FB7E30}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo Foundation", "Demo Foundation", "{206EC107-EC0C-4DAB-BC93-9ADAF3FB7E30}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mollie.Checkout.Tests", "Mollie.Checkout.Tests\Mollie.Checkout.Tests.csproj", "{F3110EF8-6F13-486D-9521-5EB2C20F8A61}"
 EndProject
