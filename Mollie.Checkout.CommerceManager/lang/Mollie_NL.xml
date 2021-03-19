@@ -5,21 +5,31 @@
     <mollie>
       <payment>
         <settings>
-          <environment>Environment</environment>
+          <environment>Omgevingen</environment>
           <apikey>Api Key</apikey>
-          <profileid>Profile ID</profileid>
+          <profileid>Profiel ID</profileid>
           <redirecturl>Redirect URL</redirecturl>
-          <orderexpiresindays>Order Expires In Days</orderexpiresindays>
-          <useordersapi>Use Orders API</useordersapi>
-          <usecreditcardcomponents>Use Creditcard Components</usecreditcardcomponents>
+          <orderexpiresindays>Order verloopt in dagen</orderexpiresindays>
+          <useordersapi>Gebruik Orders API</useordersapi>
+          <usecreditcardcomponents>Gebruik Creditcard Component</usecreditcardcomponents>
           <mollieinfoheader>Mollie Info</mollieinfoheader>
-          <version>Version</version>
-          <linktoprofile>Link to Mollie Profile (to find the API keys)</linktoprofile>
-          <linktosupportpage>Link to our support page to find more info about Mollie</linktosupportpage>
-          <listedonwebsiteheader>Payment Methods listed on Website</listedonwebsiteheader>
-          <listedonwebsite>Changes are visible after Settings have been saved!</listedonwebsite>
-          <marketcountry>Market - Country</marketcountry>
-          <notsupported>Not supported Currencies for Payment Methods by Market</notsupported>
+          <version>Versie</version>
+          <linktoprofile>Link naar Mollie Profiel (t.b.v. voor API key)</linktoprofile>
+          <linktosupportpage>Link naar onze support pagina voor informatie over Mollie</linktosupportpage>
+          <listedonwebsiteheader>Betaal Methodes op de website</listedonwebsiteheader>
+          <listedonwebsite>Wijzigingen zijn pas zichtbaar na opslaan!</listedonwebsite>
+          <marketcountry>Markt - Land</marketcountry>
+          <notsupported>Niet ondersteunde valuta voor betaal methode voor markt</notsupported>
+          <yes>Ja</yes>
+          <no>Nee</no>
+          <marketheader>Markt</marketheader>
+          <currencyheader>Valuta</currencyheader>
+          <paymentmethodheader>Betaal methode</paymentmethodheader>
+          <requiredprofileid>Profiel ID is verplicht</requiredprofileid>
+          <requiredredirecturl>Redirect URL is verplicht</requiredredirecturl>
+          <requiredorderexpires>Order verloopt in dagen is verplicht</requiredorderexpires>
+          <rangeorderexpires>Order verloopt in dagen moet tussen 1 en 100 liggen</rangeorderexpires>
+          <settingsheader>Mollie Episerver Instellingen</settingsheader>
         </settings>
       </payment>
     </mollie>
