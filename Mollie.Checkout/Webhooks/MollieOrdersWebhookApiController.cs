@@ -94,9 +94,7 @@ namespace Mollie.Checkout.Webhooks
             }
 
             // Get Cart with ID
-            var orderGroup = _orderRepository.Load<IOrderGroup>(metaDataResponse.CartId);
-
-            if (orderGroup == null)
+            if (!(_orderRepository.Load<ICart>(metaDataResponse.CartId) is IOrderGroup orderGroup))
             {
                 _log.Warning($"Cart with ID {metaDataResponse.CartId} does not exist.");
 
