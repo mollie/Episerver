@@ -7,6 +7,7 @@ using Foundation.Commerce.Customer.Services;
 using Foundation.Features.Checkout.Services;
 using Foundation.Features.MyAccount.AddressBook;
 using Foundation.Infrastructure.Services;
+using System.Threading;
 using System.Web.Mvc;
 
 namespace Foundation.Features.MyAccount.OrderConfirmation
@@ -30,7 +31,7 @@ namespace Foundation.Features.MyAccount.OrderConfirmation
             _purchaseOrderRepository = purchaseOrderRepository;
         }
 
-        public ActionResult Index(OrderConfirmationPage currentPage, string notificationMessage, string orderNumber)
+        public ActionResult Index(OrderConfirmationPage currentPage, string notificationMessage, string orderNumber, int retryCount = 0)
         {
             IPurchaseOrder order = null;
             if (PageEditing.PageIsInEditMode)
@@ -58,6 +59,14 @@ namespace Foundation.Features.MyAccount.OrderConfirmation
                 _campaignService.UpdatePoint(decimal.ToInt16(viewModel.SubTotal.Amount));
 
                 return View(viewModel);
+            }
+
+            if (order == null && retryCount < 3)
+            {
+                // It could be background processing is not yet completed..
+                Thread.Sleep(1000);
+
+                return RedirectToAction("Index", new { notificationMessage = notificationMessage, orderNumber = orderNumber, retryCount = retryCount + 1 });
             }
 
             return Redirect(Url.ContentUrl(ContentReference.StartPage));
