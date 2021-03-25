@@ -9,6 +9,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using Castle.Components.DictionaryAdapter;
 using EPiServer.Data;
+using EPiServer.Framework.Localization;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mediachase.Commerce.Markets;
@@ -41,6 +42,8 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             {
                 return;
             }
+
+            SetMultilingualSettingsLabels();
 
             var apiKey = GetParameterByName(Constants.Fields.ApiKeyField)?.Value ?? string.Empty;
             var useOrdersApi = GetParameterByName(Constants.Fields.UseOrdersApiField)?.Value?.ToLower() == "true";
@@ -366,16 +369,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             }
         }
 
-        protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)
-        {
-            ReloadPaymentMethods();
-        }
-
-        protected void MarketCountryDropDownListSelectedIndexChanged(object sender, EventArgs e)
-        {
-            ReloadPaymentMethods();
-        }
-
         private void ReloadPaymentMethods()
         {
             var apiKey = apiKeyTextbox.Text;
@@ -406,6 +399,43 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
 
             currencyValidationIssuesRepeater.DataSource = currencyValidationIssues;
             currencyValidationIssuesRepeater.DataBind();
+        }
+
+        private void SetMultilingualSettingsLabels()
+        {
+            environmentLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/environment");
+            apiKeyLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/apikey");
+            profileIDLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/profileid");
+            redirectURLLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/redirecturl");
+            orderExpiresInDaysLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/orderexpiresindays");
+            useOrdersApiLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/useordersapi");
+            useCreditcardComponentsLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/usecreditcardcomponents");
+            mollieInfoHeader.Text = LocalizationService.Current.GetString("/mollie/payment/settings/mollieinfoheader");
+            versionLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/version");
+            linkToProfileLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/linktoprofile");
+            linkToSupportPageLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/linktosupportpage");
+            listedOnWebsiteHeader.Text = LocalizationService.Current.GetString("/mollie/payment/settings/listedonwebsiteheader");
+            listedOnWebsiteDescription.Text = LocalizationService.Current.GetString("/mollie/payment/settings/listedonwebsite");
+            marketCountryLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/marketcountry");
+            notSupportedDescription.Text = LocalizationService.Current.GetString("/mollie/payment/settings/notsupported");
+        }
+
+        protected void OrdersApiRadioButtonListOnSelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReloadPaymentMethods();
+        }
+
+        protected void MarketCountryDropDownListSelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReloadPaymentMethods();
+        }
+
+        protected void currencyValidationIssuesRepeater_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e == null || e.Item == null)
+            {
+
+            }
         }
     }
 }

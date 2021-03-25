@@ -417,6 +417,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="lang\Mollie_EN.xml" />
+    <Content Include="lang\Mollie_NL.xml" />
     <Content Include="NotificationTemplates\default\order-paymentplan-confirm.xsl" />
     <Content Include="NotificationTemplates\default\order-paymentplan-notify.xsl" />
     <Content Include="NotificationTemplates\default\order-purchaseorder-confirm.xsl" />
@@ -500,6 +502,7 @@
       <Name>Mollie.Checkout</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
