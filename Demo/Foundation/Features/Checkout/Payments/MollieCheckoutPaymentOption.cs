@@ -126,8 +126,15 @@ namespace Foundation.Features.Checkout.Payments
             payment.Status = PaymentStatus.Pending.ToString();
             payment.TransactionType = TransactionType.Sale.ToString();
 
-            payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.LanguageId, languageId);
-            
+            if (!payment.Properties.ContainsKey(Mollie.Checkout.Constants.OtherPaymentFields.LanguageId))
+            {
+                payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.LanguageId, languageId);
+            }
+            else
+            {
+                payment.Properties[Mollie.Checkout.Constants.OtherPaymentFields.LanguageId] = languageId;
+            }
+
             if (!string.IsNullOrWhiteSpace(SubPaymentMethod))
             {
                 payment.Properties.Add(Mollie.Checkout.Constants.OtherPaymentFields.MolliePaymentMethod, SubPaymentMethod);

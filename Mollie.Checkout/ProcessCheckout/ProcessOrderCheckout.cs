@@ -272,7 +272,12 @@ namespace Mollie.Checkout.ProcessCheckout
 
             _logger.Information(message);
 
-            return PaymentProcessingResult.CreateSuccessfulResult(message, getOrderResponse?.Links.Checkout?.Href);
+            // If no redirect to molly is needed, redirect to the redirect page directly (cart/order updates will be handled by webhook in background)..
+            var redirectUrl = getOrderResponse?.Links.Checkout != null && !string.IsNullOrWhiteSpace(getOrderResponse?.Links.Checkout.Href)
+                ? getOrderResponse.Links.Checkout.Href
+                : orderRequest.RedirectUrl;
+
+            return PaymentProcessingResult.CreateSuccessfulResult(message, redirectUrl);
         }
 
         private IEnumerable<OrderLineRequest> GetOrderLines(

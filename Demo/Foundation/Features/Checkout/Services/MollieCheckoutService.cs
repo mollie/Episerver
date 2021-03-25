@@ -1,6 +1,8 @@
 ﻿using EPiServer.Commerce.Order;
+using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce.Orders;
+using Mollie.Checkout.Services.Interfaces;
 using System;
 using System.Linq;
 using static Mollie.Checkout.Constants;
@@ -12,11 +14,16 @@ namespace Mollie.Checkout.Services
     {
         private readonly IOrderGroupCalculator _orderGroupCalculator;
         private readonly IOrderRepository _orderRepository;
+        private readonly IOrderNoteHelper _orderNoteHelper;
 
-        public MollieCheckoutService(IOrderGroupCalculator orderGroupCalculator, IOrderRepository orderRepository)
+
+
+        public MollieCheckoutService(IOrderGroupCalculator orderGroupCalculator, IOrderRepository orderRepository,
+            IOrderNoteHelper orderNoteHelper)
         {
             _orderGroupCalculator = orderGroupCalculator;
             _orderRepository = orderRepository;
+            _orderNoteHelper = orderNoteHelper;
         }
 
         public void HandlePaymentSuccess(IOrderGroup orderGroup, IPayment payment)
@@ -33,6 +40,10 @@ namespace Mollie.Checkout.Services
                 // If the Cart is completely paid
                 if (totalProcessedAmount == orderGroup.GetTotal(_orderGroupCalculator).Amount)
                 {
+
+
+
+
                     // Create order
                     var orderReference = (cart.Properties["IsUsePaymentPlan"] != null &&
                         cart.Properties["IsUsePaymentPlan"].Equals(true)) ?
@@ -40,6 +51,9 @@ namespace Mollie.Checkout.Services
                             _orderRepository.SaveAsPurchaseOrder(cart);
 
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
+
+                    var message = "Converted to order by HandlePaymentSuccess initiated by webhook";
+                    _orderNoteHelper.AddNoteToOrder(purchaseOrder, message, message, Guid.Empty);
 
                     purchaseOrder.Properties[MollieOrder.OrderIdMollie] = cart.Properties[MollieOrder.OrderIdMollie];
                     purchaseOrder.Properties[PaymentLinkMollie] = cart.Properties[PaymentLinkMollie];
