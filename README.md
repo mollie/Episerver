@@ -3,30 +3,30 @@
 
 ## Intro
 
-The Mollie.Checkout package helps with the implementation of [Mollie](https://www.mollie.com/) for accepting online payments in a episerver commerce website. 
+The Mollie.Checkout Package helps with the Implementation of [Mollie](https://www.mollie.com/) for accepting Online Payments in a Episerver Commerce Website. 
 
 ## Packages
 
-[Mollie.Checkout] is the package for integration of Mollie Checkout in a Episerver commerce website.  
-[Mollie.Checkout.CommerceManager] contains the usercontrol for configuration of the payment method in Episerver Commerce Manager.
+[Mollie.Checkout] is the Package for Integration of Mollie Checkout in a Episerver Commerce Website.  
+[Mollie.Checkout.CommerceManager] contains the UserControl for Configuration of the Payment Method in Episerver Commerce Manager.
 
 
 ## How it works / Flow
 
-- Customer adds a product to the shoppingcart and navigates to the checkout page.
-- On the checkout page the payment option 'Mollie Checkout' is available, and the customer selects this.
-    - The customer selects the preferred payment method (optional)
-    - The customer enters creditcard information (optional - if using creditcard components)
-- The customer clicks on 'PLACE ORDER'
-    - Depending on the selected option in settings a payment or order is created using Mollie APIs.
-        (an url is returned to redirect the customer to if needed)
-    - The customer is redirected to a Mollie page to complete the payment. (if needed)
-- The customer completes the payment (if needed)
-- (Background) Updates on the payment or order are sent to a webhook by mollie
-    - When the payment is successful an order is created for the cart in episerver.
-- The customer is redirected to the 'Redirect page' specified in the mollie configuration.
-    - This could be the order confirmation page
-    - This also could be a page that waits for the payment to be processed, and redirects the user if a payment is received.
+- Customer adds a Product to the Shopping Cart and navigates to the Checkout Page.
+- On the Checkout Page the Payment Option 'Mollie Checkout' is available, and the Customer selects this.
+    - The Customer selects the preferred Payment Method (optional)
+    - The Customer enters Creditcard Information (optional - if using Creditcard Components)
+- The Customer clicks on 'PLACE ORDER'
+    - Depending on the selected Option in Settings a Payment or Order is created using Mollie APIs.
+        (an Url is returned to redirect the Customer to if needed)
+    - The Customer is redirected to a Mollie Page to complete the Payment. (if needed)
+- The Customer completes the Payment (if needed)
+- (Background) Updates on the Payment or Order are sent to a Webhook by Mollie
+    - When the Payment is successful an Order is created for the Cart in Episerver.
+- The Customer is redirected to the 'Redirect Page' specified in the Mollie Configuration.
+    - This could be the Order Confirmation Page
+    - This also could be a Page that waits for the Payment to be processed, and redirects the User if a Payment is received.
 
 
 ## Integration in Foundation 
@@ -34,8 +34,8 @@ The Mollie.Checkout package helps with the implementation of [Mollie](https://ww
 <details><summary>1. Install Packages</summary>
 <p>
 
-Install package [Mollie.Checkout] in the __Foundation__ project and the __Foundation.CommerceManager__ project  
-Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceManager__ project
+Install Package [Mollie.Checkout] in the __Foundation__ Project and the __Foundation.CommerceManager__ Project  
+Install Package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceManager__ Project
 
 </p>
 </details>
@@ -43,23 +43,23 @@ Install package [Mollie.Checkout.CommerceManager] in the __Foundation.CommerceMa
 <details><summary>2. Configure Payment in CommerceManager</summary>
 <p>
 
-When starting the website for the first time after installing the package the Mollie Checkout payment method should be added to the system for all markets and languages. To complete the configuration of the payment method in Episerver CommerceManager go to Administration >> Order System >> Payments >> _language_  
+When starting the Website for the first time after installing the Package the Mollie Checkout Payment Method should be added to the System for all Markets and Languages. To complete the Configuration of the Payment Method in Episerver Commerce Manager go to Administration >> Order System >> Payments >> _language_  
 
-Select the Payment method named 'Mollie Checkout'
+Select the Payment Method named 'Mollie Checkout'
 
-Verify/Fill the following fields:
-#### On the Overview tab:_
+Verify/Fill the following Fields:
+#### On the Overview Tab:_
 - Name 
 - System Keyword: Type __MollieCheckout__ 
 - Language
 - Class Name: Select __Mollie.Checkout.MollieCheckoutGateway__
-- Payment class: Select __Mediachase.Commerce.Orders.OtherPayment__
+- Payment Class: Select __Mediachase.Commerce.Orders.OtherPayment__
 - IsActive: Select __Yes__
-#### On the Markets tab:
-- Select markets to enable this paymentmethod for.
+#### On the Markets Tab:
+- Select Markets to enable this Payment Method for.
 #### On the Parameters tab: 
 - Api Key
-- Profile ID (Required when using Creditcard components)
+- Profile ID (Required when using Creditcard Components)
 - Redirect URL 
 
 </p>
@@ -68,7 +68,7 @@ Verify/Fill the following fields:
 <details><summary>3a. Create MollieCheckout Payment method (Minimal version example)</summary>
 <p>
 
-In this 'Minimal version' __Mollie Checkout__ is selectable as payment option the checkout page. When this option is selected, the customer is redirected to a series of Mollie hosted pages to select the payment method (ideal, creditcard, etc) and complete the payment on placing the order.
+In this 'Minimal version' __Mollie Checkout__ is selectable as Payment Option the Checkout Page. When this Option is selected, the Customer is redirected to a series of Mollie Hosted Pages to select the Payment Method (iDeal, Creditcard etc.) and complete the Payment on placing the Order.
 
 
 In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckoutPaymentOption.cs__
@@ -121,7 +121,7 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
     }
 ``` 
 
-In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMethod.cshtml__
+In __Foundation\\Features\\Checkout__ Add a new View ___MollieCheckoutPaymentMethod.cshtml__
 
 ```html
 
@@ -152,7 +152,7 @@ In __Foundation\\Infrastructure\\InitializeSite.cs__ add
 <details><summary>3b. Create MollieCheckout Payment method (Complete version example)</summary>
 <p>
 
-In this 'Complete version' __Mollie Checkout__ is selectable as payment option the checkout page. When this option is selected, the customer can see the available Mollie Payment methods and select one on the checkout page. If creditcard components is used, also creditcard information can be entered before completing the order.
+In this 'Complete Version' __Mollie Checkout__ is selectable as Payment Option the Checkout Page. When this Option is selected, the Customer can see the available Mollie Payment Methods and select one on the Checkout Page. If Creditcard Components is used, also Creditcard Information can be entered before completing the Order.
 
 
 In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckoutPaymentOption.cs__
@@ -328,7 +328,7 @@ In __Foundation\\Features\\Checkout\\Payments__ Add a new Class __MollieCheckout
     }
 ``` 
 
-In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMethod.cshtml__
+In __Foundation\\Features\\Checkout__ Add a new View ___MollieCheckoutPaymentMethod.cshtml__
 
 ```html
 
@@ -617,10 +617,10 @@ In __Foundation\\Features\\Shared\\Views\\_Layout.cshtml__ add (directly below m
 <details><summary>4. Handle redirect to Mollie</summary>
 <p>
 
-After the processing of the pauments by Episerver, the mollie checkout payment will return a PaymentProcessingResult with IsSuccessful = true en een RedirectUrl.
-In Foundation the user needs to be redirected to this Redirect url (url to the Mollie checkout page )
+After the processing of the Payments by Episerver, the Mollie Checkout Payment will return a PaymentProcessingResult with IsSuccessful = true and a RedirectUrl.
+In Foundation the User needs to be redirected to this Redirect Url (Url to the Mollie Checkout Page)
 
-See the [CheckoutService.cs](https://dev.azure.com/arlanet/Mollie/_git/Mollie?path=%2FFoundation%2FFeatures%2FCheckout%2FServices%2FCheckoutService.cs) for an example of this on line 208
+See the [CheckoutService.cs](https://dev.azure.com/arlanet/Mollie/_git/Mollie?path=%2FFoundation%2FFeatures%2FCheckout%2FServices%2FCheckoutService.cs) for an Example of this on line 208
 
 ```csharp
 
@@ -641,10 +641,10 @@ See the [CheckoutService.cs](https://dev.azure.com/arlanet/Mollie/_git/Mollie?pa
 <details><summary>5. Implement IMollieCheckoutService</summary>
 <p>
 
-When a payment status update (paid, cancelled, etc..) is received from Mollie this service is called. 
-Implement logic here to convert the cart to an order when the payment was successful.
+When a Payment Status Update (paid, cancelled, etc..) is received from Mollie this Service is called. 
+Implement Logic here to convert the Cart to an Order when the Payment was successful.
 
-See a sample implementation here:
+See an sample Implementation here:
 
 ```csharp
 
@@ -761,7 +761,7 @@ See a sample implementation here:
 <details><summary>6. Change the Foundation Order-Confirmation controller</summary>
 <p>
 
-Change the Foundation Order-Confirmation page to accept the order trackingnumber instead of the order Id. \
+Change the Foundation Order Confirmation Page to accept the Order Trackingnumber instead of the Order Id. \
 See a sample of the changed OrderConfirmationController here:
 
 ```csharp
@@ -828,7 +828,7 @@ See a sample of the changed OrderConfirmationController here:
     
 On the Foundation order-confirmation page a view is shown with some information about the payments for order.
 
-Add a new view ___MollieCheckoutConfirmation.cshtml__ to __Foundation\\Features\\MyAccount\\OrderConfirmation__
+Add a new View ___MollieCheckoutConfirmation.cshtml__ to __Foundation\\Features\\MyAccount\\OrderConfirmation__
 ```html
 
 @model EPiServer.Commerce.Order.IPayment 
