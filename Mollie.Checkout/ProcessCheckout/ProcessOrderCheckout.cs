@@ -134,12 +134,6 @@ namespace Mollie.Checkout.ProcessCheckout
             var description = _paymentDescriptionGenerator.GetDescription(cart, payment);
             var currentContact = _currentCustomerContactGetter.Get();
 
-            var metadata = new
-            {
-                order_id = orderNumber,
-                description
-            };
-
             var orderRequest = new OrderRequest
             {
                 Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
@@ -170,7 +164,6 @@ namespace Mollie.Checkout.ProcessCheckout
                     Email = shippingAddress.Email,
                     Phone = shippingAddress.DaytimePhoneNumber
                 },
-                Metadata = JsonConvert.SerializeObject(metadata),
                 ConsumerDateOfBirth = currentContact?.BirthDate,
                 Locale = LanguageUtils.GetLocale(languageId),
                 OrderNumber = orderNumber,

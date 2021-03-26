@@ -23,6 +23,7 @@ using Mollie.Checkout.ProcessCheckout;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Mollie.Checkout.Services;
 using Mollie.Checkout.Services.Interfaces;
+using Newtonsoft.Json;
 
 namespace Mollie.Checkout.Tests.ProcessCheckout
 {
@@ -55,6 +56,9 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
         private const string OrderNumber = "PO0001";
         private const string Language = "en";
         private const string PaymentResponseId = nameof(PaymentResponseId);
+        private const string MolliePaymentMethod = nameof(MolliePaymentMethod);
+        private const int CartId = 1;
+        private const string VersionStrings = nameof(VersionStrings);
 
         private const string BillingAddressOrganization = nameof(BillingAddressOrganization);
         private const string BillingAddressLine1 = nameof(BillingAddressLine1);
@@ -152,6 +156,107 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             Assert.IsTrue(orderProcessingResult.IsSuccessful);
         }
 
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Billing_Address()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                A<OrderRequest>.That.Matches(x => 
+                    x.BillingAddress.OrganizationName == BillingAddressOrganization &&
+                    x.BillingAddress.StreetAndNumber == $"{BillingAddressLine1} {BillingAddressLine2}" &&
+                    x.BillingAddress.PostalCode == BillingAddressPostalCode &&
+                    x.BillingAddress.GivenName == BillingAddressFirstName &&
+                    x.BillingAddress.FamilyName == BillingAddressLastName &&
+                    x.BillingAddress.Email == BillingAddressEmail &&
+                    x.BillingAddress.Phone == BillingAddressDaytimePhoneNumber &&
+                    x.BillingAddress.City == BillingAddressCity),
+                A<string>.Ignored,
+                A<HttpClient>.Ignored))
+            .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Shipping_Address()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.ShippingAddress.OrganizationName == ShippingAddressOrganization &&
+                        x.ShippingAddress.StreetAndNumber == $"{ShippingAddressLine1} {ShippingAddressLine2}" &&
+                        x.ShippingAddress.PostalCode == ShippingAddressPostalCode &&
+                        x.ShippingAddress.GivenName == ShippingAddressFirstName &&
+                        x.ShippingAddress.FamilyName == ShippingAddressLastName &&
+                        x.ShippingAddress.Email == ShippingAddressEmail &&
+                        x.ShippingAddress.Phone == ShippingAddressDaytimePhoneNumber &&
+                        x.ShippingAddress.City == ShippingAddressCity),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Amount()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.Amount == Amount),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Mollie_Payment_Method()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.Method == MolliePaymentMethod),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Metadata()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.Metadata.Contains(OrderNumber) &&
+                        x.Metadata.Contains(CartId.ToString()) &&
+                        x.Metadata.Contains(VersionStrings)),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
         [TestInitialize]
         public void Setup()
         {
@@ -178,9 +283,9 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             A.CallTo(() => _checkoutMetaDataFactory.Create(A<IOrderGroup>._, A<IPayment>._, A<CheckoutConfiguration>._))
                 .Returns(new CheckoutMetaDataModel
                 {
-                    CartId = 1,
-                    OrderNumber = nameof(CheckoutMetaDataModel.OrderNumber),
-                    VersionStrings = nameof(CheckoutMetaDataModel.VersionStrings)
+                    CartId = CartId,
+                    OrderNumber = OrderNumber,
+                    VersionStrings = VersionStrings
                 });
 
             A.CallTo(() =>
@@ -279,7 +384,8 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             var paymentProperties = A.Fake<IExtendedProperties>();
             A.CallTo(() => paymentProperties.Properties).Returns(new Hashtable
             {
-                { Constants.OtherPaymentFields.LanguageId, Language }
+                { Constants.OtherPaymentFields.LanguageId, Language },
+                { Constants.OtherPaymentFields.MolliePaymentMethod, MolliePaymentMethod }
             });
             A.CallTo(() => _payment.Properties).Returns(paymentProperties.Properties);
 
