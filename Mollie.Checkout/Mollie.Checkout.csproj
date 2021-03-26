@@ -230,7 +230,9 @@
     <Compile Include="Helpers\CurrentCustomerContactGetter.cs" />
     <Compile Include="Helpers\ICurrentCustomerContactGetter.cs" />
     <Compile Include="Helpers\ILineItemCalculations.cs" />
+    <Compile Include="Helpers\IReturnOrderFormFinder.cs" />
     <Compile Include="Helpers\LineItemItemCalculations.cs" />
+    <Compile Include="Helpers\ReturnOrderFormFinder.cs" />
     <Compile Include="Models\NotSupportedCurrenciesViewModel.cs" />
     <Compile Include="MollieApi\MolliePaymentMethodClient.cs" />
     <Compile Include="CheckoutInitializationModule.cs" />
