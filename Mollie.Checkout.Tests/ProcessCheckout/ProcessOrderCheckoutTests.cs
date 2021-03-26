@@ -290,6 +290,44 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             .MustHaveHappened();
         }
 
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Order_Number()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            var locale = LanguageUtils.GetLocale(Language);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.OrderNumber == OrderNumber),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Redirect_Url()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            var redirectUrl = RedirectUrl + $"?orderNumber={OrderNumber}";
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.RedirectUrl == redirectUrl),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
         [TestInitialize]
         public void Setup()
         {
