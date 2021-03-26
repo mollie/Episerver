@@ -243,11 +243,13 @@
     <Compile Include="Helpers\MolliePaymentMethodFilter.cs" />
     <Compile Include="IocConfigurableModule.cs" />
     <Compile Include="MollieApi\CreditCardSpecificParameters.cs" />
-    <Compile Include="MollieClients\Interfaces\IMollieOrderClient.cs" />
-    <Compile Include="MollieClients\Interfaces\IMolliePaymentClient.cs" />
+    <Compile Include="MollieClients\IMollieOrderClient.cs" />
+    <Compile Include="MollieClients\IMolliePaymentClient.cs" />
+    <Compile Include="MollieClients\IMollieRefundClient.cs" />
     <Compile Include="MollieClients\MollieOrderClient.cs" />
     <Compile Include="MollieClients\MolliePaymentClient.cs" />
     <Compile Include="Models\PaymentMethod.cs" />
+    <Compile Include="MollieClients\MollieRefundClient.cs" />
     <Compile Include="ProcessRefund\Interfaces\IProcessPaymentRefund.cs" />
     <Compile Include="ProcessRefund\ProcessPaymentRefund.cs" />
     <Compile Include="ProcessShipment\ShipmentProcessorInterceptor.cs" />

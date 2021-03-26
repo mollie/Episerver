@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!--Please copy this lang file into /wwwroot/lang folder-->
 <languages>
-  <language name="Nederlands" id="nl">
+  <language name="English" id="en">
     <mollie>
       <payment>
         <settings>

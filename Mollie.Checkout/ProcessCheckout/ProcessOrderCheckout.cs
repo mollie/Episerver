@@ -23,7 +23,7 @@ using System.Text;
 using Mollie.Api.Models.Payment.Response;
 using Mollie.Checkout.MollieApi;
 using Mollie.Checkout.Helpers;
-using Mollie.Checkout.MollieClients.Interfaces;
+using Mollie.Checkout.MollieClients;
 
 namespace Mollie.Checkout.ProcessCheckout
 {

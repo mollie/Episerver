@@ -11,10 +11,10 @@ using System.Web;
 using System.Net.Http;
 using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models;
-using Mollie.Checkout.MollieClients.Interfaces;
 using Mollie.Checkout.Services.Interfaces;
 using Mollie.Api.Models.Payment;
 using Mollie.Api.Models.Payment.Response;
+using Mollie.Checkout.MollieClients;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
