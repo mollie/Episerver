@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using EPiServer.Commerce.Order;
 using EPiServer.Commerce.Storage;
 using FakeItEasy;
