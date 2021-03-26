@@ -41,3 +41,30 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+
+- task: NuGetCommand@2
+  inputs:
+    command: pack
+    packagesToPack: Mollie.Checkout/Mollie.Checkout.csproj
+    
+ 
+- task: NuGetCommand@2
+  inputs:
+    command: pack
+    packagesToPack: Mollie.Checkout.CommerceManager/Mollie.Checkout.CommerceManager.csproj
+
+- task: NuGetAuthenticate@0
+  displayName: 'NuGet Authenticate'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    publishVstsFeed: 'Mollie/Mollie'
+    allowPackageConflicts: true
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'Publish artifacts'
