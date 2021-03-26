@@ -367,7 +367,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
         }
 
         [TestMethod]
-        public void When_Process_Order_Invoked_Must_Send_Lines()
+        public void When_Process_Order_Invoked_Must_Send_Order_Lines()
         {
             SetupConfiguration();
             SetupPayment();
@@ -377,12 +377,11 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
 
             A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
                     A<OrderRequest>.That.Matches(x =>
-                        x.Lines.First().Sku == LineItemCode &&
-                        x.Lines.First().Name == LineItemDisplayName &&
-                        x.Lines.First().Type == "physical" &&
-                        x.Lines.First().Metadata.Contains(OrderNumber) &&
-                        x.Lines.First().Metadata.Contains(LineItemCode) &&
-                        x.Lines.First().Quantity == LineItemQuantity),
+                        x.Lines.First(t => t.Type == "physical").Sku == LineItemCode &&
+                        x.Lines.First(t => t.Type == "physical").Name == LineItemDisplayName &&
+                        x.Lines.First(t => t.Type == "physical").Metadata.Contains(OrderNumber) &&
+                        x.Lines.First(t => t.Type == "physical").Metadata.Contains(LineItemCode) &&
+                        x.Lines.First(t => t.Type == "physical").Quantity == LineItemQuantity),
                     A<string>.Ignored,
                     A<HttpClient>.Ignored))
                 .MustHaveHappened();
