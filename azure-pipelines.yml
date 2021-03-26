@@ -44,7 +44,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: pack
-    packagesToPack: Mollie.Checkout/Mollie.Checkout.nuspec
+    packagesToPack: Mollie.Checkout/Mollie.Checkout.csproj
 
 
 - task: PublishBuildArtifacts@1
