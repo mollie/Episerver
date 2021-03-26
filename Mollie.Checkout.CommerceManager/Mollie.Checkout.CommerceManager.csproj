@@ -255,6 +255,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="lang\Mollie_EN.xml" />
+    <Content Include="lang\Mollie_NL.xml" />
     <Content Include="Mollie.Checkout.CommerceManager.nuspec" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
@@ -303,7 +305,8 @@
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)Apps\Order\Payments\Plugins\MollieCheckout\ConfigurePayment.ascx" "$(SolutionDir)Demo\Foundation.CommerceManager\Apps\Order\Payments\Plugins\MollieCheckout\" /y /e</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)Apps\Order\Payments\Plugins\MollieCheckout\ConfigurePayment.ascx" "$(SolutionDir)Demo\Foundation.CommerceManager\Apps\Order\Payments\Plugins\MollieCheckout\" /y /e
+xcopy "$(ProjectDir)lang\*.xml" "$(SolutionDir)Demo\Foundation.CommerceManager\lang\" /y /e</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

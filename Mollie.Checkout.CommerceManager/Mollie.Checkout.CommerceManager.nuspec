@@ -6,8 +6,8 @@
     <title>$title$</title>
     <authors>$author$</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
-    <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
+    <projectUrl>https://github.com/mollie/Episerver</projectUrl>
+    <iconUrl>https://avatars.githubusercontent.com/u/29656381</iconUrl>
     <description>$description$</description>
     <copyright>$copyright$</copyright>
     <tags>Episerver Commerce Manager Mollie Setting</tags>

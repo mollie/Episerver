@@ -31,7 +31,6 @@ namespace Mollie.Checkout.ProcessCheckout
     {
         private readonly ILogger _logger;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
-        private readonly IPaymentDescriptionGenerator _paymentDescriptionGenerator;
         private readonly ICheckoutMetaDataFactory _checkoutMetaDataFactory;
         private readonly IOrderRepository _orderRepository;
         private readonly IMarketService _marketService;
@@ -47,7 +46,6 @@ namespace Mollie.Checkout.ProcessCheckout
         {
             _logger = LogManager.GetLogger(typeof(ProcessOrderCheckout));
             _checkoutConfigurationLoader = ServiceLocator.Current.GetInstance<ICheckoutConfigurationLoader>();
-            _paymentDescriptionGenerator = ServiceLocator.Current.GetInstance<IPaymentDescriptionGenerator>();
             _checkoutMetaDataFactory = ServiceLocator.Current.GetInstance<ICheckoutMetaDataFactory>();
             _orderRepository = ServiceLocator.Current.GetInstance<IOrderRepository>();
             _marketService = ServiceLocator.Current.GetInstance<IMarketService>();
@@ -63,7 +61,6 @@ namespace Mollie.Checkout.ProcessCheckout
         public ProcessOrderCheckout(
             ILogger logger,
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
-            IPaymentDescriptionGenerator paymentDescriptionGenerator,
             ICheckoutMetaDataFactory checkoutMetaDataFactory,
             IOrderRepository orderRepository,
             IMarketService marketService,
@@ -77,7 +74,6 @@ namespace Mollie.Checkout.ProcessCheckout
         {
             _logger = logger;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
-            _paymentDescriptionGenerator = paymentDescriptionGenerator;
             _checkoutMetaDataFactory = checkoutMetaDataFactory;
             _orderRepository = orderRepository;
             _marketService = marketService;
@@ -131,14 +127,7 @@ namespace Mollie.Checkout.ProcessCheckout
             var billingAddress = payment.BillingAddress;
             var shippingAddress = shipment.ShippingAddress;
             var orderNumber = cart.OrderNumber();
-            var description = _paymentDescriptionGenerator.GetDescription(cart, payment);
             var currentContact = _currentCustomerContactGetter.Get();
-
-            var metadata = new
-            {
-                order_id = orderNumber,
-                description
-            };
 
             var orderRequest = new OrderRequest
             {
@@ -170,7 +159,6 @@ namespace Mollie.Checkout.ProcessCheckout
                     Email = shippingAddress.Email,
                     Phone = shippingAddress.DaytimePhoneNumber
                 },
-                Metadata = JsonConvert.SerializeObject(metadata),
                 ConsumerDateOfBirth = currentContact?.BirthDate,
                 Locale = LanguageUtils.GetLocale(languageId),
                 OrderNumber = orderNumber,
