@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -23,6 +24,7 @@ using Mollie.Checkout.ProcessCheckout;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Mollie.Checkout.Services;
 using Mollie.Checkout.Services.Interfaces;
+using Newtonsoft.Json;
 
 namespace Mollie.Checkout.Tests.ProcessCheckout
 {
@@ -42,6 +44,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
         private IMollieOrderClient _mollieOrderClient;
         private ICurrentCustomerContactGetter _currentCustomerContactGetter;
         private ProcessOrderCheckout _processOrderCheckout;
+        private ILineItemCalculations _lineItemCalculations;
 
         private ICart _cart;
         private IPayment _payment;
@@ -56,6 +59,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
         private const string MolliePaymentMethod = nameof(MolliePaymentMethod);
         private const int CartId = 1;
         private const string VersionStrings = nameof(VersionStrings);
+        private const int ExpiresInDays = 30;
 
         private const string BillingAddressOrganization = nameof(BillingAddressOrganization);
         private const string BillingAddressLine1 = nameof(BillingAddressLine1);
@@ -299,8 +303,6 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
 
             _ = _processOrderCheckout.Process(_cart, _payment);
 
-            var locale = LanguageUtils.GetLocale(Language);
-
             A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
                     A<OrderRequest>.That.Matches(x =>
                         x.OrderNumber == OrderNumber),
@@ -328,6 +330,64 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
                 .MustHaveHappened();
         }
 
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Web_Hook_Url()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.WebhookUrl.Contains(WebShopUrl)),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Expires_At()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            var expiresAtTest = DetermineExpiredAt(ExpiresInDays);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.ExpiresAt == expiresAtTest),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Lines()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.Lines.First().Sku == LineItemCode &&
+                        x.Lines.First().Name == LineItemDisplayName &&
+                        x.Lines.First().Type == "physical" &&
+                        x.Lines.First().Metadata.Contains(OrderNumber) &&
+                        x.Lines.First().Metadata.Contains(LineItemCode) &&
+                        x.Lines.First().Quantity == LineItemQuantity),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
         [TestInitialize]
         public void Setup()
         {
@@ -343,6 +403,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             _productImageUrlFinder = A.Fake<IProductImageUrlFinder>();
             _productUrlGetter = A.Fake<IProductUrlGetter>();
             _currentCustomerContactGetter = A.Fake<ICurrentCustomerContactGetter>();
+            _lineItemCalculations = A.Fake<ILineItemCalculations>();
 
             var httpContext = new HttpContext(new HttpRequest(null, WebShopUrl, null), new HttpResponse(null));
             A.CallTo(() => _httpContextAccessor.Invoke()).Returns(new HttpContextWrapper(httpContext));
@@ -389,10 +450,21 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
                 _httpClient,
                 _orderNoteHelper,
                 _mollieOrderClient,
-                _currentCustomerContactGetter);
+                _currentCustomerContactGetter,
+                _lineItemCalculations);
 
             _cart = A.Fake<ICart>();
             _payment = A.Fake<IPayment>();
+        }
+
+        private static string DetermineExpiredAt(int orderExpiresInDays)
+        {
+            var cetZone = TimeZoneInfo.FindSystemTimeZoneById("W. Europe Standard Time");
+            var cetDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cetZone);
+
+            var expiresAt = cetDateTime.AddDays(orderExpiresInDays);
+
+            return expiresAt.ToString("yyyy-MM-dd");
         }
 
         private void SetupConfiguration()
@@ -401,7 +473,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             {
                 ApiKey = "e9150793-2705-47b8-8411-a2e02f9f68fd",
                 RedirectUrl = RedirectUrl,
-                OrderExpiresInDays = 30
+                OrderExpiresInDays = ExpiresInDays
             };
 
             A.CallTo(() => _checkoutConfigurationLoader.GetConfiguration(A<string>._)).Returns(checkoutConfiguration);
