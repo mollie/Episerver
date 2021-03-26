@@ -41,6 +41,7 @@ namespace Mollie.Checkout.ProcessCheckout
         private readonly IOrderNoteHelper _orderNoteHelper;
         private readonly IMollieOrderClient _mollieOrderClient;
         private readonly ICurrentCustomerContactGetter _currentCustomerContactGetter;
+        private readonly ILineItemCalculations _lineItemCalculations;
 
         public ProcessOrderCheckout()
         {
@@ -56,6 +57,7 @@ namespace Mollie.Checkout.ProcessCheckout
             _orderNoteHelper = ServiceLocator.Current.GetInstance<IOrderNoteHelper>();
             _mollieOrderClient = ServiceLocator.Current.GetInstance<IMollieOrderClient>();
             _currentCustomerContactGetter = ServiceLocator.Current.GetInstance<ICurrentCustomerContactGetter>();
+            _lineItemCalculations = ServiceLocator.Current.GetInstance<ILineItemCalculations>();
         }
 
         public ProcessOrderCheckout(
@@ -70,7 +72,8 @@ namespace Mollie.Checkout.ProcessCheckout
             HttpClient httpClient,
             IOrderNoteHelper orderNoteHelper,
             IMollieOrderClient mollieOrderClient,
-            ICurrentCustomerContactGetter currentCustomerContactGetter)
+            ICurrentCustomerContactGetter currentCustomerContactGetter,
+            ILineItemCalculations lineItemCalculations)
         {
             _logger = logger;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
@@ -84,6 +87,7 @@ namespace Mollie.Checkout.ProcessCheckout
             _orderNoteHelper = orderNoteHelper;
             _mollieOrderClient = mollieOrderClient;
             _currentCustomerContactGetter = currentCustomerContactGetter;
+            _lineItemCalculations = lineItemCalculations;
         }
 
         public PaymentProcessingResult Process(ICart cart, IPayment payment)
@@ -287,20 +291,21 @@ namespace Mollie.Checkout.ProcessCheckout
 
                 //TODO: Check vat rate should be dependent om market
                 var varRate = (orderLine.TaxCategoryId == null ? 0 : GetVatRate(orderLine.TaxCategoryId.Value)).ToString("0.00");
-                var vatAmount = new Amount(cart.Currency.CurrencyCode, orderLine.GetSalesTax(market, cart.Currency, shippingAddress).Amount);
+
+                var vatAmount = new Amount(cart.Currency.CurrencyCode, _lineItemCalculations.GetSalesTax(orderLine, market, cart.Currency, shippingAddress).Amount);
 
                 yield return new OrderLineRequest
                 {
                     Type = "physical",
                     Sku = orderLine.Code,
                     Name = orderLine.DisplayName,
-                    ProductUrl = _productUrlGetter.Get(orderLine.GetEntryContent()),
-                    ImageUrl = _productImageUrlFinder.Find(orderLine.GetEntryContent()),
+                    ProductUrl = _productUrlGetter.Get(_lineItemCalculations.GetEntryContent(orderLine)),
+                    ImageUrl = _productImageUrlFinder.Find(_lineItemCalculations.GetEntryContent(orderLine)),
                     Quantity = (int) orderLine.Quantity,
                     VatRate = vatAmount > 0 ? varRate : "0.00",
-                    UnitPrice = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.PlacedPrice),
-                    TotalAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetLineItemPrices(cart.Currency).DiscountedPrice),
-                    DiscountAmount = new Api.Models.Amount(cart.Currency.CurrencyCode, orderLine.GetEntryDiscount()),
+                    UnitPrice = new Amount(cart.Currency.CurrencyCode, orderLine.PlacedPrice),
+                    TotalAmount = new Amount(cart.Currency.CurrencyCode, _lineItemCalculations.GetLineItemPrices(orderLine, cart.Currency).DiscountedPrice),
+                    DiscountAmount = new Amount(cart.Currency.CurrencyCode, _lineItemCalculations.GetEntryDiscount(orderLine)),
                     //TODO: Why is it returning 0 vat?
                     VatAmount = vatAmount,
                     Metadata = JsonConvert.SerializeObject(metadata)
