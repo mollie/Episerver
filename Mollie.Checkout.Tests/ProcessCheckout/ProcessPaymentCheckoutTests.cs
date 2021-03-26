@@ -15,7 +15,7 @@ using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models.Payment.Response;
 using Mollie.Api.Models.Url;
 using Mollie.Checkout.Models;
-using Mollie.Checkout.MollieClients.Interfaces;
+using Mollie.Checkout.MollieClients;
 using Mollie.Checkout.ProcessCheckout;
 using Mollie.Checkout.Services;
 using Mollie.Checkout.Services.Interfaces;

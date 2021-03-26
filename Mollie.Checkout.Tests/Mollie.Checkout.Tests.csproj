@@ -235,6 +235,7 @@
   <ItemGroup>
     <Compile Include="ProcessCheckout\ProcessOrderCheckoutTests.cs" />
     <Compile Include="ProcessCheckout\ProcessPaymentCheckoutTests.cs" />
+    <Compile Include="ProcessRefund\ProcessPaymentRefundTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

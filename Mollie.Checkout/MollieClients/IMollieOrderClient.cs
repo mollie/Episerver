@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Mollie.Api.Models.Order;
 
-namespace Mollie.Checkout.MollieClients.Interfaces
+namespace Mollie.Checkout.MollieClients
 {
     public interface IMollieOrderClient
     {

@@ -5,7 +5,6 @@ using Mollie.Api.Client;
 using Mollie.Api.Models.Order;
 using Mollie.Api.Models.Payment.Request;
 using Mollie.Api.Models.Payment.Response;
-using Mollie.Checkout.MollieClients.Interfaces;
 
 namespace Mollie.Checkout.MollieClients
 {

@@ -7,10 +7,9 @@ using EPiServer.ServiceLocation;
 using Mediachase.Commerce.Orders;
 using Mediachase.Commerce.Security;
 using Mediachase.MetaDataPlus;
-using Mollie.Api.Client;
 using Mollie.Api.Models;
 using Mollie.Api.Models.Refund;
-using Mollie.Checkout.Helpers;
+using Mollie.Checkout.MollieClients;
 using Mollie.Checkout.ProcessCheckout;
 using Mollie.Checkout.ProcessRefund.Interfaces;
 using Mollie.Checkout.Services;
@@ -21,6 +20,7 @@ namespace Mollie.Checkout.ProcessRefund
     [ServiceConfiguration(typeof(IProcessPaymentRefund))]
     public class ProcessPaymentRefund : IProcessPaymentRefund
     {
+        private readonly IMollieRefundClient _mollieRefundClient;
         private readonly IOrderRepository _orderRepository;
         private readonly HttpClient _httpClient;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
@@ -28,11 +28,13 @@ namespace Mollie.Checkout.ProcessRefund
         private readonly ILogger _logger = LogManager.GetLogger(typeof(ProcessOrderCheckout));
 
         public ProcessPaymentRefund(
+            IMollieRefundClient mollieRefundClient,
             IOrderRepository orderRepository,
             HttpClient httpClient,
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
             IOrderNoteHelper orderNoteHelper)
         {
+            _mollieRefundClient = mollieRefundClient;
             _orderRepository = orderRepository;
             _httpClient = httpClient;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
@@ -54,19 +56,21 @@ namespace Mollie.Checkout.ProcessRefund
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
 
             var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
-            var refundClient = new RefundClient(checkoutConfiguration.ApiKey, _httpClient);
             var paymentId = payment.Properties[Constants.OtherPaymentFields.MolliePaymentId] as string;
 
             //TODO:Find better way to find current return form
             var returnForm = purchaseOrder.ReturnForms.FirstOrDefault(rf => ((OrderForm)rf).ObjectState == MetaObjectState.Modified);
 
-            var refundResponse = refundClient.CreateRefundAsync(
+            var refundResponse = _mollieRefundClient.CreateRefundAsync(
                 paymentId,
                 new RefundRequest
                 {
                     Amount = new Amount(orderGroup.Currency.CurrencyCode, refundPayment.Amount),
                     Description = returnForm?.ReturnComment ?? "Not set"
-                }).GetAwaiter().GetResult();
+                },
+                checkoutConfiguration.ApiKey, 
+                _httpClient)
+                .GetAwaiter().GetResult();
 
             var message = $"--Mollie Refund Payment is successful. Refunded {refundResponse.Amount}, status {refundResponse.Status}.";
 

@@ -19,12 +19,11 @@ using Mollie.Api.Models.Order;
 using Mollie.Api.Models.Url;
 using Mollie.Checkout.Helpers;
 using Mollie.Checkout.Models;
-using Mollie.Checkout.MollieClients.Interfaces;
+using Mollie.Checkout.MollieClients;
 using Mollie.Checkout.ProcessCheckout;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Mollie.Checkout.Services;
 using Mollie.Checkout.Services.Interfaces;
-using Newtonsoft.Json;
 
 namespace Mollie.Checkout.Tests.ProcessCheckout
 {
