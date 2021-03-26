@@ -23,7 +23,6 @@ using Mollie.Checkout.ProcessCheckout;
 using Mollie.Checkout.ProcessCheckout.Helpers.Interfaces;
 using Mollie.Checkout.Services;
 using Mollie.Checkout.Services.Interfaces;
-using Newtonsoft.Json;
 
 namespace Mollie.Checkout.Tests.ProcessCheckout
 {
@@ -49,7 +48,6 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
 
         private const decimal Amount = 10;
         private const string CurrencyCode = "EUR";
-        private const string PaymentDescription = "Payment Description";
         private const string RedirectUrl = "https://www.mollie.com/";
         private const string WebShopUrl = "https://www.webshop.com";
         private const string OrderNumber = "PO0001";
@@ -254,6 +252,42 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
                     A<string>.Ignored,
                     A<HttpClient>.Ignored))
                 .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Date_Of_Birth()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                    A<OrderRequest>.That.Matches(x =>
+                        x.ConsumerDateOfBirth == _customerContactBirthDate),
+                    A<string>.Ignored,
+                    A<HttpClient>.Ignored))
+                .MustHaveHappened();
+        }
+
+        [TestMethod]
+        public void When_Process_Order_Invoked_Must_Send_Locale()
+        {
+            SetupConfiguration();
+            SetupPayment();
+            SetupCart();
+
+            _ = _processOrderCheckout.Process(_cart, _payment);
+
+            var locale = LanguageUtils.GetLocale(Language);
+
+            A.CallTo(() => _mollieOrderClient.CreateOrderAsync(
+                A<OrderRequest>.That.Matches(x =>
+                    x.Locale == locale),
+                A<string>.Ignored,
+                A<HttpClient>.Ignored))
+            .MustHaveHappened();
         }
 
         [TestInitialize]
