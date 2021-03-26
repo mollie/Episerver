@@ -32,7 +32,6 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
     {
         private ILogger _logger;
         private ICheckoutConfigurationLoader _checkoutConfigurationLoader;
-        private IPaymentDescriptionGenerator _paymentDescriptionGenerator;
         private ICheckoutMetaDataFactory _checkoutMetaDataFactory;
         private IOrderRepository _orderRepository;
         private IMarketService _marketService;
@@ -269,16 +268,12 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             _orderNoteHelper = A.Fake<IOrderNoteHelper>();
             _mollieOrderClient = A.Fake<IMollieOrderClient>();
             _marketService = A.Fake<IMarketService>();
-            _paymentDescriptionGenerator = A.Fake<IPaymentDescriptionGenerator>();
             _productImageUrlFinder = A.Fake<IProductImageUrlFinder>();
             _productUrlGetter = A.Fake<IProductUrlGetter>();
             _currentCustomerContactGetter = A.Fake<ICurrentCustomerContactGetter>();
 
             var httpContext = new HttpContext(new HttpRequest(null, WebShopUrl, null), new HttpResponse(null));
             A.CallTo(() => _httpContextAccessor.Invoke()).Returns(new HttpContextWrapper(httpContext));
-
-            A.CallTo(() => _paymentDescriptionGenerator.GetDescription(A<IOrderGroup>._, A<IPayment>._))
-                .Returns(PaymentDescription);
 
             A.CallTo(() => _checkoutMetaDataFactory.Create(A<IOrderGroup>._, A<IPayment>._, A<CheckoutConfiguration>._))
                 .Returns(new CheckoutMetaDataModel
@@ -313,7 +308,6 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             _processOrderCheckout = new ProcessOrderCheckout(
                 _logger,
                 _checkoutConfigurationLoader,
-                _paymentDescriptionGenerator,
                 _checkoutMetaDataFactory,
                 _orderRepository,
                 _marketService,
