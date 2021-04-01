@@ -36,6 +36,13 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+
+- task: NuGetCommand@2
+  inputs:
+    command: pack
+    packagesToPack: Mollie.Checkout/Mollie.Checkout.csproj
+    
+ 
 - task: VSBuild@1
   inputs:
     solution: 'Mollie.Checkout.CommerceManager\Mollie.Checkout.CommerceManager.csproj'
@@ -44,21 +51,16 @@ steps:
     configuration: '$(buildConfiguration)'
 
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: NuGetCommand@2
-  inputs:
-    command: pack
-    packagesToPack: Mollie.Checkout/Mollie.Checkout.csproj
-    
- 
 - task: NuGetCommand@2
   inputs:
     command: pack
     packagesToPack: Mollie.Checkout.CommerceManager/Mollie.Checkout.CommerceManager.csproj
+
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
 
 - task: NuGetAuthenticate@0
   displayName: 'NuGet Authenticate'
