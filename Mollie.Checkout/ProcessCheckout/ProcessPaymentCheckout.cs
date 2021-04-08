@@ -162,7 +162,7 @@ namespace Mollie.Checkout.ProcessCheckout
             {
                 _logger.Error($"Creating Payment in Mollie failed.", e);
 
-                throw new ArgumentException($"Creating Payment in Mollie failed.");
+                throw new ArgumentException($"Creating Payment in Mollie failed.", e);
             }
 
             string molliePaymentIdMessage;

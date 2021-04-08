@@ -212,7 +212,7 @@ namespace Mollie.Checkout.ProcessCheckout
             {
                 _logger.Error($"Creating Order in Mollie failed for Cart: {orderNumber}", e);
 
-                throw new Exception($"Creating Order in Mollie failed for Cart: {orderNumber}");
+                throw new Exception($"Creating Order in Mollie failed for Cart: {orderNumber}", e);
             }
 
             OrderResponse getOrderResponse;
@@ -226,7 +226,7 @@ namespace Mollie.Checkout.ProcessCheckout
             {
                 _logger.Error($"Getting Order from Mollie failed for Cart: {orderNumber}", e);
 
-                throw new Exception($"Getting Order from Mollie failed for Cart: {orderNumber}");
+                throw new Exception($"Getting Order from Mollie failed for Cart: {orderNumber}", e);
             }
 
             var molliePaymentIdMessage = new StringBuilder();
