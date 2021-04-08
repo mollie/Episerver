@@ -24,6 +24,7 @@ using Mollie.Api.Models.Payment.Response;
 using Mollie.Checkout.MollieApi;
 using Mollie.Checkout.Helpers;
 using Mollie.Checkout.MollieClients;
+using System.Runtime.ExceptionServices;
 
 namespace Mollie.Checkout.ProcessCheckout
 {
@@ -212,7 +213,7 @@ namespace Mollie.Checkout.ProcessCheckout
             {
                 _logger.Error($"Creating Order in Mollie failed for Cart: {orderNumber}", e);
 
-                throw new Exception($"Creating Order in Mollie failed for Cart: {orderNumber}", e);
+                throw new Exception($"Creating Order in Mollie failed for Cart: {orderNumber} with Message: {e.Message} ", e);
             }
 
             OrderResponse getOrderResponse;
@@ -226,7 +227,7 @@ namespace Mollie.Checkout.ProcessCheckout
             {
                 _logger.Error($"Getting Order from Mollie failed for Cart: {orderNumber}", e);
 
-                throw new Exception($"Getting Order from Mollie failed for Cart: {orderNumber}", e);
+                throw new Exception($"Getting Order from Mollie failed for Cart: {orderNumber} with Message: {e.Message} ");
             }
 
             var molliePaymentIdMessage = new StringBuilder();
