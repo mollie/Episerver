@@ -339,6 +339,10 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 /appdata/blobs
-/Foundation/License.config
+Demo/Foundation/License.config
 License.config
 /Demo/appdata/blobs
+/Demo/Foundation/connectionStrings.config
+/Demo/Foundation.CommerceManager/connectionStrings.config
+azure-pipelines.yml
+azure-pipelines-1.yml
