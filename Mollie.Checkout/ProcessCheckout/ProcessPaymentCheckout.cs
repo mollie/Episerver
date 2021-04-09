@@ -94,22 +94,23 @@ namespace Mollie.Checkout.ProcessCheckout
                 throw new ApplicationException("Api key configuration not set.");
             }
 
-            var paymentMethod = string.Empty;
-
-            if (payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod))
-            {
-                paymentMethod = payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string;
-            }
-
             var paymentRequest = new PaymentRequest
             {
                 Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
                 Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
                 WebhookUrl = urlBuilder.ToString(),
-                Locale = LanguageUtils.GetLocale(languageId),
-                Method = paymentMethod
+                Locale = LanguageUtils.GetLocale(languageId)
             };
+
+            string paymentMethod = payment.Properties.ContainsKey(Constants.OtherPaymentFields.MolliePaymentMethod)
+                ? payment.Properties[Constants.OtherPaymentFields.MolliePaymentMethod] as string
+                : null;
+
+            if (!string.IsNullOrWhiteSpace(paymentMethod))
+            {
+                paymentRequest.Method = paymentMethod;
+            }
 
             if (!string.IsNullOrWhiteSpace(paymentMethod) && paymentMethod.Equals(PaymentMethod.Ideal, StringComparison.InvariantCultureIgnoreCase))
             {
