@@ -653,11 +653,14 @@ See an sample Implementation here:
     {
         private readonly IOrderGroupCalculator _orderGroupCalculator;
         private readonly IOrderRepository _orderRepository;
+        private readonly IOrderNoteHelper _orderNoteHelper;
 
-        public MollieCheckoutService(IOrderGroupCalculator orderGroupCalculator, IOrderRepository orderRepository)
+        public MollieCheckoutService(IOrderGroupCalculator orderGroupCalculator, IOrderRepository orderRepository,
+            IOrderNoteHelper orderNoteHelper)
         {
             _orderGroupCalculator = orderGroupCalculator;
             _orderRepository = orderRepository;
+            _orderNoteHelper = orderNoteHelper;
         }
 
         public void HandlePaymentSuccess(IOrderGroup orderGroup, IPayment payment)
@@ -682,7 +685,11 @@ See an sample Implementation here:
 
                     var purchaseOrder = _orderRepository.Load<IPurchaseOrder>(orderReference.OrderGroupId);
 
+                    var message = "Converted to order by HandlePaymentSuccess initiated by webhook";
+                    _orderNoteHelper.AddNoteToOrder(purchaseOrder, message, message, Guid.Empty);
+
                     purchaseOrder.Properties[MollieOrder.OrderIdMollie] = cart.Properties[MollieOrder.OrderIdMollie];
+                    purchaseOrder.Properties[PaymentLinkMollie] = cart.Properties[PaymentLinkMollie];
                     purchaseOrder.Properties[MollieOrder.LanguageId] = payment.Properties[OtherPaymentFields.LanguageId];
 
                     _orderRepository.Save(purchaseOrder);
@@ -696,13 +703,13 @@ See an sample Implementation here:
         }
 
         public void HandleOrderStatusUpdate(
-            ICart cart, 
+            IOrderGroup orderGroup, 
             string mollieStatus, 
             string mollieOrderId)
         {
-            if(cart == null)
+            if(orderGroup == null)
             {
-                throw new ArgumentNullException(nameof(cart));
+                throw new ArgumentNullException(nameof(orderGroup));
             }
 
             if(string.IsNullOrEmpty(mollieStatus))
@@ -722,23 +729,23 @@ See an sample Implementation here:
                 case MollieOrderStatus.Authorized:
                 case MollieOrderStatus.Paid:
                 case MollieOrderStatus.Shipping:
-                    cart.OrderStatus = OrderStatus.InProgress;
+                    orderGroup.OrderStatus = OrderStatus.InProgress;
                     break;
                 case MollieOrderStatus.Completed:
-                    cart.OrderStatus = OrderStatus.Completed;
+                    orderGroup.OrderStatus = OrderStatus.Completed;
                     break;
                 case MollieOrderStatus.Canceled:
                 case MollieOrderStatus.Expired:
-                    cart.OrderStatus = OrderStatus.Cancelled;
+                    orderGroup.OrderStatus = OrderStatus.Cancelled;
                     break;
                 default:
                     break;
             }
 
-            cart.Properties[Constants.Cart.MollieOrderStatusField] = mollieStatus;
-            cart.Properties[MollieOrder.OrderIdMollie] = mollieOrderId;
+            orderGroup.Properties[Constants.Cart.MollieOrderStatusField] = mollieStatus;
+            orderGroup.Properties[MollieOrder.OrderIdMollie] = mollieOrderId;
 
-            _orderRepository.Save(cart);
+            _orderRepository.Save(orderGroup);
         }
 
         public void HandlePaymentFailure(IOrderGroup orderGroup, IPayment payment)
