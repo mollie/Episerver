@@ -11,7 +11,7 @@ namespace Mollie.Checkout.Services
         {
             var metaDataObject = new CheckoutMetaDataModel()
             {
-                CartId = orderGroup.OrderLink.OrderGroupId,
+                OrderGroupId = orderGroup.OrderLink.OrderGroupId,
                 OrderNumber = orderGroup.OrderNumber(),
                 VersionStrings = configuration.VersionStrings
             };

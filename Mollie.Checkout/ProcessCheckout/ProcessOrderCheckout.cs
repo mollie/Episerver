@@ -91,7 +91,7 @@ namespace Mollie.Checkout.ProcessCheckout
             _lineItemCalculations = lineItemCalculations;
         }
 
-        public PaymentProcessingResult Process(ICart cart, IPayment payment)
+        public PaymentProcessingResult Process(IOrderGroup orderGroup, IPayment payment)
         {
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
 
@@ -128,15 +128,15 @@ namespace Mollie.Checkout.ProcessCheckout
                 throw new ApplicationException("Api key configuration not set.");
             }
 
-            var shipment = cart.GetFirstShipment();
+            var shipment = orderGroup.GetFirstShipment();
             var billingAddress = payment.BillingAddress;
             var shippingAddress = shipment.ShippingAddress;
-            var orderNumber = cart.OrderNumber();
+            var orderNumber = orderGroup.OrderNumber();
             var currentContact = _currentCustomerContactGetter.Get();
 
             var orderRequest = new OrderRequest
             {
-                Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
+                Amount = new Amount(orderGroup.Currency.CurrencyCode, payment.Amount),
                 Method = selectedMethod,
                 BillingAddress = new OrderAddressDetails
                 {
@@ -169,11 +169,11 @@ namespace Mollie.Checkout.ProcessCheckout
                 OrderNumber = orderNumber,
                 RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={orderNumber}",
                 WebhookUrl = urlBuilder.ToString(),
-                Lines = GetOrderLines(cart),
+                Lines = GetOrderLines(orderGroup),
                 ExpiresAt = DetermineExpiredAt(checkoutConfiguration)
             };
 
-            var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
+            var metaData = _checkoutMetaDataFactory.Create(orderGroup, payment, checkoutConfiguration);
 
             orderRequest.SetMetadata(metaData);
 
@@ -250,18 +250,18 @@ namespace Mollie.Checkout.ProcessCheckout
 
             if (!string.IsNullOrWhiteSpace(molliePaymentIdMessage.ToString()))
             {
-                _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment ID", molliePaymentIdMessage.ToString(), PrincipalInfo.CurrentPrincipal.GetContactId());
+                _orderNoteHelper.AddNoteToOrder(orderGroup, "Mollie Payment ID", molliePaymentIdMessage.ToString(), PrincipalInfo.CurrentPrincipal.GetContactId());
             }
 
             var message = getOrderResponse?.Links.Checkout != null && !string.IsNullOrWhiteSpace(getOrderResponse?.Links.Checkout.Href)
                 ? $"Mollie Create Order is successful. Redirect end user to {getOrderResponse?.Links.Checkout.Href}"
                 : "Mollie Create Order is successful. No redirect needed";
-            
-            cart.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout?.Href;
 
-            _orderNoteHelper.AddNoteToOrder(cart, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
+            orderGroup.Properties[Constants.PaymentLinkMollie] = getOrderResponse?.Links.Checkout?.Href;
 
-            _orderRepository.Save(cart);
+            _orderNoteHelper.AddNoteToOrder(orderGroup, "Mollie Order created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
+
+            _orderRepository.Save(orderGroup);
 
             _logger.Information(message);
 

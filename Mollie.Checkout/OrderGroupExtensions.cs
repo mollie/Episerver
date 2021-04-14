@@ -10,6 +10,11 @@ namespace Mollie.Checkout
             var orderNumberGenerator = ServiceLocator.Current.GetInstance<IOrderNumberGenerator>();
             var orderRepo = ServiceLocator.Current.GetInstance<IOrderRepository>();
 
+            if (orderGroup is IPurchaseOrder)
+            {
+                return ((IPurchaseOrder)orderGroup).OrderNumber;
+            }
+
             if (string.IsNullOrWhiteSpace(orderGroup.Properties["OrderNumber"] as string))
             {
                 // No orderNumber has been generated yet.

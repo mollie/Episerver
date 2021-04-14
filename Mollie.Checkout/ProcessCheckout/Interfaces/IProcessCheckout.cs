@@ -4,6 +4,6 @@ namespace Mollie.Checkout.ProcessCheckout.Interfaces
 {
     public interface IProcessCheckout
     {
-        PaymentProcessingResult Process(ICart cart, IPayment payment);
+        PaymentProcessingResult Process(IOrderGroup orderGroup, IPayment payment);
     }
 }
