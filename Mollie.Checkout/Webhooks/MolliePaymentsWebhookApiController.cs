@@ -18,17 +18,20 @@ namespace Mollie.Checkout.Webhooks
         private readonly ILogger _log = LogManager.GetLogger(typeof(MolliePaymentsWebhookApiController));
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly IOrderRepository _orderRepository;
+        private readonly IPurchaseOrderRepository _purchaseOrderRepository;
         private readonly IOrderGroupPaymentService _orderGroupPaymentService;
         private readonly HttpClient _httpClient;
 
         public MolliePaymentsWebhookApiController(
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
             IOrderRepository orderRepository,
+            IPurchaseOrderRepository purchaseOrderRepository,
             IOrderGroupPaymentService orderGroupPaymentService,
             HttpClient httpClient)
         {
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
             _orderRepository = orderRepository;
+            _purchaseOrderRepository = purchaseOrderRepository;
             _orderGroupPaymentService = orderGroupPaymentService;
             _httpClient = httpClient;
         }
@@ -87,12 +90,15 @@ namespace Mollie.Checkout.Webhooks
                 return Ok();
             }
 
-            // Get Cart with ID
-            var orderGroup = _orderRepository.Load<ICart>(metaDataResponse.CartId);
-
-            if(orderGroup == null)
+            IOrderGroup orderGroup = _orderRepository.Load<ICart>(metaDataResponse.OrderGroupId);
+            if (orderGroup == null)
             {
-                _log.Error($"Cart with ID {metaDataResponse.CartId} does not exist.");
+                orderGroup = _purchaseOrderRepository.Load(metaDataResponse.OrderNumber);
+            }
+
+            if (orderGroup == null)
+            {
+                _log.Error($"OrderGroup with ID {metaDataResponse.OrderGroupId} Or PurchaseOrder with Number {metaDataResponse.OrderNumber} does not exist.");
 
                 return Ok();
             }

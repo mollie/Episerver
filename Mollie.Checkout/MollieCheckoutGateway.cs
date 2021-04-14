@@ -55,7 +55,8 @@ namespace Mollie.Checkout
             // The order which is created by Commerce Manager
             if (cart == null && orderGroup is IPurchaseOrder)
             {
-                if (payment.TransactionType == TransactionType.Capture.ToString())
+                if (payment.TransactionType == TransactionType.Capture.ToString() 
+                    || payment.TransactionType == TransactionType.Sale.ToString())
                 {
                     return ProcessPaymentCapture(orderGroup, payment);
                 }
@@ -84,7 +85,11 @@ namespace Mollie.Checkout
 
         private PaymentProcessingResult ProcessPaymentCapture(IOrderGroup orderGroup, IPayment payment)
         {
-            throw new NotImplementedException("Capture not implemented yet");
+            // CHECKOUT
+            var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
+            var processCheckout = _processCheckoutFactory.GetInstance(languageId);
+
+            return processCheckout.Process(orderGroup, payment);
         }
     }
 }

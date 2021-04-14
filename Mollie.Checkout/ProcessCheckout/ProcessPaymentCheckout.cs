@@ -65,7 +65,7 @@ namespace Mollie.Checkout.ProcessCheckout
             _orderNoteHelper = orderNoteHelper;
         }
 
-        public PaymentProcessingResult Process(ICart cart, IPayment payment)
+        public PaymentProcessingResult Process(IOrderGroup orderGroup, IPayment payment)
         {
             var languageId = payment.Properties[Constants.OtherPaymentFields.LanguageId] as string;
 
@@ -96,9 +96,9 @@ namespace Mollie.Checkout.ProcessCheckout
 
             var paymentRequest = new PaymentRequest
             {
-                Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
-                Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
-                RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
+                Amount = new Amount(orderGroup.Currency.CurrencyCode, payment.Amount),
+                Description = _paymentDescriptionGenerator.GetDescription(orderGroup, payment),
+                RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={orderGroup.OrderNumber()}",
                 WebhookUrl = urlBuilder.ToString(),
                 Locale = LanguageUtils.GetLocale(languageId)
             };
@@ -139,16 +139,16 @@ namespace Mollie.Checkout.ProcessCheckout
                 var token = payment.Properties[Constants.OtherPaymentFields.MollieToken] as string;
                 paymentRequest = new CreditCardPaymentRequest()
                 {
-                    Amount = new Amount(cart.Currency.CurrencyCode, payment.Amount),
-                    Description = _paymentDescriptionGenerator.GetDescription(cart, payment),
-                    RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={cart.OrderNumber()}",
+                    Amount = new Amount(orderGroup.Currency.CurrencyCode, payment.Amount),
+                    Description = _paymentDescriptionGenerator.GetDescription(orderGroup, payment),
+                    RedirectUrl = checkoutConfiguration.RedirectUrl + $"?orderNumber={orderGroup.OrderNumber()}",
                     WebhookUrl = urlBuilder.ToString(),
                     Locale = LanguageUtils.GetLocale(languageId),
                     CardToken = token
                 };
             }
 
-            var metaData = _checkoutMetaDataFactory.Create(cart, payment, checkoutConfiguration);
+            var metaData = _checkoutMetaDataFactory.Create(orderGroup, payment, checkoutConfiguration);
 
             paymentRequest.SetMetadata(metaData);
 
@@ -181,18 +181,18 @@ namespace Mollie.Checkout.ProcessCheckout
                 molliePaymentIdMessage = $"Mollie Payment ID created: {paymentResponse?.Id}";
             }
 
-            _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment ID", molliePaymentIdMessage, PrincipalInfo.CurrentPrincipal.GetContactId());
+            _orderNoteHelper.AddNoteToOrder(orderGroup, "Mollie Payment ID", molliePaymentIdMessage, PrincipalInfo.CurrentPrincipal.GetContactId());
 
 
             var message = paymentResponse?.Links.Checkout != null && !string.IsNullOrWhiteSpace(paymentResponse?.Links.Checkout.Href)
                 ? $"Mollie Create Payment is successful. Redirect end user to {paymentResponse?.Links.Checkout.Href}"
                 : $"Mollie Create Payment is successful. No redirect needed";
 
-            _orderNoteHelper.AddNoteToOrder(cart, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
+            _orderNoteHelper.AddNoteToOrder(orderGroup, "Mollie Payment created", message, PrincipalInfo.CurrentPrincipal.GetContactId());
 
-            cart.Properties[Constants.PaymentLinkMollie] = paymentResponse.Links.Checkout?.Href;
+            orderGroup.Properties[Constants.PaymentLinkMollie] = paymentResponse.Links.Checkout?.Href;
 
-            _orderRepository.Save(cart);
+            _orderRepository.Save(orderGroup);
 
             _logger.Information(message);
 
