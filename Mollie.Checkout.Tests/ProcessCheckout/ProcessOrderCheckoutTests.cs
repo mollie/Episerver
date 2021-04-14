@@ -409,7 +409,7 @@ namespace Mollie.Checkout.Tests.ProcessCheckout
             A.CallTo(() => _checkoutMetaDataFactory.Create(A<IOrderGroup>._, A<IPayment>._, A<CheckoutConfiguration>._))
                 .Returns(new CheckoutMetaDataModel
                 {
-                    CartId = CartId,
+                    OrderGroupId = CartId,
                     OrderNumber = OrderNumber,
                     VersionStrings = VersionStrings
                 });

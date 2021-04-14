@@ -8,7 +8,7 @@ namespace Mollie.Checkout
 
         public const string PaymentLinkMollie = "PaymentLinkMollie";
 
-        public const string MollieCheckoutMethodName = "Mollie Chechout";
+        public const string MollieCheckoutMethodName = "Mollie Checkout";
 
         
 

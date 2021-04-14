@@ -2,7 +2,7 @@
 {
     public class CheckoutMetaDataModel
     {
-        public int CartId { get; set; }
+        public int OrderGroupId { get; set; }
 
         public string OrderNumber { get; set; }
 
