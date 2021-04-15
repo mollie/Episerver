@@ -93,22 +93,21 @@ namespace Mollie.Checkout.Webhooks
                 return Ok();
             }
 
-            // Get OrderGroup with ID
-            if (!(_orderRepository.Load<ICart>(metaDataResponse.OrderGroupId) is IOrderGroup orderGroup))
+            IOrderGroup orderGroup = _purchaseOrderRepository.Load(metaDataResponse.OrderNumber);
+            if (orderGroup == null)
             {
-                _log.Warning($"Cart with ID {metaDataResponse.OrderGroupId} does not exist.");
-
-                orderGroup = _purchaseOrderRepository.Load(metaDataResponse.OrderNumber);
-
-                if (orderGroup == null)
-                {
-                    _log.Error($"Order with ID {metaDataResponse.OrderNumber} does not exist.");
-
-                    return Ok();
-                }
+                orderGroup = _orderRepository.Load<ICart>(metaDataResponse.OrderGroupId);
             }
 
-            // Update Cart            
+            if (orderGroup == null)
+            {
+                _log.Error($"PurchaseOrder with Number {metaDataResponse.OrderNumber} Or Cart with ID {metaDataResponse.OrderGroupId} does not exist.");
+
+                return Ok();
+            }
+
+
+            // Update Order/Cart            
             _mollieCheckoutService.HandleOrderStatusUpdate(orderGroup, orderResult.Status, orderResult.Id);
 
             // Update Payments
