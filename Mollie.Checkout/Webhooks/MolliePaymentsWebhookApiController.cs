@@ -90,15 +90,15 @@ namespace Mollie.Checkout.Webhooks
                 return Ok();
             }
 
-            IOrderGroup orderGroup = _orderRepository.Load<ICart>(metaDataResponse.OrderGroupId);
+            IOrderGroup orderGroup = _purchaseOrderRepository.Load(metaDataResponse.OrderNumber);
             if (orderGroup == null)
             {
-                orderGroup = _purchaseOrderRepository.Load(metaDataResponse.OrderNumber);
+                orderGroup = _orderRepository.Load<ICart>(metaDataResponse.OrderGroupId);
             }
 
             if (orderGroup == null)
             {
-                _log.Error($"OrderGroup with ID {metaDataResponse.OrderGroupId} Or PurchaseOrder with Number {metaDataResponse.OrderNumber} does not exist.");
+                _log.Error($"PurchaseOrder with Number {metaDataResponse.OrderNumber} Or Cart with ID {metaDataResponse.OrderGroupId} does not exist.");
 
                 return Ok();
             }
