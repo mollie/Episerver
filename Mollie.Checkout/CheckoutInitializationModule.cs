@@ -36,13 +36,13 @@ namespace Mollie.Checkout
             var allMarkets = _marketService.Service.GetAllMarkets().Where(x => x.IsEnabled).ToList();
             foreach (var language in allMarkets.SelectMany(x => x.Languages).Distinct())
             {
-                var paymentMethodDto = PaymentManager.GetPaymentMethods(language.TwoLetterISOLanguageName);
+                var paymentMethodDto = PaymentManager.GetPaymentMethods(language.TwoLetterISOLanguageName, true);
                 
                 if (!paymentMethodDto.PaymentMethod.Any(pm => pm.SystemKeyword.Equals(Constants.MollieCheckoutSystemKeyword)))
                 {
                     var row = paymentMethodDto.PaymentMethod.AddPaymentMethodRow(Guid.NewGuid(), Constants.MollieCheckoutMethodName, 
-                        Constants.MollieCheckoutMethodName, language.TwoLetterISOLanguageName, Constants.MollieCheckoutSystemKeyword, 
-                        true, true, $"{typeof(MollieCheckoutGateway)}, {typeof(MollieCheckoutGateway).Assembly.GetName().Name}",
+                        Constants.MollieCheckoutMethodName, language.TwoLetterISOLanguageName, Constants.MollieCheckoutSystemKeyword,
+                        false, false, $"{typeof(MollieCheckoutGateway)}, {typeof(MollieCheckoutGateway).Assembly.GetName().Name}",
                         $"{typeof(OtherPayment)}, {typeof(OtherPayment).Assembly.GetName().Name}", false, 0, DateTime.Now, DateTime.Now);
 
                     var paymentMethod = new PaymentMethod(row);
