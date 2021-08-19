@@ -83,7 +83,7 @@
             <strong><asp:Literal ID="orderExpiresInDaysLabel" Text="Order Expires In Days" runat="server"></asp:Literal></strong>
         </td>
         <td class="FormFieldCell">
-            <asp:TextBox ID="orderExpiresInDaysTextBox" CssClass="text" Text="30" runat="server"></asp:TextBox>
+            <asp:TextBox ID="orderExpiresInDaysTextBox" CssClass="text" Text="28" runat="server"></asp:TextBox>
             <asp:RequiredFieldValidator ID="orderExpiresInDaysRequiredValidator" runat="server" ControlToValidate="orderExpiresInDaysTextBox" ErrorMessage="<%$ Resources: EPiServer, mollie.payment.settings.requiredorderexpires %>" />
             <asp:RangeValidator ID="orderExpiresInDaysRangeValidator" Type="Integer" MinimumValue="1" MaximumValue="100" runat="server" ControlToValidate="orderExpiresInDaysTextBox" ErrorMessage="<%$ Resources: EPiServer, mollie.payment.settings.rangeorderexpires %>" />
         </td>

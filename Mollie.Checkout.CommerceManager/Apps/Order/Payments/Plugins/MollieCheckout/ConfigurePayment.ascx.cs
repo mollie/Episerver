@@ -56,7 +56,7 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             profileIDTextBox.Text = GetParameterByName(Constants.Fields.ProfileIDField)?.Value ?? string.Empty;
             redirectURLTextBox.Text = GetParameterByName(Constants.Fields.RedirectURLField)?.Value ?? string.Empty;
             useCreditcardComponentsRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseCreditcardComponentsField)?.Value ?? "False";
-            orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "30";
+            orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "28";
             versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
 
             if (string.IsNullOrWhiteSpace(apiKey))
