@@ -28,8 +28,10 @@ export default class Address {
                     }
 
                     feather.replace();
-                    let dropdown = new Dropdown(region);
-                    dropdown.Init();
+
+                    // Throws an error, not sure what it was supposed to do.
+                    //let dropdown = new Dropdown(region);
+                    //dropdown.Init();
                 })
                 .catch(function (e) {
                     notification.error(e);
@@ -45,6 +47,7 @@ export default class Address {
             if ($(this).find('option').length == 0) {
                 axios.get('/header/getcountryoptions?inputName=' + data)
                     .then(function (r) {
+
                         let html = $(r.data).html();
                         $(element).html(html);
                         feather.replace();
