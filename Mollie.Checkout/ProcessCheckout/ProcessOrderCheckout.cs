@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using EPiServer.Commerce.Order;
@@ -108,8 +109,15 @@ namespace Mollie.Checkout.ProcessCheckout
             }
             
             var request = _httpContextAccessor().Request;
-            
+
             var baseUrl = $"{request.Url?.Scheme}://{request.Url?.Authority}";
+
+            var proxyUrl = ConfigurationManager.AppSettings["mollie:webhook.proxyurl"];
+
+            if (!string.IsNullOrWhiteSpace(proxyUrl))
+            {
+                baseUrl = proxyUrl;
+            }
 
             var urlBuilder = new UriBuilder(baseUrl)
             {

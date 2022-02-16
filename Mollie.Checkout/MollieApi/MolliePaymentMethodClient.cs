@@ -51,6 +51,8 @@ namespace Mollie.Checkout.MollieApi
             result.AddValueIfNotNullOrEmpty(nameof(resource), resource?.ToString()?.ToLower());
             result.AddValueIfNotNullOrEmpty(nameof(currency), currency);
             result.AddValueIfNotNullOrEmpty(nameof(billingCountry), billingCountry);
+            result.AddValueIfNotNullOrEmpty("includeWallets", "applepay");
+
             return result;
         }
 
