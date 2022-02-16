@@ -21,7 +21,7 @@
                     activeSubPaymentMethod = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
                 }
 
-                <div class="card">
+                <div class="card @(method.Id.Equals("applepay") ? "hidden" : "")" id="payment-@method.Id">
                     <div class="card-header" id="head-@method.Id">
                         <label class="checkbox">
                             <input type="radio" name="subPaymentMethod" value="@method.Id" @(activeSubPaymentMethod ? "checked" : string.Empty)
@@ -33,25 +33,36 @@
                     </div>
                 </div>
 
-                <div id="collapse-@method.Id" class="collapse @(activeSubPaymentMethod ? "show" : string.Empty)" aria-labelledby="head-@method.Id" data-parent="#accordion">
+                if (method.Id == "applepay") {
+                    <script>
+                        if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
+                            var applePay = document.querySelector('#payment-applepay');
+                            if (applePay) {
+                                applePay.classList.remove("hidden");
+                            }
+                        }
+                    </script>
+                }
 
-                    @if (method.Issuers != null)
-                    {
-                        <div class="card-body">
-                            @RenderIssuersList(method.Issuers)
-                        </div>
-                    }
+            <div id="collapse-@method.Id" class="collapse @(activeSubPaymentMethod ? "show" : string.Empty)" aria-labelledby="head-@method.Id" data-parent="#accordion">
 
-                    @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase) && Model.Configuration.UseCreditcardComponents)
-                    {
-                        <div class="card-body">
-                            @RenderCreditCardComponents()
-                        </div>
-                    }
+                @if (method.Issuers != null)
+                {
+                    <div class="card-body">
+                        @RenderIssuersList(method.Issuers)
+                    </div>
+                }
 
-                </div>
+                @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase) && Model.Configuration.UseCreditcardComponents)
+                {
+                    <div class="card-body">
+                        @RenderCreditCardComponents()
+                    </div>
+                }
 
-                activeSubPaymentMethod = false;
+            </div>
+
+            activeSubPaymentMethod = false;
             }
         </div>
     </div>
