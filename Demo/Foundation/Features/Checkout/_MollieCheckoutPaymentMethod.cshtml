@@ -33,7 +33,9 @@
                     </div>
                 </div>
 
-                if (method.Id == "applepay") {
+                <!--You should check if the Apple Pay method is available on the shopper’s device by using the canMakePayments method on the window.ApplePaySession object. Apple requires you that you only show the Apple Pay option when it is actually supported by the device.-->
+                if (method.Id == "applepay")
+                {
                     <script>
                         if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
                             var applePay = document.querySelector('#payment-applepay');
@@ -44,25 +46,25 @@
                     </script>
                 }
 
-            <div id="collapse-@method.Id" class="collapse @(activeSubPaymentMethod ? "show" : string.Empty)" aria-labelledby="head-@method.Id" data-parent="#accordion">
+                <div id="collapse-@method.Id" class="collapse @(activeSubPaymentMethod ? "show" : string.Empty)" aria-labelledby="head-@method.Id" data-parent="#accordion">
 
-                @if (method.Issuers != null)
-                {
-                    <div class="card-body">
-                        @RenderIssuersList(method.Issuers)
-                    </div>
-                }
+                    @if (method.Issuers != null)
+                    {
+                        <div class="card-body">
+                            @RenderIssuersList(method.Issuers)
+                        </div>
+                    }
 
-                @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase) && Model.Configuration.UseCreditcardComponents)
-                {
-                    <div class="card-body">
-                        @RenderCreditCardComponents()
-                    </div>
-                }
+                    @if (method.Id.Equals("creditcard", StringComparison.InvariantCultureIgnoreCase) && Model.Configuration.UseCreditcardComponents)
+                    {
+                        <div class="card-body">
+                            @RenderCreditCardComponents()
+                        </div>
+                    }
 
-            </div>
+                </div>
 
-            activeSubPaymentMethod = false;
+                activeSubPaymentMethod = false;
             }
         </div>
     </div>
