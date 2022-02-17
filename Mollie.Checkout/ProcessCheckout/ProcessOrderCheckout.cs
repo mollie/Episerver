@@ -317,7 +317,8 @@ namespace Mollie.Checkout.ProcessCheckout
                     DiscountAmount = new Amount(cart.Currency.CurrencyCode, _lineItemCalculations.GetEntryDiscount(orderLine)),
                     //TODO: Why is it returning 0 vat?
                     VatAmount = vatAmount,
-                    Metadata = JsonConvert.SerializeObject(metadata)
+                    Metadata = JsonConvert.SerializeObject(metadata),
+                    Category = "gift"   
                 };
             }
 
