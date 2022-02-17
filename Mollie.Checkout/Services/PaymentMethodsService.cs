@@ -3,17 +3,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter;
+using EPiServer.Framework.Localization;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mollie.Api.Client;
 using Mollie.Api.Client.Abstract;
 using Mollie.Api.Models;
 using Mollie.Api.Models.PaymentMethod;
-using Mollie.Checkout.Dto;
 using Mollie.Checkout.MollieApi;
 using Mollie.Checkout.Helpers;
-using Mollie.Checkout.Storage;
-using Newtonsoft.Json;
 using Currency = Mediachase.Commerce.Currency;
 
 namespace Mollie.Checkout.Services
@@ -21,20 +19,20 @@ namespace Mollie.Checkout.Services
     [ServiceConfiguration(typeof(IPaymentMethodsService))]
     public class PaymentMethodService : IPaymentMethodsService
     {
-        private readonly IPaymentMethodsSettingsService _paymentMethodsSettingsService;
+        private readonly LocalizationService _localizationService;
         private readonly IMolliePaymentMethodFilter _molliePaymentMethodFilter;
         private readonly IMolliePaymentMethodSorter _molliePaymentMethodSorter;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly HttpClient _httpClient;
         
         public PaymentMethodService(
-            IPaymentMethodsSettingsService paymentMethodsSettingsService,
+            LocalizationService localizationService,
             IMolliePaymentMethodFilter molliePaymentMethodFilter,
             IMolliePaymentMethodSorter molliePaymentMethodSorter,
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
             HttpClient httpClient)
         {
-            _paymentMethodsSettingsService = paymentMethodsSettingsService;
+            _localizationService = localizationService;
             _molliePaymentMethodFilter = molliePaymentMethodFilter;
             _molliePaymentMethodSorter = molliePaymentMethodSorter;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
@@ -199,12 +197,15 @@ namespace Mollie.Checkout.Services
             }
         }
 
-        private static Models.PaymentMethod MapToModel(PaymentMethodResponse response)
+        private Models.PaymentMethod MapToModel(PaymentMethodResponse response)
         {
             var methodModel = new Models.PaymentMethod
             {
                 Id = response.Id,
-                Description = response.Description,
+                Description = _localizationService
+                    .TryGetString($"/mollie/paymentmethods/{response.Id}", out var value) ? 
+                    value : 
+                    response.Description,
                 ImageSize1X = response.Image?.Size1x,
                 ImageSize2X = response.Image?.Size2x,
                 ImageSvg = response.Image?.Svg,

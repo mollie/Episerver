@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<languages>
+	<language name="Dutch" id="nl">
+		<mollie>
+			<paymentmethods>
+				<applepay>Appel betaling</applepay>
+				<ideal>Ideale betaling</ideal>
+			</paymentmethods>
+		</mollie>
+	</language>
+</languages>
