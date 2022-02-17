@@ -1,10 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <languages>
-	<language name="Dutch" id="nl">
+	<language name="English" id="en">
 		<mollie>
 			<paymentmethods>
-				<applepay>Appel betaling</applepay>
-				<ideal>Ideale betaling</ideal>
+				<ideal>Dutch IDeal payment system</ideal>
 			</paymentmethods>
 		</mollie>
 	</language>

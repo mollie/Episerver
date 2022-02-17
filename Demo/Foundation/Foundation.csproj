@@ -1883,10 +1883,7 @@
     <Content Include="Features\Shared\Views\Header\_HeaderCart.cshtml" />
     <Content Include="Features\Shared\Views\_AddressSummaryLine.cshtml" />
     <Content Include="NotFound.aspx" />
-    <EmbeddedResource Include="resources\languagefiles\Mollie_NL.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\languagefiles\Mollie_EN.xml">
+    <EmbeddedResource Include="lang\Mollie_EN.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <Content Include="resources\languagefiles\Episerver.Marketing.Automation.Forms_EN.xml" />

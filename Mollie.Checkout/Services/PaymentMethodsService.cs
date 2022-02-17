@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -202,10 +203,7 @@ namespace Mollie.Checkout.Services
             var methodModel = new Models.PaymentMethod
             {
                 Id = response.Id,
-                Description = _localizationService
-                    .TryGetString($"/mollie/paymentmethods/{response.Id}", out var value) ? 
-                    value : 
-                    response.Description,
+                Description = _localizationService.GetString($"/mollie/paymentmethods/{response.Id}", response.Description),
                 ImageSize1X = response.Image?.Size1x,
                 ImageSize2X = response.Image?.Size2x,
                 ImageSvg = response.Image?.Svg,
