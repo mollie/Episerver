@@ -861,3 +861,39 @@ Add a new view ___MollieCheckoutConfirmation.cshtml__ to __Foundation\\Features\
 
 </p>
 </details>
+
+<details><summary>8. Translate payment methods</summary>
+<p>
+    
+We offer the option to translate the payment method names shown in the checkout page.
+To translate the payment method name you need to add the following translations:
+
+```html
+
+<mollie>
+	<paymentmethods>
+		<applepay>Apple Pay</applepay>
+        <ideal>iDEAL</ideal>
+        <creditcard>Credit card</creditcard>
+        <klarnapaylater>Pay later</klarnapaylater>
+        <klarnapaynow>Pay now</klarnapaynow>
+        <klarnasliceit>Slice it</klarnasliceit>
+        <paypal>PayPal</paypal>
+        <banktransfer>Bank transfer</banktransfer>
+        <sofort>SOFORT Banking</sofort>
+        <giftcard>Gift cards</giftcard>
+        <bancontact>Bancontact</bancontact>
+        <eps>eps</eps>
+        <giropay>giropay</giropay>
+        <przelewy24>Przelewy24</przelewy24>
+        <kbc>KBC/CBC Payment Button</kbc>
+        <belfius>Belfius Pay Button</belfius>
+        <voucher>Vouchers</voucher>
+        <directdebit>SEPA Direct Debit</directdebit>
+	</paymentmethods>
+</mollie>
+
+```
+
+</p>
+</details>
