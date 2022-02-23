@@ -1,6 +1,7 @@
 using EPiServer.Commerce.Catalog.ContentTypes;
 using System.Collections.Generic;
 using System.Web.Mvc;
+using Mollie.Checkout.Models;
 
 namespace Foundation.Features.CatalogContent.Product
 {
@@ -25,5 +26,6 @@ namespace Foundation.Features.CatalogContent.Product
         public string Size { get; set; }
         public List<VariantViewModel> Variants { get; set; }
         public string WishlistLabel { get; set; }
+        public CheckoutConfiguration CheckoutConfiguration { get; set; }
     }
 }

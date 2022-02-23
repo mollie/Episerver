@@ -133,6 +133,10 @@
             {
                 @Html.Partial("_Store", Model.Stores)
                 @Html.Partial("_BuyNow", new Tuple<string, int, bool>(Model.Variant.Code, Model.MinQuantity, Model.IsAvailable))
+                if (Model.CheckoutConfiguration.UseApplePayDirectIntegration)
+                {
+                    <h1>Apple Pay: @Model.CheckoutConfiguration.UseApplePayDirectIntegration</h1>
+                }
             }
             <hr />
             <div class="row">

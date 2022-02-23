@@ -28,6 +28,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using Mollie.Checkout.Models;
+using Mollie.Checkout.Services;
 
 namespace Foundation.Features.CatalogContent
 {
@@ -48,6 +50,8 @@ namespace Foundation.Features.CatalogContent
         private readonly IInventoryService _inventoryService;
         private readonly IWarehouseRepository _warehouseRepository;
         private readonly IDatabaseMode _databaseMode;
+        private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
+        private readonly LanguageService _languageService;        
 
         public CatalogEntryViewModelFactory(
             IPromotionService promotionService,
@@ -64,7 +68,7 @@ namespace Foundation.Features.CatalogContent
             IQuickOrderService quickOrderService,
             IInventoryService inventoryService,
             IWarehouseRepository warehouseRepository,
-            IDatabaseMode databaseMode)
+            IDatabaseMode databaseMode, ICheckoutConfigurationLoader checkoutConfigurationLoader, LanguageService languageService)
         {
             _promotionService = promotionService;
             _contentLoader = contentLoader;
@@ -81,6 +85,8 @@ namespace Foundation.Features.CatalogContent
             _inventoryService = inventoryService;
             _warehouseRepository = warehouseRepository;
             _databaseMode = databaseMode;
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _languageService = languageService;
         }
 
         public virtual TViewModel Create<TProduct, TVariant, TViewModel>(TProduct currentContent, string variationCode)
@@ -89,6 +95,10 @@ namespace Foundation.Features.CatalogContent
             where TViewModel : ProductViewModelBase<TProduct, TVariant>, new()
         {
             var viewModel = new TViewModel();
+
+            var languageId = _languageService.GetCurrentLanguage().Name;
+            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
+
             var market = _currentMarket.GetCurrentMarket();
             var currency = _currencyservice.GetCurrentCurrency();
             var variants = GetVariants<TVariant, TProduct>(currentContent)
@@ -106,7 +116,8 @@ namespace Foundation.Features.CatalogContent
                     Colors = new List<SelectListItem>(),
                     Sizes = new List<SelectListItem>(),
                     StaticAssociations = new List<ProductTileViewModel>(),
-                    Variants = new List<VariantViewModel>()
+                    Variants = new List<VariantViewModel>(),
+                    CheckoutConfiguration = checkoutConfiguration
                 };
             }
 
@@ -194,6 +205,7 @@ namespace Foundation.Features.CatalogContent
                 .Select(x => _contentLoader.Get<MediaData>(x.AssetLink)).ToList();
             viewModel.MinQuantity = (int)defaultPrice.MinQuantity;
             viewModel.HasSaleCode = defaultPrice != null ? !string.IsNullOrEmpty(defaultPrice.CustomerPricing.PriceCode) : false;
+            viewModel.CheckoutConfiguration = checkoutConfiguration;
 
             return viewModel;
         }
