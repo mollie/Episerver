@@ -20,6 +20,8 @@ namespace Mollie.Checkout.Models
 
         public bool UseCreditcardComponents { get; set; }
 
+        public bool UseApplePayDirectIntegration { get; set; }
+
         public int OrderExpiresInDays { get; set; }
     }
 }
