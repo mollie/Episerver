@@ -1068,6 +1068,7 @@
     <Compile Include="Features\Locations\TagsPartialRouting.cs" />
     <Compile Include="Features\Markets\CurrentMarketViewModel.cs" />
     <Compile Include="Features\Media\CodingFile.cs" />
+    <Compile Include="Features\MollieApplePay\ApplePayController.cs" />
     <Compile Include="Features\MyAccount\Bookmarks\BookmarksPage.cs" />
     <Compile Include="Features\MyAccount\Bookmarks\BookmarksService.cs" />
     <Compile Include="Features\MyAccount\Bookmarks\BookmarksViewModel.cs" />
@@ -1647,6 +1648,9 @@
     <Content Include="Features\Blog\BlogListPage\View\Template\_NoImageTemplate.cshtml" />
     <Content Include="Features\Blog\BlogListPage\View\_BlogList.cshtml" />
     <Content Include="Features\Blog\BlogListPage\View\_Paging.cshtml" />
+    <Content Include="App_Data\apple-developer-merchantid-domain-association">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Features\CatalogContent\DynamicCatalogContent\DynamicProduct\Index.cshtml" />
     <Content Include="Features\Events\CalendarBlock\calendar-block.js" />
     <Content Include="Features\Markets\market.js" />
