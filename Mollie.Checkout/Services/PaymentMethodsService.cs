@@ -93,6 +93,38 @@ namespace Mollie.Checkout.Services
             return items.Select(MapToModel).ToList();
         }
 
+        public async Task<bool> PaymentMethodActiveAsync(
+            string paymentMethodId,
+            string marketId,
+            string languageId,
+            Money cartTotal,
+            string countryCode)
+        {
+            var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
+
+            var paymentMethods = await LoadMethods(
+                languageId,
+                cartTotal.Currency,
+                cartTotal.Amount,
+                countryCode,
+                config.ApiKey,
+                config.UseOrdersApi,
+                true);
+
+            if (paymentMethods.All(x => x.Id != paymentMethodId))
+            {
+                return false;
+            }
+
+            var items = _molliePaymentMethodFilter.Filter(
+                paymentMethods,
+                languageId,
+                countryCode,
+                marketId);
+
+            return items.Any(x => x.Id == paymentMethodId);
+        }
+
         public async Task<List<Models.PaymentMethod>> LoadMethods(
             string marketId,
             string languageId, 

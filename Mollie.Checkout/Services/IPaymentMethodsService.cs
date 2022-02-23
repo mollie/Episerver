@@ -7,6 +7,13 @@ namespace Mollie.Checkout.Services
 {
     public interface IPaymentMethodsService
     {
+        Task<bool> PaymentMethodActiveAsync(
+            string paymentMethodId,
+            string marketId,
+            string languageId,
+            Money cartTotal,
+            string countryCode);
+
         Task<List<Models.PaymentMethod>> LoadMethods(
             string languageId);
 
