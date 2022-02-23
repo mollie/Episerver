@@ -26,6 +26,11 @@ namespace Foundation
             base.RegisterRoutes(routes);
 
             routes.MapRoute(
+                "ApplePay",
+                "well-known/apple-developer-merchantid-domain-association",
+                new { controller = "ApplePay", action = "WellKnownApplePay" });
+
+            routes.MapRoute(
               name: "Default",
               url: "{controller}/{action}/{id}",
               defaults: new { action = "Index", id = UrlParameter.Optional });
