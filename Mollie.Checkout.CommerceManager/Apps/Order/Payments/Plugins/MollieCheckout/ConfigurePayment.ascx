@@ -123,17 +123,6 @@
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
-        <td class="FormLabelCell center">
-            <strong><asp:Literal ID="useApplePayDirectIntegrationLabel" Text="Use Apple Pay Direct Integration" runat="server"></asp:Literal></strong>
-        </td>
-        <td class="FormFieldCell top">
-            <asp:RadioButtonList ID="useApplePayDirectIntegrationRadioButtonList" runat="server" RepeatDirection="Horizontal" Width="120px">
-                <asp:ListItem Text="<%$ Resources: EPiServer, mollie.payment.settings.yes %>" Value="True" />
-                <asp:ListItem Text="<%$ Resources: EPiServer, mollie.payment.settings.no %>" Value="False" Enabled="true" />
-            </asp:RadioButtonList>
-        </td>
-    </tr>
-    <tr>
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>

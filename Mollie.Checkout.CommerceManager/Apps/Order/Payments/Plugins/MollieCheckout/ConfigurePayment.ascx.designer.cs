@@ -204,24 +204,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
         protected global::System.Web.UI.WebControls.RadioButtonList useCreditcardComponentsRadioButtonList;
 
         /// <summary>
-        /// useApplePayDirectIntegrationLabel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal useApplePayDirectIntegrationLabel;
-
-        /// <summary>
-        /// useApplePayDirectIntegrationRadioButtonList control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButtonList useApplePayDirectIntegrationRadioButtonList;
-
-        /// <summary>
         /// mollieInfoHeader control.
         /// </summary>
         /// <remarks>

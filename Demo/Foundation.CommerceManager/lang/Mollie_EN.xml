@@ -12,7 +12,6 @@
           <orderexpiresindays>Order Expires In Days</orderexpiresindays>
           <useordersapi>Use Orders API</useordersapi>
           <usecreditcardcomponents>Use Creditcard Components</usecreditcardcomponents>
-          <useapplepaydirectintegration>Use Apple Pay Direct Integration</useapplepaydirectintegration>
           <mollieinfoheader>Mollie Info</mollieinfoheader>
           <version>Version</version>
           <linktoprofile>Link to Mollie Profile (to find the API keys)</linktoprofile>

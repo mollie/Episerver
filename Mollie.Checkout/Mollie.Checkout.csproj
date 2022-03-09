@@ -274,7 +274,6 @@
     <Compile Include="ProcessShipment\Interfaces\IMollieShipmentCreator.cs" />
     <Compile Include="ProcessShipment\MollieShipmentCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\ApplePay.cs" />
     <Compile Include="Services\AssemblyVersionUtils.cs" />
     <Compile Include="Services\DefaultCheckoutConfigurationLoader.cs" />
     <Compile Include="Services\DefaultCheckoutMetaDataFactory.cs" />
@@ -282,7 +281,6 @@
     <Compile Include="Services\ICheckoutConfigurationLoader.cs" />
     <Compile Include="Services\ICheckoutMetaDataFactory.cs" />
     <Compile Include="Services\IMollieCheckoutService.cs" />
-    <Compile Include="Services\Interfaces\IApplePay.cs" />
     <Compile Include="Services\Interfaces\IOrderNoteHelper.cs" />
     <Compile Include="Services\IOrderGroupPaymentService.cs" />
     <Compile Include="Services\IPaymentDescriptionGenerator.cs" />

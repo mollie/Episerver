@@ -56,7 +56,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             profileIDTextBox.Text = GetParameterByName(Constants.Fields.ProfileIDField)?.Value ?? string.Empty;
             redirectURLTextBox.Text = GetParameterByName(Constants.Fields.RedirectURLField)?.Value ?? string.Empty;
             useCreditcardComponentsRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseCreditcardComponentsField)?.Value ?? "False";
-            useApplePayDirectIntegrationRadioButtonList.SelectedValue = GetParameterByName(Constants.Fields.UseApplePayDirectIntegrationField)?.Value ?? "False";
             orderExpiresInDaysTextBox.Text = GetParameterByName(Constants.Fields.OrderExpiresInDaysField)?.Value ?? "28";
             versionValueLabel.Text = AssemblyVersionUtils.CreateVersionString();
 
@@ -120,7 +119,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             SetParamValue(paymentMethodId, Constants.Fields.RedirectURLField, redirectURLTextBox.Text);
             SetParamValue(paymentMethodId, Constants.Fields.UseOrdersApiField, useOrdersApiRadioButtonList.SelectedValue);
             SetParamValue(paymentMethodId, Constants.Fields.UseCreditcardComponentsField, useCreditcardComponentsRadioButtonList.SelectedValue);
-            SetParamValue(paymentMethodId, Constants.Fields.UseApplePayDirectIntegrationField, useApplePayDirectIntegrationRadioButtonList.SelectedValue);
             SetParamValue(paymentMethodId, Constants.Fields.OrderExpiresInDaysField, orderExpiresInDaysTextBox.Text);
 
             var marketId = marketCountryDropDownList.SelectedValue?.Split('|').FirstOrDefault();
@@ -412,7 +410,6 @@ namespace Mollie.Checkout.CommerceManager.Apps.Order.Payments.Plugins.MollieChec
             orderExpiresInDaysLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/orderexpiresindays");
             useOrdersApiLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/useordersapi");
             useCreditcardComponentsLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/usecreditcardcomponents");
-            useApplePayDirectIntegrationLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/useapplepaydirectintegration");
             mollieInfoHeader.Text = LocalizationService.Current.GetString("/mollie/payment/settings/mollieinfoheader");
             versionLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/version");
             linkToProfileLabel.Text = LocalizationService.Current.GetString("/mollie/payment/settings/linktoprofile");

@@ -12,7 +12,6 @@
           <orderexpiresindays>Order verloopt in dagen</orderexpiresindays>
           <useordersapi>Gebruik Orders API</useordersapi>
           <usecreditcardcomponents>Gebruik Creditcard Component</usecreditcardcomponents>
-          <useapplepaydirectintegration>Gebruik Apple Pay Direct Integration</useapplepaydirectintegration>
           <mollieinfoheader>Mollie Info</mollieinfoheader>
           <version>Versie</version>
           <linktoprofile>Link naar Mollie Profiel (t.b.v. voor API key)</linktoprofile>
