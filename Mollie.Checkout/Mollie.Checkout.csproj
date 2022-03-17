@@ -234,6 +234,7 @@
     <Compile Include="Helpers\LineItemItemCalculations.cs" />
     <Compile Include="Helpers\ReturnOrderFormFinder.cs" />
     <Compile Include="Models\NotSupportedCurrenciesViewModel.cs" />
+    <Compile Include="MollieApi\MollieApplePayClient.cs" />
     <Compile Include="MollieApi\MolliePaymentMethodClient.cs" />
     <Compile Include="CheckoutInitializationModule.cs" />
     <Compile Include="Constants.cs" />
@@ -299,6 +300,7 @@
     <None Include="app.config" />
     <None Include="Mollie.Checkout.nuspec" />
     <None Include="packages.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

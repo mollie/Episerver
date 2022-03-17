@@ -355,7 +355,7 @@ In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMet
                     activeSubPaymentMethod = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
                 }
 
-                <div class="card">
+                <div class="card @(method.Id.Equals("applepay") ? "hidden" : "")" id="payment-@method.Id">
                     <div class="card-header" id="head-@method.Id">
                         <label class="checkbox">
                             <input type="radio" name="subPaymentMethod" value="@method.Id" @(activeSubPaymentMethod ? "checked" : string.Empty)
@@ -366,6 +366,19 @@ In __Foundation\\Features\\Checkout__ Add a new view ___MollieCheckoutPaymentMet
                         </label>
                     </div>
                 </div>
+
+                <!--You should check if the Apple Pay method is available on the shopper’s device by using the canMakePayments method on the window.ApplePaySession object. Apple requires you that you only show the Apple Pay option when it is actually supported by the device.-->
+                if (method.Id == "applepay")
+                {
+                    <script>
+                        if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
+                            var applePay = document.querySelector('#payment-applepay');
+                            if (applePay) {
+                                applePay.classList.remove("hidden");
+                            }
+                        }
+                    </script>
+                }
 
                 <div id="collapse-@method.Id" class="collapse @(activeSubPaymentMethod ? "show" : string.Empty)" aria-labelledby="head-@method.Id" data-parent="#accordion">
 
@@ -843,6 +856,42 @@ Add a new view ___MollieCheckoutConfirmation.cshtml__ to __Foundation\\Features\
         
     </p>
 </div>
+
+```
+
+</p>
+</details>
+
+<details><summary>8. Translate payment methods</summary>
+<p>
+    
+We offer the option to translate the payment method names shown in the checkout page.
+To translate the payment method name you need to add the following translations:
+
+```html
+
+<mollie>
+	<paymentmethods>
+		<applepay>Apple Pay</applepay>
+        <ideal>iDEAL</ideal>
+        <creditcard>Credit card</creditcard>
+        <klarnapaylater>Pay later</klarnapaylater>
+        <klarnapaynow>Pay now</klarnapaynow>
+        <klarnasliceit>Slice it</klarnasliceit>
+        <paypal>PayPal</paypal>
+        <banktransfer>Bank transfer</banktransfer>
+        <sofort>SOFORT Banking</sofort>
+        <giftcard>Gift cards</giftcard>
+        <bancontact>Bancontact</bancontact>
+        <eps>eps</eps>
+        <giropay>giropay</giropay>
+        <przelewy24>Przelewy24</przelewy24>
+        <kbc>KBC/CBC Payment Button</kbc>
+        <belfius>Belfius Pay Button</belfius>
+        <voucher>Vouchers</voucher>
+        <directdebit>SEPA Direct Debit</directdebit>
+	</paymentmethods>
+</mollie>
 
 ```
 

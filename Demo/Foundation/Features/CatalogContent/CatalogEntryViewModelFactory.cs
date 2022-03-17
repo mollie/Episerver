@@ -89,12 +89,18 @@ namespace Foundation.Features.CatalogContent
             where TViewModel : ProductViewModelBase<TProduct, TVariant>, new()
         {
             var viewModel = new TViewModel();
+
             var market = _currentMarket.GetCurrentMarket();
             var currency = _currencyservice.GetCurrentCurrency();
             var variants = GetVariants<TVariant, TProduct>(currentContent)
                 .Where(v => v.Prices().Any(x => x.MarketId == _currentMarket.GetCurrentMarket().MarketId))
                 .ToList();
+
             var variantsState = GetVarantsState(variants, market);
+
+            // Must select country code for Apple Pay
+            var countryCode = market.Countries.FirstOrDefault();
+
             if (!TryGetVariant(variants, variationCode, out var variant))
             {
                 return new TViewModel

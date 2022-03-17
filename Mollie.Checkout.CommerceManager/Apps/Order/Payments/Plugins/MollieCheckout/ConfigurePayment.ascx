@@ -16,6 +16,9 @@
     .FormFieldCell.top {
         vertical-align: top;
     }
+    .auto-style1 {
+        height: 31px;
+    }
 </style>
 
 <asp:HiddenField ID="PaymentMethodIdHiddenField" runat="server"/>
@@ -92,10 +95,10 @@
         <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
-        <td class="FormLabelCell center">
+        <td class="auto-style1">
             <strong><asp:Literal ID="useOrdersApiLabel" Text="Use Orders API" runat="server"></asp:Literal></strong>
         </td>
-        <td class="FormFieldCell">
+        <td class="FormFieldCell" style="height: 31px">
             <asp:RadioButtonList ID="useOrdersApiRadioButtonList" OnSelectedIndexChanged="OrdersApiRadioButtonListOnSelectedIndexChanged" AutoPostBack="True" runat="server" RepeatDirection="Horizontal" Width="120px">
                 <asp:ListItem Text="<%$ Resources: EPiServer, mollie.payment.settings.yes %>" Value="True" />
                 <asp:ListItem Text="<%$ Resources: EPiServer, mollie.payment.settings.no %>" Value="False" Enabled="true" />
@@ -115,6 +118,9 @@
                 <asp:ListItem Text="<%$ Resources: EPiServer, mollie.payment.settings.no %>" Value="False" Enabled="true" />
             </asp:RadioButtonList>
         </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="FormSpacerCell"></td>
     </tr>
     <tr>
         <td colspan="2" class="FormSpacerCell"></td>

@@ -67,11 +67,11 @@ namespace Mollie.Checkout.Services
             {
                 case MolliePaymentStatus.Open:
                 case MolliePaymentStatus.Pending:
-                case MolliePaymentStatus.Authorized:
                     orderGroupPayment.Status = PaymentStatus.Pending.ToString();
                     _orderRepository.Save(orderGroup);
                     break;
                 case MolliePaymentStatus.Paid:
+                case MolliePaymentStatus.Authorized:
                     orderGroupPayment.Status = PaymentStatus.Processed.ToString();
                     _orderRepository.Save(orderGroup);
 
