@@ -21,7 +21,7 @@
                     activeSubPaymentMethod = method.Id.Equals(Model.SubPaymentMethod, StringComparison.InvariantCultureIgnoreCase);
                 }
 
-                <div class="card">
+                <div class="card @(method.Id.Equals("applepay") ? "hidden" : "")" id="payment-@method.Id">
                     <div class="card-header" id="head-@method.Id">
                         <label class="checkbox">
                             <input type="radio" name="subPaymentMethod" value="@method.Id" @(activeSubPaymentMethod ? "checked" : string.Empty)

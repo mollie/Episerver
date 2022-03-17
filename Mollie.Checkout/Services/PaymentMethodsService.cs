@@ -3,17 +3,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter;
+using EPiServer.Framework.Localization;
 using EPiServer.ServiceLocation;
 using Mediachase.Commerce;
 using Mollie.Api.Client;
 using Mollie.Api.Client.Abstract;
 using Mollie.Api.Models;
 using Mollie.Api.Models.PaymentMethod;
-using Mollie.Checkout.Dto;
 using Mollie.Checkout.MollieApi;
 using Mollie.Checkout.Helpers;
-using Mollie.Checkout.Storage;
-using Newtonsoft.Json;
 using Currency = Mediachase.Commerce.Currency;
 
 namespace Mollie.Checkout.Services
@@ -21,20 +19,20 @@ namespace Mollie.Checkout.Services
     [ServiceConfiguration(typeof(IPaymentMethodsService))]
     public class PaymentMethodService : IPaymentMethodsService
     {
-        private readonly IPaymentMethodsSettingsService _paymentMethodsSettingsService;
+        private readonly LocalizationService _localizationService;
         private readonly IMolliePaymentMethodFilter _molliePaymentMethodFilter;
         private readonly IMolliePaymentMethodSorter _molliePaymentMethodSorter;
         private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
         private readonly HttpClient _httpClient;
         
         public PaymentMethodService(
-            IPaymentMethodsSettingsService paymentMethodsSettingsService,
+            LocalizationService localizationService,
             IMolliePaymentMethodFilter molliePaymentMethodFilter,
             IMolliePaymentMethodSorter molliePaymentMethodSorter,
             ICheckoutConfigurationLoader checkoutConfigurationLoader,
             HttpClient httpClient)
         {
-            _paymentMethodsSettingsService = paymentMethodsSettingsService;
+            _localizationService = localizationService;
             _molliePaymentMethodFilter = molliePaymentMethodFilter;
             _molliePaymentMethodSorter = molliePaymentMethodSorter;
             _checkoutConfigurationLoader = checkoutConfigurationLoader;
@@ -93,6 +91,38 @@ namespace Mollie.Checkout.Services
                 marketId);
 
             return items.Select(MapToModel).ToList();
+        }
+
+        public async Task<bool> PaymentMethodActiveAsync(
+            string paymentMethodId,
+            string marketId,
+            string languageId,
+            Money cartTotal,
+            string countryCode)
+        {
+            var config = _checkoutConfigurationLoader.GetConfiguration(languageId);
+
+            var paymentMethods = await LoadMethods(
+                languageId,
+                cartTotal.Currency,
+                cartTotal.Amount,
+                countryCode,
+                config.ApiKey,
+                config.UseOrdersApi,
+                true);
+
+            if (paymentMethods.All(x => x.Id != paymentMethodId))
+            {
+                return false;
+            }
+
+            var items = _molliePaymentMethodFilter.Filter(
+                paymentMethods,
+                languageId,
+                countryCode,
+                marketId);
+
+            return items.Any(x => x.Id == paymentMethodId);
         }
 
         public async Task<List<Models.PaymentMethod>> LoadMethods(
@@ -199,12 +229,12 @@ namespace Mollie.Checkout.Services
             }
         }
 
-        private static Models.PaymentMethod MapToModel(PaymentMethodResponse response)
+        private Models.PaymentMethod MapToModel(PaymentMethodResponse response)
         {
             var methodModel = new Models.PaymentMethod
             {
                 Id = response.Id,
-                Description = response.Description,
+                Description = _localizationService.GetString($"/mollie/paymentmethods/{response.Id}", response.Description),
                 ImageSize1X = response.Image?.Size1x,
                 ImageSize2X = response.Image?.Size2x,
                 ImageSvg = response.Image?.Svg,

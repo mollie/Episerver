@@ -1,6 +1,7 @@
 using EPiServer.Commerce.Catalog.ContentTypes;
 using System.Collections.Generic;
 using System.Web.Mvc;
+using Mollie.Checkout.Models;
 
 namespace Foundation.Features.CatalogContent.Product
 {

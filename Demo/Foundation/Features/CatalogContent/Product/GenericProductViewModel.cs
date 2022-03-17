@@ -2,6 +2,7 @@ using EPiServer.Personalization.Commerce.Tracking;
 using Foundation.Features.CatalogContent.Variation;
 using Foundation.Social.ViewModels;
 using System.Collections.Generic;
+using Mollie.Checkout.Models;
 
 namespace Foundation.Features.CatalogContent.Product
 {
