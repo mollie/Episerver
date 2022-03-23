@@ -2305,6 +2305,7 @@
     <Content Include="Features\CatalogContent\DynamicCatalogContent\DynamicProduct\_ProductDetail.cshtml" />
     <Content Include="Features\MyAccount\OrderConfirmation\_MollieCheckoutConfirmation.cshtml" />
     <Content Include="Features\Checkout\_MollieCheckoutPaymentMethod.cshtml" />
+    <Content Include="Features\CatalogContent\_ApplayPayDirectIntegration.cshtml" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

@@ -1,0 +1,202 @@
+﻿@model Mollie.Checkout.Models.CheckoutConfiguration
+
+@if (Model.UseApplePayDirectIntegration)
+{
+    <div id="applepaydirect" class="apple-pay-button-with-text apple-pay-button-black-with-text hidden">
+        <span class="text">Buy with</span>
+        <span class="logo"></span>
+    </div>
+    <style>
+        .hidden {
+            display: none !important;
+        }
+
+        @@supports (-webkit-appearance: -apple-pay-button) {
+            .apple-pay-button-with-text {
+                display: inline-block;
+                -webkit-appearance: -apple-pay-button;
+                -apple-pay-button-type: buy;
+            }
+
+                .apple-pay-button-with-text > * {
+                    display: none;
+                }
+
+            .apple-pay-button-black-with-text {
+                -apple-pay-button-style: black;
+            }
+
+            .apple-pay-button-white-with-text {
+                -apple-pay-button-style: white;
+            }
+
+            .apple-pay-button-white-with-line-with-text {
+                -apple-pay-button-style: white-outline;
+            }
+        }
+
+        @@supports not (-webkit-appearance: -apple-pay-button) {
+            .apple-pay-button-with-text {
+                --apple-pay-scale: 1; /* (height / 32) */
+                display: inline-flex;
+                justify-content: center;
+                font-size: 12px;
+                border-radius: 5px;
+                padding: 0px;
+                box-sizing: border-box;
+                min-width: 200px;
+                min-height: 32px;
+                max-height: 64px;
+            }
+
+            .apple-pay-button-black-with-text {
+                background-color: black;
+                color: white;
+            }
+
+            .apple-pay-button-white-with-text {
+                background-color: white;
+                color: black;
+            }
+
+            .apple-pay-button-white-with-line-with-text {
+                background-color: white;
+                color: black;
+                border: .5px solid black;
+            }
+
+            .apple-pay-button-with-text.apple-pay-button-black-with-text > .logo {
+                background-image: -webkit-named-image(apple-pay-logo-white);
+                background-color: black;
+            }
+
+            .apple-pay-button-with-text.apple-pay-button-white-with-text > .logo {
+                background-image: -webkit-named-image(apple-pay-logo-black);
+                background-color: white;
+            }
+
+            .apple-pay-button-with-text.apple-pay-button-white-with-line-with-text > .logo {
+                background-image: -webkit-named-image(apple-pay-logo-black);
+                background-color: white;
+            }
+
+            .apple-pay-button-with-text > .text {
+                font-family: -apple-system;
+                font-size: calc(1em * var(--apple-pay-scale));
+                font-weight: 300;
+                align-self: center;
+                margin-right: calc(2px * var(--apple-pay-scale));
+            }
+
+            .apple-pay-button-with-text > .logo {
+                width: calc(35px * var(--scale));
+                height: 100%;
+                background-size: 100% 60%;
+                background-repeat: no-repeat;
+                background-position: 0 50%;
+                margin-left: calc(2px * var(--apple-pay-scale));
+                border: none;
+            }
+        }
+    </style>
+    <script>
+        var applepaydirect = document.querySelector('#applepaydirect');
+        if (applepaydirect) {
+            if (window.ApplePaySession) {
+                applepaydirect.classList.add("hidden");
+                if (ApplePaySession.canMakePayments()) {
+                    applepaydirect.classList.remove("hidden");
+                } else {
+                    // Check for the existence of the openPaymentSetup method.
+                    if (ApplePaySession.openPaymentSetup) {
+                        // Display the Set up Apple Pay Button here…
+                        ApplePaySession.openPaymentSetup(merchantIdentifier)
+                            .then(function (success) {
+                                if (success) {
+                                    // Open payment setup successful
+                                } else {
+                                    // Open payment setup failed
+                                }
+                            })
+                            .catch(function (e) {
+                                // Open payment setup error handling
+                            });
+                    }
+                }
+            }
+
+
+            applepaydirect.addEventListener('click',
+                e => {
+                    var request = {
+                        countryCode: "US",
+                        currencyCode: "EUR",
+                        supportedNetworks: ["amex", "maestro", "masterCard", "visa", "vPay"],
+                        merchantCapabilities: ["supports3DS"],
+                        total: {
+                            label: "Optimizely Demo", amount: "10.00"
+                        }
+                        //,requiredShippingContactFields: ['postalAddress']
+                    }
+
+                    var session = new ApplePaySession(3, request);
+
+                    session.onvalidatemerchant = function (event) {
+                        var httpRequest = new XMLHttpRequest();
+                        httpRequest.open('GET', '/MollieApi/ValidateMerchant?validationUrl=' + event.validationURL, true);
+                        httpRequest.send();
+
+                        //$.ajax({
+                        //    url: '/MollieApi/ValidateMerchant?validationUrl=' + event.validationURL,
+                        //    method: "GET",
+                        //    contentType: "application/json; charset=utf-8"
+                        //}).then(function (merchantSession) {
+                        //    alert('post done');
+                        //    session.completeMerchantValidation(merchantSession);
+                        //    alert("end = " + window.location.host);
+                        //}, function (error) {
+                        //    alert("merchant validation unsuccessful: " + JSON.stringify(error));
+                        //    session.abort();
+                        //});
+                    };
+
+                    session.onshippingcontactselected = function (event) {
+                        console.log('starting session.onshippingcontactselected');
+                        console.log(event);
+                    }
+
+                    session.onpaymentmethodselected = function (event) {
+                        console.log("onpaymentmethodselected");
+                        session.completePaymentMethodSelection(total, lineItems);
+                    };
+
+                    session.onshippingcontactselected = function (event) {
+                        console.log("onshippingcontactselected");
+                        session.completeShippingContactSelection(ApplePaySession.STATUS_SUCCESS, shippingMethods, total, lineItems);
+                    };
+
+                    session.onshippingmethodselected = function (event) {
+                        console.log("onshippingmethodselected");
+                        session.completeShippingMethodSelection(ApplePaySession.STATUS_SUCCESS, total, lineItems);
+                    }
+
+                    session.onpaymentauthorized = function (event) {
+                        var token = event.payment.token;
+                        console.log("payment authorization | token = ", token);
+                        session.completePayment(ApplePaySession.STATUS_SUCCESS);
+                    }
+
+                    session.oncancel = function (event) {
+                        console.log("payment cancel error ", event);
+                    }
+
+
+
+
+
+                    session.begin();
+
+                });
+        }
+    </script>
+}
