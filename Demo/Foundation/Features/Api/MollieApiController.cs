@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Net.Http;
 using System.Web.Mvc;
 using Mollie.Checkout.MollieApi;
+using Newtonsoft.Json;
 
 namespace Foundation.Features.Api
 {
@@ -15,12 +14,12 @@ namespace Foundation.Features.Api
             _httpClient = new HttpClient();
         }
 
-        public async Task<ActionResult> ValidateMerchant(string validationUrl)
+        public ActionResult ValidateMerchant(string validationUrl)
         {
             var client = new MollieApplePayClient("live_jAe7MfwUsBEzqaKVyM7wVvy5aFA8md", _httpClient);
-            var response = await client.ValidateMerchant(validationUrl);
+            var response = client.ValidateMerchant(validationUrl);
 
-            return Json(response);
+            return Json(response, JsonRequestBehavior.AllowGet);
         }
     }
 }

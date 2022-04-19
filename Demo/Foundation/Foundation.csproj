@@ -1474,6 +1474,7 @@
     <Content Include="App_Data\promotions.xml" />
     <Content Include="App_Data\shippingMethods.xml" />
     <Content Include="App_Data\warehouses.xml" />
+    <Content Include="Assets\css\mollie.apple.pay.direct.css" />
     <Content Include="Assets\css\mollie.checkout.css" />
     <Content Include="Assets\icons\cms\blocks\CMS-icon-block-30.png" />
     <Content Include="Assets\icons\cms\blocks\CMS-icon-block-31.png" />
@@ -1627,6 +1628,7 @@
     <Content Include="Assets\imgs\blog-img1.jpg" />
     <Content Include="Assets\imgs\ipadair.png" />
     <Content Include="Assets\imgs\iphone11.png" />
+    <Content Include="Assets\js\mollie.apple.pay.direct.js" />
     <Content Include="Assets\js\mollie.checkout.js" />
     <Content Include="Assets\js\mollie.apple.pay.js" />
     <Content Include="Assets\vendors\fa-brands-400.svg" />

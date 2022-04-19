@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Mollie.Api.Client;
+using Mollie.Checkout.Helpers;
 using Newtonsoft.Json;
 
 namespace Mollie.Checkout.MollieApi
@@ -12,24 +13,57 @@ namespace Mollie.Checkout.MollieApi
             : base(apiKey, httpClient)
         { }
 
-        public async Task<ReponseValidateMerchant> ValidateMerchant(string validationUrl)
+        public ReponseValidateMerchant ValidateMerchant(string validationUrl)
         {
             var data = new Dictionary<string, string>
             {
                 { "validationUrl", validationUrl },
-                { "domain", "5ba3-92-64-221-225.ngrok.io" }
+                { "domain", "923a-92-64-221-225.ngrok.io" }
             };
-
-            var response = await this.PostAsync<ReponseValidateMerchant>("wallets/applepay/sessions", data)
-                .ConfigureAwait(false);
+            
+            var response = AsyncHelper.RunSync(() =>
+                this.PostAsync<ReponseValidateMerchant>("wallets/applepay/sessions", data));
 
             return response;
+        }
+
+        public void CreatePayment(object applePayPayment)
+        {
+            //var data = new Dictionary<string, string>
+            //{
+            //    { "method", "applepay" },
+            //    { "domain", "923a-92-64-221-225.ngrok.io" }
+            //};
+
+            //var response = AsyncHelper.RunSync(() =>
+            //    this.PostAsync<ReponseValidateMerchant>("wallets/applepay/sessions", data));
         }
     }
 
     public class ReponseValidateMerchant
     {
+        [JsonProperty("epochTimestamp")]
+        public string epochTimestamp { get; set; }
+
+        [JsonProperty("expiresAt")]
+        public string expiresAt { get; set; }
+
+        [JsonProperty("merchantSessionIdentifier")]
+        public string merchantSessionIdentifier { get; set; }
+
+        [JsonProperty("nonce")]
+        public string nonce { get; set; }
+
+        [JsonProperty("merchantIdentifier")]
+        public string merchantIdentifier { get; set; }
+
+        [JsonProperty("domainName")]
+        public string domainName { get; set; }
+
         [JsonProperty("displayName")]
-        public string DisplayName { get; set; }
+        public string displayName { get; set; }
+
+        [JsonProperty("signature")]
+        public string signature { get; set; }
     }
 }

@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using Mollie.Checkout.Helpers;
+using Mollie.Checkout.Services;
 using Mollie.Checkout.Services.Interfaces;
 
 namespace Foundation.Features.CatalogContent
@@ -51,6 +52,9 @@ namespace Foundation.Features.CatalogContent
         private readonly IInventoryService _inventoryService;
         private readonly IWarehouseRepository _warehouseRepository;
         private readonly IDatabaseMode _databaseMode;
+        private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
+        private readonly LanguageService _languageService;
+
 
         public CatalogEntryViewModelFactory(
             IApplePay applePay,
@@ -68,7 +72,7 @@ namespace Foundation.Features.CatalogContent
             IQuickOrderService quickOrderService,
             IInventoryService inventoryService,
             IWarehouseRepository warehouseRepository,
-            IDatabaseMode databaseMode)
+            IDatabaseMode databaseMode, ICheckoutConfigurationLoader checkoutConfigurationLoader, LanguageService languageService)
         {
             _applePay = applePay;
             _promotionService = promotionService;
@@ -86,6 +90,8 @@ namespace Foundation.Features.CatalogContent
             _inventoryService = inventoryService;
             _warehouseRepository = warehouseRepository;
             _databaseMode = databaseMode;
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
+            _languageService = languageService;
         }
 
         public virtual TViewModel Create<TProduct, TVariant, TViewModel>(TProduct currentContent, string variationCode)
@@ -94,6 +100,9 @@ namespace Foundation.Features.CatalogContent
             where TViewModel : ProductViewModelBase<TProduct, TVariant>, new()
         {
             var viewModel = new TViewModel();
+
+            var languageId = _languageService.GetCurrentLanguage().Name;
+            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
             var market = _currentMarket.GetCurrentMarket();
             var currency = _currencyservice.GetCurrentCurrency();
@@ -126,7 +135,7 @@ namespace Foundation.Features.CatalogContent
                     Sizes = new List<SelectListItem>(),
                     StaticAssociations = new List<ProductTileViewModel>(),
                     Variants = new List<VariantViewModel>(),
-                    ApplePayDirectIntegrationActive = applePayDirectIntegrationActive
+                    CheckoutConfiguration = checkoutConfiguration
                 };
             }
 
@@ -221,7 +230,7 @@ namespace Foundation.Features.CatalogContent
                 .Select(x => _contentLoader.Get<MediaData>(x.AssetLink)).ToList();
             viewModel.MinQuantity = (int)defaultPrice.MinQuantity;
             viewModel.HasSaleCode = defaultPrice != null ? !string.IsNullOrEmpty(defaultPrice.CustomerPricing.PriceCode) : false;
-            viewModel.ApplePayDirectIntegrationActive = applePayDirectIntegrationActive;
+            viewModel.CheckoutConfiguration = checkoutConfiguration;
 
             return viewModel;
         }
