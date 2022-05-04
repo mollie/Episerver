@@ -1,25 +1,36 @@
 ﻿using System.Net.Http;
 using System.Web.Mvc;
+using Foundation.Commerce.Markets;
 using Mollie.Checkout.MollieApi;
-using Newtonsoft.Json;
+using Mollie.Checkout.Services;
 
 namespace Foundation.Features.Api
 {
     public class MollieApiController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly LanguageService _languageService;
+        private readonly ICheckoutConfigurationLoader _checkoutConfigurationLoader;
 
-        public MollieApiController(HttpClient httpClient)
+        public MollieApiController(
+            LanguageService languageService,
+            ICheckoutConfigurationLoader checkoutConfigurationLoader)
         {
-            _httpClient = new HttpClient();
+            _languageService = languageService;
+            _checkoutConfigurationLoader = checkoutConfigurationLoader;
         }
 
         public ActionResult ValidateMerchant(string validationUrl)
         {
-            var client = new MollieApplePayClient("live_jAe7MfwUsBEzqaKVyM7wVvy5aFA8md", _httpClient);
-            var response = client.ValidateMerchant(validationUrl);
+            var languageId = _languageService.GetCurrentLanguage().Name;
+            var checkoutConfiguration = _checkoutConfigurationLoader.GetConfiguration(languageId);
 
-            return Json(response, JsonRequestBehavior.AllowGet);
+            using (var httpClient = new HttpClient())
+            {
+                var client = new MollieApplePayClient(checkoutConfiguration.ApiKey, httpClient);
+                var response = client.ValidateMerchant(validationUrl);
+
+                return Json(response, JsonRequestBehavior.AllowGet);
+            }
         }
     }
 }
