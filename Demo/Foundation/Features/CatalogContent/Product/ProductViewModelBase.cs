@@ -26,5 +26,6 @@ namespace Foundation.Features.CatalogContent.Product
         public string Size { get; set; }
         public List<VariantViewModel> Variants { get; set; }
         public string WishlistLabel { get; set; }
+        public CheckoutConfiguration CheckoutConfiguration { get; set; }
     }
 }

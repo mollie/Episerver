@@ -27,7 +27,7 @@ namespace Foundation
 
             routes.MapRoute(
                 "ApplePay",
-                "well-known/apple-developer-merchantid-domain-association",
+                ".well-known/apple-developer-merchantid-domain-association",
                 new { controller = "ApplePay", action = "WellKnownApplePay" });
 
             routes.MapRoute(

@@ -38,6 +38,13 @@ namespace Mollie.Checkout.Services
                 useCreditcardComponents = useCreditcardComponentsResult;
             }
 
+            var useApplePayDirectIntegration = false;
+
+            if (bool.TryParse(paymentMethodDto.GetParameter(Constants.Fields.UseApplePayDirectIntegrationField)?.Value, out var useApplePayDirectIntegrationResult))
+            {
+                useApplePayDirectIntegration = useApplePayDirectIntegrationResult;
+            }
+
             var paymentMethodId = Guid.Empty;
             if (paymentMethodDto.PaymentMethod.Count > 0)
             {
@@ -54,6 +61,7 @@ namespace Mollie.Checkout.Services
                 VersionStrings = AssemblyVersionUtils.CreateVersionString(),
                 UseOrdersApi = useOrdersApi,
                 UseCreditcardComponents = useCreditcardComponents,
+                UseApplePayDirectIntegration = useApplePayDirectIntegration,
                 OrderExpiresInDays = int.TryParse(paymentMethodDto.GetParameter(Constants.Fields.OrderExpiresInDaysField)?.Value, out var orderExpiresInDays) ? orderExpiresInDays : 30
             };
         }

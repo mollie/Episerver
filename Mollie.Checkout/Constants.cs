@@ -27,6 +27,8 @@ namespace Mollie.Checkout
 
             public const string UseCreditcardComponentsField = "UseCreditcardComponents";
 
+            public const string UseApplePayDirectIntegrationField = "UseApplePayDirectIntegration";
+
             public const string OrderExpiresInDaysField = "OrderExpiresInDays";
 
             public const string EnabledMolliePaymentMethods = "EnabledMolliePaymentMethods";
